@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
 
 class ApiClient {
   constructor() {
@@ -29,7 +29,13 @@ class ApiClient {
 
     // Response interceptor
     this.axiosInstance.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        const res = response.data;
+        if (res && typeof res.success !== 'undefined' && !res.success) {
+          return Promise.reject(new Error(res.message || 'API Error'));
+        }
+        return res;
+      },
       (error) => {
         // Handle specific error cases
         if (error.response?.status === 401) {
