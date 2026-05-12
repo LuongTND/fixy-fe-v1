@@ -32,8 +32,20 @@
       "@/hooks/*": [
         "./src/hooks/*"
       ],
-      "@/services/*": [
-        "./src/services/*"
+      "@/apis/*": [
+        "./src/apis/*"
+      ],
+      "@/providers/*": [
+        "./src/providers/*"
+      ],
+      "@/utils/*": [
+        "./src/utils/*"
+      ],
+      "@/constants/*": [
+        "./src/constants/*"
+      ],
+      "@/interfaces/*": [
+        "./src/interfaces/*"
       ],
       "@/lib/*": [
         "./src/lib/*"
