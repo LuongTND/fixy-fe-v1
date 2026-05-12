@@ -1,5 +1,8 @@
-@import "antd/dist/reset.css";
+@layer antd-reset {
+  @import "antd/dist/reset.css";
+}
 @import "tailwindcss";
+
 
 /* Google Fonts are loaded via <link> tags in layout.jsx */
 
@@ -52,8 +55,20 @@
   --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: var(--font-geist-mono);
   
+  /* Custom spacing */
+  --spacing-base: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+  --spacing-section-v: 56px;
+  --spacing-container-max: 1200px;
+
   /* Custom colors */
   --color-primary: #FF8228;
+  --color-primary-container: #FF8228;
+  --color-on-primary: #FFFFFF;
   --color-primary-hover: #E67E20;
   --color-primary-active: #D46F18;
   --color-primary-light: rgba(255, 130, 40, 0.10);
@@ -61,18 +76,38 @@
   --color-brand-navy: #0A1F44;
   --color-brand-blue: #006EF5;
   --color-secondary-accent: #5BC0DE;
+  --color-secondary-container: #7CDFFE;
   --color-success: #39B54A;
+  --color-success-alt: #2C9901;
   --color-error: #EA4335;
   --color-surface-bg: #FFFFFF;
   --color-surface-container-low: #f6f3f2;
   --color-surface-variant: #e4e2e1;
   --color-text-primary: #383838;
   --color-text-secondary: #4A4A4A;
+  --color-text-tertiary: #555555;
   --color-text-disabled: #9A9A9A;
   --color-text-muted: #818A91;
   --color-border-light: #DDDDDD;
   --color-border-medium: #D4D4D4;
+  --color-outline-variant: #DEC0B1;
+  /* Admin-specific tokens */
+  --color-secondary: #00677d;
+  --color-on-secondary-container: #006277;
+  --color-surface-container: #f0eded;
+  --color-on-background: #1b1c1c;
+  --color-primary-fixed: #ffdbc9;
+  --color-secondary-fixed: #b3ebff;
+  --color-on-primary-fixed: #321200;
+  --color-on-secondary-fixed: #001f27;
+  --color-error-container: #ffdad6;
 }
+
+/* Custom scrollbar for admin panels */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #dec0b1; border-radius: 10px; }
+
 
 body {
   background: var(--background);

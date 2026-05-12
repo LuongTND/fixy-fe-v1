@@ -11,7 +11,6 @@ export function CategoryGrid() {
     { icon: 'ac_unit', label: 'Máy Lạnh' },
     { icon: 'construction', label: 'Xây Dựng' },
     { icon: 'cleaning_services', label: 'Vệ Sinh' },
-    { icon: 'devices', label: 'Thiết Bị Số' },
   ];
 
   return (

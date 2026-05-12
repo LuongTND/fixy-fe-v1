@@ -11,7 +11,6 @@ import { USER_ROLES } from '@/constants/api-endpoints';
  * @param {Function} onSelect - Callback when role is confirmed
  */
 export function RoleSelection({ selectedRole: initialRole, onSelect }) {
-  const [hoveredRole, setHoveredRole] = useState(null);
   const [activeRole, setActiveRole] = useState(initialRole);
 
   const roles = [
@@ -48,30 +47,21 @@ export function RoleSelection({ selectedRole: initialRole, onSelect }) {
   };
 
   return (
-    <div>
-      <p style={{
-        fontFamily: "'Montserrat', sans-serif",
-        fontSize: '16px',
-        fontWeight: 600,
-        color: '#383838',
-        marginBottom: '16px',
-      }}>
+    <div className="font-montserrat">
+      <p className="text-base font-semibold text-[#383838] mb-4">
         Chọn vai trò của bạn
       </p>
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         {roles.map((role) => {
           const isActive = activeRole === role.id;
-          const isHovered = hoveredRole === role.id;
 
           return (
             <div
               key={role.id}
               id={`role-card-${role.id}`}
-              className={`role-card ${isActive ? 'active' : ''}`}
+              className={`role-card transition-all duration-250 cursor-pointer ${isActive ? 'active' : ''}`}
               onClick={() => setActiveRole(role.id)}
-              onMouseEnter={() => setHoveredRole(role.id)}
-              onMouseLeave={() => setHoveredRole(null)}
               role="button"
               tabIndex={0}
               aria-pressed={isActive}
@@ -85,92 +75,62 @@ export function RoleSelection({ selectedRole: initialRole, onSelect }) {
             >
               {/* Icon */}
               <span
-                className="material-symbols-outlined"
-                style={{
-                  fontSize: '48px',
-                  marginBottom: '12px',
-                  color: isActive ? '#FF8228' : '#4A4A4A',
-                  transition: 'color 250ms ease-out',
-                }}
+                className={`material-symbols-outlined text-[48px] mb-3 transition-colors duration-250 ${
+                  isActive ? 'text-primary' : 'text-gray'
+                }`}
               >
                 {role.icon}
               </span>
 
               {/* Title */}
-              <h3 style={{
-                fontFamily: "'Montserrat', sans-serif",
-                fontSize: '16px',
-                fontWeight: 600,
-                color: isActive ? '#FF8228' : '#383838',
-                marginBottom: '4px',
-                transition: 'color 250ms ease-out',
-              }}>
+              <h3 className={`text-base font-semibold mb-1 transition-colors duration-250 ${
+                isActive ? 'text-primary' : 'text-[#383838]'
+              }`}>
                 {role.title}
               </h3>
 
               {/* Description */}
-              <p style={{
-                fontFamily: "'Montserrat', sans-serif",
-                fontSize: '14px',
-                color: isActive ? 'rgba(255, 130, 40, 0.8)' : '#4A4A4A',
-                marginBottom: '16px',
-                transition: 'color 250ms ease-out',
-              }}>
+              <p className={`text-sm mb-4 transition-colors duration-250 ${
+                isActive ? 'text-primary opacity-80' : 'text-gray'
+              }`}>
                 {role.description}
               </p>
 
               {/* Features */}
-              {(isActive || isHovered) && (
-                <ul className="text-left space-y-2 animate-fade-in-up">
+              <div className="pt-2 transition-all duration-400 ease-in-out">
+                <ul className="text-left space-y-2">
                   {role.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-2" style={{
-                      animationDelay: `${idx * 60}ms`,
-                    }}>
+                    <li key={idx} className="flex items-center gap-2">
                       <span
-                        className="material-symbols-outlined"
-                        style={{
-                          fontSize: '16px',
-                          color: isActive ? '#39B54A' : '#4A4A4A',
-                        }}
+                        className={`material-symbols-outlined text-[16px] transition-colors duration-400 ease-in-out ${
+                          isActive ? 'text-success' : 'text-gray'
+                        }`}
                       >
                         check_circle
                       </span>
-                      <span style={{
-                        fontFamily: "'Montserrat', sans-serif",
-                        fontSize: '13px',
-                        color: isActive ? '#383838' : '#555555',
-                      }}>
+                      <span className={`text-[13px] transition-colors duration-400 ease-in-out ${
+                        isActive ? 'text-[#383838]' : 'text-[#555555]'
+                      }`}>
                         {feature}
                       </span>
                     </li>
                   ))}
                 </ul>
-              )}
+              </div>
 
               {/* Selection Indicator */}
-              {isActive && (
-                <div className="mt-4 animate-fade-in" style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '4px',
-                }}>
-                  <span className="material-symbols-outlined" style={{
-                    fontSize: '20px',
-                    color: '#FF8228',
-                  }}>
+              <div className={`overflow-hidden transition-all duration-400 ease-in-out ${
+                isActive ? 'max-h-10 opacity-100' : 'max-h-0 opacity-0'
+              }`}>
+                <div className="pt-4 flex items-center justify-center gap-1">
+                  <span className="material-symbols-outlined text-[20px] text-primary">
                     check_circle
                   </span>
-                  <span style={{
-                    fontFamily: "'Montserrat', sans-serif",
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    color: '#FF8228',
-                  }}>
+                  <span className="text-[12px] font-semibold text-primary">
                     Đã chọn
                   </span>
                 </div>
-              )}
+              </div>
             </div>
           );
         })}
@@ -179,10 +139,9 @@ export function RoleSelection({ selectedRole: initialRole, onSelect }) {
       {/* Continue Button */}
       <button
         id="role-continue-btn"
-        className="btn-primary"
+        className="btn-primary mt-2"
         onClick={handleConfirm}
         disabled={!activeRole}
-        style={{ marginTop: '8px' }}
       >
         Tiếp tục
       </button>

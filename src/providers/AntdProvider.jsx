@@ -1,6 +1,6 @@
 'use client';
 
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, App } from 'antd';
 import viVN from 'antd/locale/vi_VN';
 
 /**
@@ -40,7 +40,7 @@ export function AntdProvider({ children }) {
         },
       }}
     >
-      {children}
+      <App>{children}</App>
     </ConfigProvider>
   );
 }

@@ -9,13 +9,12 @@ class ApiClient {
       timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
       },
     });
 
-    // Request interceptor
     this.axiosInstance.interceptors.request.use(
       (config) => {
-        // Add token if exists
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
@@ -27,22 +26,70 @@ class ApiClient {
       }
     );
 
-    // Response interceptor
     this.axiosInstance.interceptors.response.use(
       (response) => {
         const res = response.data;
+
+        if (res && typeof res.isSuccess !== 'undefined') {
+          if (!res.isSuccess) {
+            const errMsg = (res.errors && res.errors[0]) || res.message || 'API Error';
+            const err = new Error(errMsg);
+            err.response = { data: res };
+            return Promise.reject(err);
+          }
+          return res.data !== undefined ? res.data : res;
+        }
+
         if (res && typeof res.success !== 'undefined' && !res.success) {
           return Promise.reject(new Error(res.message || 'API Error'));
         }
+
         return res;
       },
-      (error) => {
-        // Handle specific error cases
-        if (error.response?.status === 401) {
-          // Handle unauthorized - clear token and redirect to login
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('token');
-            window.location.href = '/login';
+      async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          if (originalRequest.url.includes('/auth/token/refresh')) {
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('token');
+              localStorage.removeItem('refreshToken');
+              window.location.href = '/login';
+            }
+            return Promise.reject(error);
+          }
+
+          originalRequest._retry = true;
+          const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
+
+          if (refreshToken) {
+            try {
+              const response = await axios.post(`${API_BASE_URL}/auth/token/refresh`, { refreshToken });
+              const payload = response.data?.data || response.data;
+              const newToken = payload?.accessToken || payload?.token;
+
+              if (newToken) {
+                localStorage.setItem('token', newToken);
+                if (payload?.refreshToken) {
+                  localStorage.setItem('refreshToken', payload.refreshToken);
+                }
+
+                originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                return this.axiosInstance(originalRequest);
+              }
+            } catch (refreshError) {
+              if (typeof window !== 'undefined') {
+                localStorage.removeItem('token');
+                localStorage.removeItem('refreshToken');
+                window.location.href = '/login';
+              }
+              return Promise.reject(refreshError);
+            }
+          } else {
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('token');
+              window.location.href = '/login';
+            }
           }
         }
         return Promise.reject(error);

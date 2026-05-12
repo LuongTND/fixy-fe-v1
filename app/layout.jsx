@@ -19,6 +19,7 @@ export default function RootLayout({ children }) {
     <html
       lang="vi"
       className={`${montserrat.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <head>
         <link

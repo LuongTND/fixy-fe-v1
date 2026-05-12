@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 /**
  * FeaturedPros - List of top-rated tradespersons
@@ -8,6 +9,7 @@ import { useState } from 'react';
  */
 export function FeaturedPros() {
   const [viewMode, setViewMode] = useState('list');
+  const router = useRouter();
 
   const pros = [
     {
@@ -37,7 +39,7 @@ export function FeaturedPros() {
   ];
 
   return (
-    <div className="lg:col-span-2" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {/* Header + View Toggle */}
       <div className="section-header">
         <h2 className="section-title">Vua Thợ Nổi Bật</h2>
@@ -89,7 +91,12 @@ export function FeaturedPros() {
       {/* Pro Cards */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {pros.map((pro) => (
-          <div key={pro.id} className="pro-card">
+          <div 
+            key={pro.id} 
+            className="pro-card"
+            onClick={() => router.push(`/worker/${pro.id}`)}
+            style={{ cursor: 'pointer' }}
+          >
             {/* Avatar */}
             <div className="pro-avatar-wrap">
               <img
@@ -142,7 +149,15 @@ export function FeaturedPros() {
                     {pro.location}
                   </span>
                 </div>
-                <button className="pro-book-btn">Đặt Ngay</button>
+                <button 
+                  className="pro-book-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/worker/${pro.id}`);
+                  }}
+                >
+                  Đặt Ngay
+                </button>
               </div>
             </div>
           </div>

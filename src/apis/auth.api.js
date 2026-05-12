@@ -1,114 +1,115 @@
 import axios from '@/base/axios';
 import { API_ENDPOINTS } from '@/constants/api-endpoints';
 
-class AuthService {
-  /**
-   * Login with email/phone and password
-   * @param {Object} data - { email, password } or { phone, password }
-   */
-  async login(data) {
-    const response = await axios.post(API_ENDPOINTS.AUTH.LOGIN, data);
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-    }
-    return response.data;
-  }
+/**
+ * Login with email/phone and password
+ * @param {Object} data - { target, password }
+ */
+export const login = async (data) => {
+  const res = await axios.post(API_ENDPOINTS.AUTH.LOGIN, data);
+  return res;
+};
 
-  /**
-   * Register new user (customer or tradesperson)
-   * @param {Object} data - Registration data
-   * @param {string} data.fullName - Full name
-   * @param {string} data.phone - Phone number
-   * @param {string} data.email - Email address
-   * @param {string} data.password - Password
-   * @param {string} data.role - 'customer' or 'tradesperson'
-   * @param {string} [data.dateOfBirth] - Date of birth (tradesperson only)
-   * @param {string} [data.gender] - Gender (tradesperson only)
-   * @param {string} [data.address] - Permanent address (tradesperson only)
-   */
-  async register(data) {
-    const response = await axios.post(API_ENDPOINTS.AUTH.REGISTER, data);
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-    }
-    return response.data;
-  }
+/**
+ * Register new user
+ * @param {Object} data - Registration data
+ */
+export const register = async (data) => {
+  const res = await axios.post(API_ENDPOINTS.AUTH.REGISTER, data);
+  return res;
+};
 
-  /**
-   * Send OTP to phone or email
-   * @param {Object} data - { phone } or { email }
-   * @param {string} data.type - 'sms' or 'email'
-   */
-  async sendOtp(data) {
-    const response = await axios.post(API_ENDPOINTS.AUTH.SEND_OTP, data);
-    return response.data;
-  }
+/**
+ * Send OTP to a target
+ * @param {Object} data - { target, purpose }
+ */
+export const sendOtp = async (data) => {
+  const res = await axios.post(API_ENDPOINTS.AUTH.SEND_OTP, data);
+  return res;
+};
 
-  /**
-   * Verify OTP code
-   * @param {Object} data - { phone/email, otp }
-   */
-  async verifyOtp(data) {
-    const response = await axios.post(API_ENDPOINTS.AUTH.VERIFY_OTP, data);
-    return response.data;
-  }
+/**
+ * Verify OTP code
+ * @param {Object} data - { target, otpCode }
+ */
+export const verifyOtp = async (data) => {
+  const res = await axios.post(API_ENDPOINTS.AUTH.VERIFY_OTP, data);
+  return res;
+};
 
-  /**
-   * Login with Google OAuth2
-   * @param {string} token - Google OAuth token
-   */
-  async googleLogin(token) {
-    const response = await axios.post(API_ENDPOINTS.AUTH.GOOGLE_LOGIN, { token });
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-    }
-    return response.data;
-  }
+/**
+ * Login with Google OAuth2
+ * @param {string} oauthToken - Google OAuth token
+ */
+export const googleLogin = async (oauthToken) => {
+  const res = await axios.post(API_ENDPOINTS.AUTH.GOOGLE_LOGIN, { token: oauthToken });
+  return res;
+};
 
-  /**
-   * Login with Facebook OAuth2
-   * @param {string} token - Facebook access token
-   */
-  async facebookLogin(token) {
-    const response = await axios.post(API_ENDPOINTS.AUTH.FACEBOOK_LOGIN, { token });
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-    }
-    return response.data;
-  }
+/**
+ * Login with Facebook OAuth2
+ * @param {string} oauthToken - Facebook access token
+ */
+export const facebookLogin = async (oauthToken) => {
+  const res = await axios.post(API_ENDPOINTS.AUTH.FACEBOOK_LOGIN, { token: oauthToken });
+  return res;
+};
 
-  /**
-   * Forgot password (send reset link or OTP)
-   * @param {Object} data - { email } or { phone }
-   */
-  async forgotPassword(data) {
-    const response = await axios.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, data);
-    return response.data;
-  }
+/**
+ * Forgot password
+ * @param {Object} data - { target }
+ */
+export const forgotPassword = async (data) => {
+  const res = await axios.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, data);
+  return res;
+};
 
-  /**
-   * Reset password (with OTP/token)
-   * @param {Object} data - { email/phone, otp, newPassword }
-   */
-  async resetPassword(data) {
-    const response = await axios.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, data);
-    return response.data;
-  }
+/**
+ * Reset password
+ * @param {Object} data - { target, otp, newPassword }
+ */
+export const resetPassword = async (data) => {
+  const res = await axios.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, data);
+  return res;
+};
 
-  async logout() {
-    localStorage.removeItem('token');
-  }
+/**
+ * Change password (authenticated)
+ * @param {Object} data - { target, oldPassword, newPassword }
+ */
+export const changePassword = async (data) => {
+  const res = await axios.post(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, data);
+  return res;
+};
 
-  getToken() {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('token');
-    }
+/**
+ * Refresh access token
+ * @param {string} refreshToken - The refresh token
+ */
+export const refreshToken = async (refreshToken) => {
+  const res = await axios.post(API_ENDPOINTS.AUTH.REFRESH, { refreshToken });
+  return res;
+};
+
+export const authApi = {
+  login,
+  register,
+  sendOtp,
+  verifyOtp,
+  googleLogin,
+  facebookLogin,
+  forgotPassword,
+  resetPassword,
+  changePassword,
+  refreshToken,
+  logout: async () => {
+  },
+  getToken: () => {
+    if (typeof window !== 'undefined') return localStorage.getItem('token');
     return null;
+  },
+  isAuthenticated: () => {
+    if (typeof window !== 'undefined') return !!localStorage.getItem('token');
+    return false;
   }
-
-  isAuthenticated() {
-    return !!this.getToken();
-  }
-}
-
-export const authApi = new AuthService();
+};

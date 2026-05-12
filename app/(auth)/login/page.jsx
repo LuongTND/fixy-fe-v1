@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { message } from 'antd';
-import { authService } from '@/apis/auth.service';
+import { useRouter } from 'next/navigation';
+import { App } from 'antd';
+import { useAuth } from '@/hooks/useAuth';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '@/constants/messages';
 
 /**
@@ -10,6 +11,9 @@ import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '@/constants/messages';
  * Supports email/phone + password login and OAuth2
  */
 export default function LoginPage() {
+  const router = useRouter();
+  const { message } = App.useApp();
+  const { login } = useAuth();
   const [formValues, setFormValues] = useState({
     emailOrPhone: '',
     password: '',
@@ -48,23 +52,16 @@ export default function LoginPage() {
 
     try {
       setLoading(true);
-      const isEmail = formValues.emailOrPhone.includes('@');
-      const loginData = isEmail
-        ? { email: formValues.emailOrPhone, password: formValues.password }
-        : { phone: formValues.emailOrPhone, password: formValues.password };
-
-      await authService.login(loginData);
+      await login(formValues.emailOrPhone, formValues.password);
       message.success(SUCCESS_MESSAGES.LOGIN_SUCCESS);
 
-      if (typeof window !== 'undefined') {
-        window.location.href = '/dashboard';
-      }
+      router.push('/profile');
     } catch (err) {
       message.error(err.response?.data?.message || ERROR_MESSAGES.INVALID_CREDENTIALS);
     } finally {
       setLoading(false);
     }
-  }, [formValues, validateForm]);
+  }, [formValues, validateForm, login, message, router]);
 
   const handleGoogleLogin = () => {
     console.log('Google login');
@@ -75,25 +72,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div>
+    <div className="font-montserrat">
       {/* Header */}
       <div className="mb-8">
-        <h2 style={{
-          fontFamily: "'Montserrat', sans-serif",
-          fontSize: '32px',
-          lineHeight: '38.4px',
-          fontWeight: 700,
-          color: '#383838',
-          marginBottom: '8px',
-        }}>
+        <h2 className="text-[32px] leading-[38.4px] font-bold text-[#383838] mb-2">
           Đăng nhập
         </h2>
-        <p style={{
-          fontFamily: "'Montserrat', sans-serif",
-          fontSize: '14px',
-          lineHeight: '21px',
-          color: '#4A4A4A',
-        }}>
+        <p className="text-sm leading-[21px] text-gray">
           Chào mừng bạn quay trở lại Vua Thợ
         </p>
       </div>
@@ -134,15 +119,7 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         {/* Email/Phone */}
         <div>
-          <label htmlFor="login-email"
-                 style={{
-                   display: 'block',
-                   fontFamily: "'Montserrat', sans-serif",
-                   fontSize: '14px',
-                   fontWeight: 600,
-                   color: '#383838',
-                   marginBottom: '8px',
-                 }}>
+          <label htmlFor="login-email" className="block font-semibold text-sm text-[#383838] mb-2">
             Email hoặc Số điện thoại
           </label>
           <input
@@ -160,29 +137,22 @@ export default function LoginPage() {
         {/* Password */}
         <div>
           <div className="flex justify-between items-center mb-2">
-            <label htmlFor="login-password"
-                   style={{
-                     fontFamily: "'Montserrat', sans-serif",
-                     fontSize: '14px',
-                     fontWeight: 600,
-                     color: '#383838',
-                   }}>
+            <label htmlFor="login-password" className="font-semibold text-sm text-[#383838]">
               Mật khẩu
             </label>
-            <a href="/forgot-password" className="link-primary" style={{ fontSize: '13px' }}>
+            <a href="/forgot-password" size="small" className="link-primary text-[13px]">
               Quên mật khẩu?
             </a>
           </div>
-          <div style={{ position: 'relative' }}>
+          <div className="relative">
             <input
               id="login-password"
-              className={`auth-input ${errors.password ? 'input-error' : ''}`}
+              className={`auth-input pr-12 ${errors.password ? 'input-error' : ''}`}
               type={showPassword ? 'text' : 'password'}
               placeholder="Nhập mật khẩu"
               value={formValues.password}
               onChange={(e) => handleChange('password', e.target.value)}
               autoComplete="current-password"
-              style={{ paddingRight: '48px' }}
             />
             <button
               type="button"
@@ -190,7 +160,7 @@ export default function LoginPage() {
               onClick={() => setShowPassword(!showPassword)}
               aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
+              <span className="material-symbols-outlined text-[20px]">
                 {showPassword ? 'visibility_off' : 'visibility'}
               </span>
             </button>
@@ -207,12 +177,7 @@ export default function LoginPage() {
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
           />
-          <label htmlFor="login-remember" style={{
-            fontFamily: "'Montserrat', sans-serif",
-            fontSize: '14px',
-            color: '#4A4A4A',
-            cursor: 'pointer',
-          }}>
+          <label htmlFor="login-remember" className="text-sm text-gray cursor-pointer">
             Ghi nhớ đăng nhập
           </label>
         </div>
@@ -220,22 +185,12 @@ export default function LoginPage() {
         {/* Submit */}
         <button
           id="login-submit-btn"
-          className="btn-primary"
+          className="btn-primary flex items-center justify-center gap-2 mt-6"
           type="submit"
           disabled={loading}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            marginTop: '24px',
-          }}
         >
           {loading && (
-            <span className="material-symbols-outlined" style={{
-              fontSize: '20px',
-              animation: 'spin 1s linear infinite',
-            }}>
+            <span className="material-symbols-outlined text-[20px] animate-spin">
               progress_activity
             </span>
           )}
@@ -245,14 +200,10 @@ export default function LoginPage() {
 
       {/* Register Link */}
       <div className="mt-8 text-center">
-        <span style={{
-          fontFamily: "'Montserrat', sans-serif",
-          fontSize: '14px',
-          color: '#4A4A4A',
-        }}>
+        <span className="text-sm text-gray">
           Chưa có tài khoản?{' '}
         </span>
-        <a href="/register" className="link-primary" style={{ fontSize: '14px' }}>
+        <a href="/register" className="link-primary text-sm">
           Đăng ký ngay
         </a>
       </div>

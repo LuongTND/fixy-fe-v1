@@ -1,170 +1,109 @@
 'use client';
-
 import { useState } from 'react';
 
-/**
- * Search Filters Component
- * 4.2.1. Lọc theo: vị trí (khu vực, bán kính), giá dịch vụ, điểm đánh giá, trạng thái online.
- */
 export function SearchFilters() {
-  const [radius, setRadius] = useState(5);
-  const [onlineOnly, setOnlineOnly] = useState(false);
-  const [minRating, setMinRating] = useState(0);
-
-  const categories = ['Điện Nước', 'Điện Lạnh', 'Xây Dựng', 'Vệ Sinh', 'Thiết Bị Số', 'Mộc'];
+  const [radius, setRadius] = useState(10);
 
   return (
-    <div style={{
-      background: '#FFF',
-      borderRadius: '12px',
-      padding: '24px',
-      border: '1px solid #E8E8E8',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '24px'
-    }}>
-      <h3 style={{
-        fontFamily: "'Montserrat', sans-serif",
-        fontSize: '18px',
-        fontWeight: 700,
-        color: '#0A1F44',
-        margin: 0
-      }}>Bộ lọc tìm kiếm</h3>
-
-      {/* Danh mục */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <h4 style={{ fontSize: '15px', fontWeight: 600, color: '#383838', margin: 0 }}>Danh mục dịch vụ</h4>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-          {categories.map(cat => (
-            <label key={cat} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: '#4A4A4A', cursor: 'pointer' }}>
-              <input type="checkbox" style={{ accentColor: '#FF8228', width: '16px', height: '16px' }} />
-              {cat}
+    <>
+      <div className="bg-surface-bg rounded-xl border border-border-light p-4 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-h3 text-text-primary">Filters</h3>
+          <button className="text-primary font-small-bold text-small bg-transparent border-none cursor-pointer">Clear All</button>
+        </div>
+        
+        {/* Online Status */}
+        <div className="mb-6">
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <div className="relative inline-flex items-center">
+              <input className="sr-only peer" type="checkbox" />
+              <div className="w-11 h-6 bg-border-light peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-success"></div>
+            </div>
+            <span className="font-body text-text-primary">Available Now</span>
+          </label>
+        </div>
+        
+        {/* Price Range */}
+        <div className="mb-6 border-t border-border-light pt-4">
+          <h4 className="font-small-bold mb-4 text-text-primary">Price Range (VND)</h4>
+          <div className="space-y-3">
+            <label className="flex items-center gap-3 font-small cursor-pointer text-text-secondary">
+              <input className="rounded focus:ring-primary h-4 w-4 border-border-light" style={{ accentColor: '#FF8228' }} type="checkbox" />
+              <span>Under 200,000</span>
             </label>
-          ))}
+            <label className="flex items-center gap-3 font-small cursor-pointer text-text-secondary">
+              <input className="rounded focus:ring-primary h-4 w-4 border-border-light" style={{ accentColor: '#FF8228' }} type="checkbox" />
+              <span>200,000 - 500,000</span>
+            </label>
+            <label className="flex items-center gap-3 font-small cursor-pointer text-text-secondary">
+              <input className="rounded focus:ring-primary h-4 w-4 border-border-light" style={{ accentColor: '#FF8228' }} type="checkbox" />
+              <span>Over 500,000</span>
+            </label>
+          </div>
         </div>
-      </div>
-
-      <hr style={{ border: 'none', borderTop: '1px solid #E8E8E8' }} />
-
-      {/* Khoảng cách */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h4 style={{ fontSize: '15px', fontWeight: 600, color: '#383838', margin: 0 }}>Khoảng cách</h4>
-          <span style={{ fontSize: '14px', color: '#FF8228', fontWeight: 600 }}>{radius} km</span>
+        
+        {/* Rating */}
+        <div className="mb-6 border-t border-border-light pt-4">
+          <h4 className="font-small-bold mb-4 text-text-primary">Minimum Rating</h4>
+          <div className="space-y-3">
+            {[4, 3].map((rating) => (
+              <label key={rating} className="flex items-center gap-3 font-small cursor-pointer group">
+                <div className="relative flex items-center justify-center">
+                  <input className="sr-only peer" name="rating" type="radio" />
+                  <div className="w-5 h-5 rounded-full border-2 border-border-light peer-checked:border-primary peer-checked:bg-primary transition-all flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-white scale-0 peer-checked:scale-100 transition-transform"></div>
+                  </div>
+                </div>
+                <span className="flex items-center text-primary">
+                  {[...Array(rating)].map((_, i) => (
+                    <span key={i} className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                  ))}
+                  <span className="text-text-tertiary ml-2">& up</span>
+                </span>
+              </label>
+            ))}
+          </div>
         </div>
-        <input 
-          type="range" 
-          min="1" max="50" 
-          value={radius} 
-          onChange={(e) => setRadius(e.target.value)}
-          style={{ width: '100%', accentColor: '#FF8228' }} 
-        />
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#818A91' }}>
-          <span>1 km</span>
-          <span>50 km</span>
-        </div>
-      </div>
-
-      <hr style={{ border: 'none', borderTop: '1px solid #E8E8E8' }} />
-
-      {/* Trạng thái Online */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10B981' }}></div>
-          <h4 style={{ fontSize: '15px', fontWeight: 600, color: '#383838', margin: 0 }}>Đang Online</h4>
-        </div>
-        <label style={{
-          position: 'relative',
-          display: 'inline-block',
-          width: '44px',
-          height: '24px'
-        }}>
-          <input 
-            type="checkbox" 
-            checked={onlineOnly} 
-            onChange={(e) => setOnlineOnly(e.target.checked)}
-            style={{ opacity: 0, width: 0, height: 0 }} 
-          />
-          <span style={{
-            position: 'absolute',
-            cursor: 'pointer',
-            top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: onlineOnly ? '#FF8228' : '#ccc',
-            transition: '.4s',
-            borderRadius: '24px'
-          }}>
-            <span style={{
-              position: 'absolute',
-              content: '""',
-              height: '18px',
-              width: '18px',
-              left: '3px',
-              bottom: '3px',
-              backgroundColor: 'white',
-              transition: '.4s',
-              borderRadius: '50%',
-              transform: onlineOnly ? 'translateX(20px)' : 'translateX(0)'
-            }}></span>
-          </span>
-        </label>
-      </div>
-
-      <hr style={{ border: 'none', borderTop: '1px solid #E8E8E8' }} />
-
-      {/* Đánh giá */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <h4 style={{ fontSize: '15px', fontWeight: 600, color: '#383838', margin: 0 }}>Đánh giá tối thiểu</h4>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {[5, 4, 3].map(rating => (
-            <label key={rating} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+        
+        {/* Radius */}
+        <div className="border-t border-border-light pt-4">
+          <div className="flex justify-between items-center mb-4">
+            <h4 className="font-small-bold text-text-primary">Distance Radius</h4>
+            <div className="flex items-center gap-1.5">
               <input 
-                type="radio" 
-                name="rating" 
-                checked={minRating === rating}
-                onChange={() => setMinRating(rating)}
-                style={{ accentColor: '#FF8228', width: '16px', height: '16px' }} 
+                type="number" 
+                value={radius}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value);
+                  if (!isNaN(val)) setRadius(Math.min(50, Math.max(1, val)));
+                }}
+                className="w-12 h-7 text-center text-primary font-bold text-sm bg-primary/10 border-none rounded-md focus:ring-1 focus:ring-primary outline-none"
               />
-              <div style={{ display: 'flex', alignItems: 'center', gap: '2px', color: '#FFB800' }}>
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} className="material-symbols-outlined" style={{ fontSize: '18px', fontVariationSettings: i < rating ? "'FILL' 1" : "'FILL' 0" }}>
-                    star
-                  </span>
-                ))}
-              </div>
-              <span style={{ fontSize: '14px', color: '#4A4A4A' }}>trở lên</span>
-            </label>
-          ))}
+              <span className="text-[11px] font-bold text-text-tertiary uppercase">km</span>
+            </div>
+          </div>
+          <input 
+            className="w-full h-2 bg-border-light rounded-lg appearance-none cursor-pointer" 
+            style={{ accentColor: '#FF8228' }} 
+            max="50" 
+            min="1" 
+            type="range" 
+            value={radius}
+            onChange={(e) => setRadius(parseInt(e.target.value))}
+          />
+          <div className="flex justify-between text-xs mt-2 text-text-tertiary">
+            <span>1 km</span>
+            <span>50 km</span>
+          </div>
         </div>
       </div>
-
-      {/* Action Buttons */}
-      <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-        <button style={{
-          flex: 1,
-          padding: '10px',
-          background: 'transparent',
-          border: '1.5px solid #D4D4D4',
-          borderRadius: '8px',
-          color: '#4A4A4A',
-          fontFamily: "'Montserrat', sans-serif",
-          fontWeight: 600,
-          cursor: 'pointer'
-        }}>Xóa bộ lọc</button>
-        <button style={{
-          flex: 2,
-          padding: '10px',
-          background: '#FF8228',
-          border: 'none',
-          borderRadius: '8px',
-          color: '#FFF',
-          fontFamily: "'Montserrat', sans-serif",
-          fontWeight: 600,
-          cursor: 'pointer',
-          boxShadow: '0 2px 8px rgba(255,130,40,0.2)'
-        }}>Áp dụng</button>
+      
+      {/* Ad/Promo Card */}
+      <div style={{ background: '#F2F8FF', border: '1px solid #006EF5' }} className="rounded-xl p-4 overflow-hidden relative">
+        <h5 className="font-body-bold text-text-primary mb-2">Join Vua Thợ Pro</h5>
+        <p className="text-small text-text-secondary mb-4">Boost your visibility and find more local clients today.</p>
+        <button className="font-small-bold bg-transparent border-none cursor-pointer p-0 hover:underline" style={{ color: '#006EF5' }}>Register now →</button>
       </div>
-
-    </div>
+    </>
   );
 }

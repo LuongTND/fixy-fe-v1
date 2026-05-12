@@ -81,7 +81,7 @@ export function NearbyMap() {
                   fontFamily: "'Montserrat', sans-serif",
                   fontSize: '12px',
                   color: 'var(--color-text-muted)',
-                }}>Sẵn sàng nhận việc ngay</p>
+                }}>Sẵn sàng phục vụ</p>
               </div>
             </div>
           </div>

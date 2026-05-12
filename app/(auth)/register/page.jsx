@@ -1,27 +1,35 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { message } from 'antd';
+import { useRouter } from 'next/navigation';
+import { App } from 'antd';
 import { RoleSelection } from '@/components/feature/auth/RoleSelection';
-import { RegisterForm } from '@/components/feature/auth/RegisterForm';
 import { OtpVerification } from '@/components/feature/auth/OtpVerification';
 import { ProgressSteps } from '@/components/feature/auth/ProgressSteps';
-import { authService } from '@/apis/auth.service';
+import { CompleteRegistrationForm } from '@/components/feature/auth/CompleteRegistrationForm';
+import { authApi } from '@/apis/auth.api';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '@/constants/messages';
+import { validateEmail, validatePhone, validateRequired } from '@/utils/validate';
 
 /**
  * Registration Page - 3-step flow
- * Step 1: Role Selection (Customer / Tradesperson)
- * Step 2: Registration Form (info + social login)
- * Step 3: OTP Verification
+ * Step 1: Role Selection + Target
+ * Step 2: OTP Verification
+ * Step 3: Complete Registration
  */
 export default function RegisterPage() {
+  const router = useRouter();
+  const { message } = App.useApp();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedRole, setSelectedRole] = useState(null);
+  const [contactTarget, setContactTarget] = useState('');
+  const [targetType, setTargetType] = useState('email');
+  const [otpRequested, setOtpRequested] = useState(false);
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
+  const [stepError, setStepError] = useState('');
 
-  const stepLabels = ['Chọn vai trò', 'Thông tin đăng ký', 'Xác thực OTP'];
+  const stepLabels = ['Chọn vai trò', 'Xác thực OTP', 'Hoàn tất đăng ký'];
 
   // Step 1: Role selected
   const handleRoleSelect = useCallback((role) => {
@@ -29,68 +37,104 @@ export default function RegisterPage() {
     setCurrentStep(2);
   }, []);
 
-  // Step 2: Form submitted
-  const handleFormSubmit = useCallback(async (data) => {
+  // Step 2: Send OTP after entering target
+  const handleSendOtp = useCallback(async () => {
     try {
       setLoading(true);
+      setStepError('');
+
+      if (!selectedRole) {
+        setStepError('Vui lòng chọn vai trò');
+        return;
+      }
+
+      if (!validateRequired(contactTarget)) {
+        setStepError('Vui lòng nhập email hoặc số điện thoại');
+        return;
+      }
+
+      const isEmail = contactTarget.includes('@');
+      const isPhone = !isEmail;
+
+      if (isEmail && !validateEmail(contactTarget)) {
+        setStepError('Email không hợp lệ');
+        return;
+      }
+
+      if (isPhone && !validatePhone(contactTarget)) {
+        setStepError('Số điện thoại không hợp lệ');
+        return;
+      }
+
+      const normalizedTargetType = isPhone ? 'sms' : 'email';
+      setTargetType(normalizedTargetType);
+
       const registrationData = {
-        ...data,
         role: selectedRole,
+        target: contactTarget,
+        targetType: normalizedTargetType,
       };
       setFormData(registrationData);
 
-      // Call register API
-      await authService.register(registrationData);
+      // Send OTP before completing registration
+      await authApi.sendOtp({ target: contactTarget, purpose: 0 });
 
-      // Send OTP to the registered phone/email
-      const otpTarget = data.phone || data.email;
-      const otpType = data.phone ? 'sms' : 'email';
-      await authService.sendOtp({ [otpType === 'sms' ? 'phone' : 'email']: otpTarget, type: otpType });
-
+      setOtpRequested(true);
       message.success(SUCCESS_MESSAGES.OTP_SENT);
-      setCurrentStep(3);
     } catch (err) {
-      message.error(err.response?.data?.message || ERROR_MESSAGES.REGISTER_FAILED);
+      message.error(err.response?.data?.message || ERROR_MESSAGES.SERVER_ERROR);
     } finally {
       setLoading(false);
     }
-  }, [selectedRole]);
+  }, [contactTarget, message, selectedRole]);
 
-  // Step 3: OTP verified
+  // Step 2: OTP verified
   const handleOtpVerify = useCallback(async (otpCode) => {
     try {
       setLoading(true);
-      const otpTarget = formData.phone || formData.email;
-      const otpType = formData.phone ? 'sms' : 'email';
-      
-      await authService.verifyOtp({
-        [otpType === 'sms' ? 'phone' : 'email']: otpTarget,
-        otp: otpCode,
+      const target = formData.target;
+
+      await authApi.verifyOtp({
+        target,
+        otpCode,
       });
 
-      message.success(SUCCESS_MESSAGES.REGISTER_SUCCESS);
-
-      // Redirect to appropriate page after successful registration
-      if (typeof window !== 'undefined') {
-        window.location.href = '/dashboard';
-      }
+      setCurrentStep(3);
     } catch (err) {
       message.error(err.response?.data?.message || ERROR_MESSAGES.OTP_INVALID);
     } finally {
       setLoading(false);
     }
-  }, [formData]);
+  }, [formData, message]);
+
+  // Step 3: Complete registration
+  const handleCompleteRegistration = useCallback(async (data) => {
+    try {
+      setLoading(true);
+
+      await authApi.register({
+        fullName: data.fullName,
+        password: data.password,
+        target: formData.target,
+      });
+
+      message.success(SUCCESS_MESSAGES.REGISTER_SUCCESS);
+
+      router.push('/login');
+    } catch (err) {
+      message.error(err.response?.data?.message || ERROR_MESSAGES.REGISTER_FAILED);
+    } finally {
+      setLoading(false);
+    }
+  }, [formData, message, router]);
 
   // Resend OTP
   const handleResendOtp = useCallback(async () => {
     try {
       setLoading(true);
-      const otpTarget = formData.phone || formData.email;
-      const otpType = formData.phone ? 'sms' : 'email';
-      
-      await authService.sendOtp({
-        [otpType === 'sms' ? 'phone' : 'email']: otpTarget,
-        type: otpType,
+      await authApi.sendOtp({
+        target: formData.target,
+        purpose: 0,
       });
 
       message.success(SUCCESS_MESSAGES.OTP_SENT);
@@ -109,26 +153,14 @@ export default function RegisterPage() {
   }, [currentStep]);
 
   return (
-    <div>
+    <div className="font-montserrat">
       {/* Header & Progress */}
-      <div className="flex justify-between items-center" style={{ marginBottom: '12px' }}>
+      <div className="flex justify-between items-center mb-3">
         <div>
-          <h2 style={{
-            fontFamily: "'Montserrat', sans-serif",
-            fontSize: '24px',
-            lineHeight: '30px',
-            fontWeight: 700,
-            color: '#383838',
-            marginBottom: '2px',
-          }}>
+          <h2 className="text-2xl leading-[30px] font-bold text-[#383838] mb-0.5">
             Tạo tài khoản
           </h2>
-          <p style={{
-            fontFamily: "'Montserrat', sans-serif",
-            fontSize: '13px',
-            lineHeight: '18px',
-            color: '#4A4A4A',
-          }}>
+          <p className="text-[13px] leading-[18px] text-gray">
             Bước {currentStep}/3: {stepLabels[currentStep - 1]}
           </p>
         </div>
@@ -145,37 +177,39 @@ export default function RegisterPage() {
         )}
 
         {currentStep === 2 && (
-          <RegisterForm
-            role={selectedRole}
-            initialData={formData}
-            loading={loading}
-            onSubmit={handleFormSubmit}
-            onBack={handleBack}
-          />
-        )}
-
-        {currentStep === 3 && (
           <OtpVerification
-            target={formData.phone || formData.email}
-            type={formData.phone ? 'sms' : 'email'}
+            target={formData.target}
+            targetValue={contactTarget}
+            targetType={targetType}
+            otpRequested={otpRequested}
+            stepError={stepError}
+            onTargetChange={setContactTarget}
+            onRequestOtp={handleSendOtp}
+            type={targetType}
             loading={loading}
             onVerify={handleOtpVerify}
             onResend={handleResendOtp}
             onBack={handleBack}
           />
         )}
+
+        {currentStep === 3 && (
+          <CompleteRegistrationForm
+            role={selectedRole}
+            target={formData.target}
+            loading={loading}
+            onSubmit={handleCompleteRegistration}
+            onBack={handleBack}
+          />
+        )}
       </div>
 
       {/* Login Link */}
-      <div className="text-center" style={{ marginTop: '12px' }}>
-        <span style={{
-          fontFamily: "'Montserrat', sans-serif",
-          fontSize: '13px',
-          color: '#4A4A4A',
-        }}>
+      <div className="text-center mt-3">
+        <span className="text-[13px] text-gray">
           Đã có tài khoản?{' '}
         </span>
-        <a href="/login" className="link-primary" style={{ fontSize: '13px' }}>
+        <a href="/login" className="link-primary text-[13px]">
           Đăng nhập
         </a>
       </div>
