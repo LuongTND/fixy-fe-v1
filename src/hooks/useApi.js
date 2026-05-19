@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import apiClient from '@/services/api-client';
+import apiClient from '@/apis/api-client';
 
 export function useApi() {
   const [state, setState] = useState({

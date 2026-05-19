@@ -4,12 +4,21 @@ export const API_ENDPOINTS = {
     LOGIN: '/auth/login',
     LOGOUT: '/auth/logout',
     REGISTER: '/auth/register',
-    REFRESH: '/auth/refresh',
+    REFRESH: '/auth/token/refresh',
+    SEND_OTP: '/auth/otp/send',
+    VERIFY_OTP: '/auth/otp/verify',
+    GOOGLE_LOGIN: '/auth/google',
+    FACEBOOK_LOGIN: '/auth/facebook',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
+    CHANGE_PASSWORD: '/auth/password/change',
   },
   USER: {
-    PROFILE: '/user/profile',
-    UPDATE: '/user/update',
+    PROFILE: '/user',
+    UPDATE: '/user',
     CHANGE_PASSWORD: '/user/change-password',
+    UPLOAD_AVATAR: '/user/upload-avatar',
+    ENABLE_2FA: '/user/enable-2fa',
   },
   DASHBOARD: {
     GET_DATA: '/dashboard/data',
@@ -23,5 +32,16 @@ export const DEFAULT_PAGE_SIZE = 20;
 export const DEFAULT_PAGE = 1;
 
 // App Config
-export const APP_NAME = 'Fixy';
+export const APP_NAME = 'Vua Thợ';
 export const APP_VERSION = '1.0.0';
+
+// User Roles
+export const USER_ROLES = {
+  CUSTOMER: 'customer',
+  TRADESPERSON: 'tradesperson',
+  ADMIN: 'admin',
+};
+
+// OTP Config
+export const OTP_LENGTH = 6;
+export const OTP_RESEND_TIMEOUT = 60; // seconds
