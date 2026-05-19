@@ -38,3 +38,41 @@ export const formatNumber = (num) => {
 export const formatPercentage = (value) => {
   return `${value.toFixed(2)}%`;
 };
+// Format VNPAY amount (VNPAY returns amount * 100)
+export const formatVnpayAmount = (value) => {
+  const amount = Number(value || 0) / 100;
+  return formatCurrency(amount);
+};
+
+// Format booking price with "Chưa báo giá" fallback
+export const formatBookingPrice = (value) => {
+  if (value === null || value === undefined || value === '') return 'Chưa báo giá';
+  return `${Number(value || 0).toLocaleString('vi-VN')}đ`;
+};
+
+// Format booking date with "Chưa đặt lịch" fallback
+export const formatBookingDate = (value) => {
+  if (!value) return 'Chưa đặt lịch';
+  return new Date(value).toLocaleString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+};
+
+// Format transaction time
+export const formatTransactionTime = (value) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+
+  return new Intl.DateTimeFormat('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(date);
+};

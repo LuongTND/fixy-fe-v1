@@ -1,7 +1,4 @@
-export function middleware(_request) {
-  // Add your middleware logic here
-  // Example: protect routes, check authentication, etc.
-
+export function proxy() {
   return;
 }
 

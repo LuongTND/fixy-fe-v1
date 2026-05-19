@@ -10,6 +10,7 @@ import { CompleteRegistrationForm } from '@/components/feature/auth/CompleteRegi
 import { authApi } from '@/apis/auth.api';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '@/constants/messages';
 import { validateEmail, validatePhone, validateRequired } from '@/utils/validate';
+import { ROLE_REGISTER, ROLE_REGISTER_BY_USER_ROLE } from '@/constants/enums';
 
 /**
  * Registration Page - 3-step flow
@@ -116,6 +117,7 @@ export default function RegisterPage() {
         fullName: data.fullName,
         password: data.password,
         target: formData.target,
+        roleRegister: ROLE_REGISTER_BY_USER_ROLE[selectedRole] ?? ROLE_REGISTER.CUSTOMER,
       });
 
       message.success(SUCCESS_MESSAGES.REGISTER_SUCCESS);
@@ -126,7 +128,7 @@ export default function RegisterPage() {
     } finally {
       setLoading(false);
     }
-  }, [formData, message, router]);
+  }, [formData, message, router, selectedRole]);
 
   // Resend OTP
   const handleResendOtp = useCallback(async () => {
@@ -143,7 +145,7 @@ export default function RegisterPage() {
     } finally {
       setLoading(false);
     }
-  }, [formData]);
+  }, [formData, message]);
 
   // Go back to previous step
   const handleBack = useCallback(() => {

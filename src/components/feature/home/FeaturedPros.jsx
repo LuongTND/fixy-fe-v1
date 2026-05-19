@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Avatar, Button, Card, Segmented, Tag } from 'antd';
 
 /**
  * FeaturedPros - List of top-rated tradespersons
@@ -15,7 +16,7 @@ export function FeaturedPros() {
     {
       id: 1,
       name: 'Nguyễn Văn Hùng',
-      specialty: 'Chuyên gia Điện Nước • 12 năm kinh nghiệm',
+      specialty: 'Chuyên gia Điện Nước - 12 năm kinh nghiệm',
       rating: 4.9,
       reviews: 128,
       completedJobs: '1,200+',
@@ -27,7 +28,7 @@ export function FeaturedPros() {
     {
       id: 2,
       name: 'Lê Thị Mai',
-      specialty: 'Chuyên gia Điện Lạnh • 8 năm kinh nghiệm',
+      specialty: 'Chuyên gia Điện Lạnh - 8 năm kinh nghiệm',
       rating: 4.8,
       reviews: 85,
       completedJobs: '750+',
@@ -39,128 +40,90 @@ export function FeaturedPros() {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Header + View Toggle */}
-      <div className="section-header">
+    <div className="featured-pros">
+      <div className="section-header featured-pros-header">
         <h2 className="section-title">Vua Thợ Nổi Bật</h2>
-        <div style={{
-          display: 'flex',
-          background: 'var(--color-surface-variant)',
-          padding: '4px',
-          borderRadius: '100px',
-        }}>
-          <button
-            onClick={() => setViewMode('list')}
-            style={{
-              padding: '6px 16px',
-              borderRadius: '100px',
-              border: 'none',
-              fontFamily: "'Montserrat', sans-serif",
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              background: viewMode === 'list' ? 'var(--color-surface-bg)' : 'transparent',
-              color: viewMode === 'list' ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
-              boxShadow: viewMode === 'list' ? 'var(--shadow-level-1)' : 'none',
-              transition: 'all 200ms ease-out',
-            }}
-          >
-            Danh sách
-          </button>
-          <button
-            onClick={() => setViewMode('map')}
-            style={{
-              padding: '6px 16px',
-              borderRadius: '100px',
-              border: 'none',
-              fontFamily: "'Montserrat', sans-serif",
-              fontSize: '14px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              background: viewMode === 'map' ? 'var(--color-surface-bg)' : 'transparent',
-              color: viewMode === 'map' ? 'var(--color-text-primary)' : 'var(--color-text-muted)',
-              boxShadow: viewMode === 'map' ? 'var(--shadow-level-1)' : 'none',
-              transition: 'all 200ms ease-out',
-            }}
-          >
-            Bản đồ
-          </button>
-        </div>
+        <Segmented
+          className="featured-pros-segmented"
+          value={viewMode}
+          onChange={setViewMode}
+          options={[
+            { label: 'Danh sách', value: 'list' },
+            { label: 'Bản đồ', value: 'map' },
+          ]}
+        />
       </div>
 
-      {/* Pro Cards */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className="featured-pros-list">
         {pros.map((pro) => (
-          <div 
-            key={pro.id} 
-            className="pro-card"
+          <Card
+            key={pro.id}
+            className="pro-card-ant"
+            hoverable
             onClick={() => router.push(`/worker/${pro.id}`)}
-            style={{ cursor: 'pointer' }}
           >
-            {/* Avatar */}
-            <div className="pro-avatar-wrap">
-              <img
-                className="pro-avatar"
-                src={pro.avatar}
-                alt={pro.name}
-              />
-              {pro.verified && (
-                <div className="pro-verified-badge">
-                  <span className="material-symbols-outlined" style={{
-                    fontSize: '14px',
-                    fontVariationSettings: "'FILL' 1",
-                  }}>
-                    verified
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Info */}
-            <div className="pro-info">
-              <div className="pro-header">
-                <div>
-                  <h3 className="pro-name">{pro.name}</h3>
-                  <p className="pro-specialty">{pro.specialty}</p>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div className="pro-rating">
-                    <span className="material-symbols-outlined">star</span>
-                    {pro.rating}
+            <div className="pro-card">
+              <div className="pro-avatar-wrap">
+                <Avatar
+                  className="pro-avatar"
+                  src={pro.avatar}
+                  alt={pro.name}
+                />
+                {pro.verified && (
+                  <div className="pro-verified-badge">
+                    <span className="material-symbols-outlined pro-verified-icon">
+                      verified
+                    </span>
                   </div>
-                  <p className="pro-review-count">{pro.reviews} đánh giá</p>
-                </div>
+                )}
               </div>
 
-              <div className="pro-tags">
-                {pro.tags.map((tag) => (
-                  <span key={tag} className="pro-tag">{tag}</span>
-                ))}
-              </div>
-
-              <div className="pro-footer">
-                <div className="pro-stats">
-                  <span className="pro-stat">
-                    <span className="material-symbols-outlined">task_alt</span>
-                    {pro.completedJobs} việc đã xong
-                  </span>
-                  <span className="pro-stat">
-                    <span className="material-symbols-outlined">location_on</span>
-                    {pro.location}
-                  </span>
+              <div className="pro-info">
+                <div className="pro-header">
+                  <div>
+                    <h3 className="pro-name">{pro.name}</h3>
+                    <p className="pro-specialty">{pro.specialty}</p>
+                  </div>
+                  <div className="pro-rating-block">
+                    <div className="pro-rating">
+                      <span className="material-symbols-outlined">star</span>
+                      {pro.rating}
+                    </div>
+                    <p className="pro-review-count">{pro.reviews} đánh giá</p>
+                  </div>
                 </div>
-                <button 
-                  className="pro-book-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    router.push(`/worker/${pro.id}`);
-                  }}
-                >
-                  Đặt Ngay
-                </button>
+
+                <div className="pro-tags">
+                  {pro.tags.map((tag) => (
+                    <Tag key={tag} className="pro-tag">{tag}</Tag>
+                  ))}
+                </div>
+
+                <div className="pro-footer">
+                  <div className="pro-stats">
+                    <span className="pro-stat">
+                      <span className="material-symbols-outlined">task_alt</span>
+                      {pro.completedJobs} việc đã xong
+                    </span>
+                    <span className="pro-stat">
+                      <span className="material-symbols-outlined">location_on</span>
+                      {pro.location}
+                    </span>
+                  </div>
+                  <Button
+                    type="primary"
+                    className="pro-book-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/worker/${pro.id}`);
+                    }}
+                  >
+                    Đặt Ngay
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
     </div>

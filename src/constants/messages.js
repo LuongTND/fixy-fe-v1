@@ -51,10 +51,3 @@ export const SUCCESS_MESSAGES = {
   OTP_VERIFIED: 'Xác thực OTP thành công',
   PASSWORD_RESET: 'Mật khẩu đã được đặt lại thành công',
 };
-
-// User Roles
-export const USER_ROLES = {
-  ADMIN: 'admin',
-  CUSTOMER: 'customer',
-  TRADESPERSON: 'tradesperson',
-};

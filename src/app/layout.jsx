@@ -10,7 +10,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata = {
-  title: "Vua Thợ - Nền tảng kết nối thợ nghề",
+  title: "Fixy - Nền tảng kết nối thợ nghề",
   description: "Nền tảng kết nối thợ nghề chuyên nghiệp với khách hàng. Đăng ký ngay để trải nghiệm dịch vụ chất lượng.",
 };
 

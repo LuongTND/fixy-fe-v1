@@ -7,7 +7,7 @@ import Link from 'next/link';
  */
 export function Footer() {
   return (
-    <footer style={{
+    <footer className="site-footer" style={{
       borderTop: '1px solid #E8E8E8',
       background: '#FFFFFF',
       padding: '24px',

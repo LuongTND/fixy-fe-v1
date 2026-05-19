@@ -25,23 +25,53 @@ export const API_ENDPOINTS = {
     GET_CHART: '/dashboard/chart',
     GET_STATS: '/dashboard/stats',
   },
+  ADDRESSES: {
+    GET_ME: '/addresses/me',
+    CREATE: '/addresses',
+    UPDATE: (id) => `/addresses/${id}`,
+    DELETE: (id) => `/addresses/${id}`,
+  },
+  SERVICE_CATEGORIES: {
+    BASE: '/service-categories',
+    DETAIL: (id) => `/service-categories/${id}`,
+    PRICE: (id) => `/service-categories/${id}/price`,
+  },
+  MEDIA: {
+    UPLOAD: '/Media/upload',
+  },
+  BOOKINGS: {
+    BASE: '/bookings',
+    DETAIL: (bookingId) => `/bookings/${bookingId}`,
+    DRAFTS: '/bookings/drafts',
+    DRAFT_DETAIL: (draftId) => `/bookings/drafts/${draftId}`,
+    DRAFT_CONFIRM: (draftId) => `/bookings/drafts/${draftId}/confirm`,
+  },
+  WALLET: {
+    BASE: '/wallet',
+    TRANSACTIONS: '/wallet/transactions',
+  },
+  PAYMENT: {
+    VNPAY_TOPUP: '/payment/topup/vnpay',
+    VNPAY_RETURN: '/payment/vnpay-return',
+  },
+  WORKER_PROFILES: {
+    BASE: '/worker-profiles',
+    ME: '/worker-profiles/me',
+    REGISTER: '/worker-profiles/register',
+    DETAIL: (id) => `/worker-profiles/${id}`,
+    PUBLIC_DETAIL: (id) => `/worker-profiles/${id}/public`,
+    ADMIN_DETAIL: (id) => `/worker-profiles/${id}/admin`,
+    APPROVE: (id) => `/worker-profiles/${id}/approve`,
+    REJECT: (id) => `/worker-profiles/${id}/reject`,
+    UPDATE_ME: '/worker-profiles/me',
+    PORTFOLIO_IMAGES: '/worker-profiles/me/portfolio-images',
+    PORTFOLIO_IMAGE_DELETE: (mediaId) => `/worker-profiles/me/portfolio-images/${mediaId}`,
+    IDENTIFICATION_IMAGES: '/worker-profiles/me/identification-images',
+    CERTIFICATES: '/worker-profiles/me/centificates',
+  },
+  WORKER_SCHEDULES: {
+    WEEKLY: (workerProfileId) => `/worker-schedules/${workerProfileId}/weekly`,
+    EXCEPTIONS: (workerProfileId) => `/worker-schedules/${workerProfileId}/exceptions`,
+    DAY_OFF: (workerProfileId) => `/worker-schedules/${workerProfileId}/day-off`,
+  },
 };
-
-// Pagination
-export const DEFAULT_PAGE_SIZE = 20;
-export const DEFAULT_PAGE = 1;
-
-// App Config
-export const APP_NAME = 'Vua Thợ';
-export const APP_VERSION = '1.0.0';
-
-// User Roles
-export const USER_ROLES = {
-  CUSTOMER: 'customer',
-  TRADESPERSON: 'tradesperson',
-  ADMIN: 'admin',
-};
-
-// OTP Config
-export const OTP_LENGTH = 6;
-export const OTP_RESEND_TIMEOUT = 60; // seconds
