@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import apiClient from '@/apis/api-client';
+import { useState, useCallback } from "react";
+import axios from "@/base/axios";
 
 export function useApi() {
   const [state, setState] = useState({
@@ -13,7 +13,7 @@ export function useApi() {
   const request = useCallback(async (url, config) => {
     setState({ data: null, loading: true, error: null });
     try {
-      const response = await apiClient.get(url, config);
+      const response = await axios.get(url, config);
       setState({ data: response.data, loading: false, error: null });
       return response.data;
     } catch (error) {

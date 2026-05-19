@@ -46,6 +46,7 @@ export function AuthProvider({ children }) {
         phone: profile?.phone || null,
         dateOfBirth: profile?.dateOfBirth || null,
         gender: profile?.gender || null,
+        avatarUrl: profile?.avatarUrl || null,
       };
       setUser(updated);
       saveUserMeta({ userId: updated.userId, role: updated.role, email: updated.email });
@@ -89,7 +90,7 @@ export function AuthProvider({ children }) {
 
         const meta = {
           userId: response?.userId || null,
-          role: response?.roles?.[0] || null,
+          role: response?.roles?.[0] || response?.role || null,
           email: response?.email || null,
         };
         saveUserMeta(meta);

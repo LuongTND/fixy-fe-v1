@@ -1,9 +1,8 @@
 'use client';
 
-/**
- * CategoryGrid - Popular service categories
- * 6-column responsive grid with icon + label
- */
+import Link from 'next/link';
+import { Card } from 'antd';
+
 export function CategoryGrid() {
   const categories = [
     { icon: 'bolt', label: 'Điện Nước' },
@@ -17,18 +16,25 @@ export function CategoryGrid() {
     <section>
       <div className="section-header">
         <h2 className="section-title">Dịch Vụ Phổ Biến</h2>
-        <a href="#" className="section-link">Xem tất cả</a>
+        <Link href="/search" className="section-link">Xem tất cả</Link>
       </div>
       <div className="category-grid">
         {categories.map((cat) => (
-          <button key={cat.icon} className="category-card" aria-label={cat.label}>
+          <Card
+            key={cat.icon}
+            className="category-card"
+            hoverable
+            role="button"
+            tabIndex={0}
+            aria-label={cat.label}
+          >
             <div className="category-icon">
-              <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>
+              <span className="material-symbols-outlined category-icon-symbol">
                 {cat.icon}
               </span>
             </div>
             <span className="category-label">{cat.label}</span>
-          </button>
+          </Card>
         ))}
       </div>
     </section>

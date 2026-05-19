@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { OTP_LENGTH, OTP_RESEND_TIMEOUT } from '@/constants/api-endpoints';
+import { Alert, Button, Input } from 'antd';
+import { OTP_LENGTH, OTP_RESEND_TIMEOUT } from '@/constants/config';
 
 /**
  * OtpVerification - Step 3 of registration
@@ -42,7 +43,7 @@ export function OtpVerification({
 
   useEffect(() => {
     if (!otpRequested) return;
-    setResendTimer(OTP_RESEND_TIMEOUT);
+    queueMicrotask(() => setResendTimer(OTP_RESEND_TIMEOUT));
   }, [otpRequested]);
 
   useEffect(() => {
@@ -153,15 +154,16 @@ export function OtpVerification({
   return (
     <div className="animate-slide-in-right font-montserrat">
       {/* Back Button */}
-      <button
+      <Button
+        type="text"
         onClick={onBack}
-        className="btn-ghost flex items-center gap-1 mb-6 !px-2 !py-1 text-sm"
+        className="mb-6 !h-10 !px-2 !font-semibold !text-primary"
       >
-        <span className="material-symbols-outlined text-[18px]">
+        <span className="material-symbols-outlined text-[18px] align-[-4px]">
           arrow_back
         </span>
         Quay lại
-      </button>
+      </Button>
       {/* Icon */}
       <div className="flex justify-center mb-6">
         <div className="w-20 h-20 rounded-full bg-primary-light flex items-center justify-center">
@@ -185,25 +187,27 @@ export function OtpVerification({
           <label htmlFor="otp-target" className="block font-semibold text-sm text-[#383838] mb-2">
             Email hoặc số điện thoại
           </label>
-          <input
+          <Input
             id="otp-target"
-            type="text"
+            size="large"
             value={targetValue}
             onChange={(e) => onTargetChange(e.target.value)}
             placeholder="example@email.com / 0901234567"
-            className="auth-input"
+            status={stepError ? 'error' : undefined}
           />
-          {stepError && <p className="field-error mt-2">{stepError}</p>}
+          {stepError && <Alert type="error" showIcon message={stepError} className="!mt-3 !rounded" />}
 
-          <button
+          <Button
             id="otp-send-btn"
-            className="btn-primary mt-4 w-full"
-            type="button"
+            type="primary"
+            size="large"
+            block
+            className="mt-4 !h-11 !rounded !font-semibold"
             onClick={onRequestOtp}
-            disabled={loading}
+            loading={loading}
           >
             {loading ? 'Đang gửi OTP...' : 'Gửi mã OTP'}
-          </button>
+          </Button>
         </>
       ) : (
         <>
@@ -222,11 +226,12 @@ export function OtpVerification({
           {/* OTP Inputs */}
           <div className="flex justify-center gap-3 mb-6" onPaste={handlePaste}>
             {otpValues.map((value, index) => (
-              <input
+              <Input
                 key={index}
                 ref={(el) => { inputRefs.current[index] = el; }}
                 id={`otp-input-${index}`}
-                className={`otp-input ${value ? 'filled' : ''} ${error ? '!border-error' : ''}`}
+                className={`otp-input ${value ? 'filled' : ''}`}
+                status={error ? 'error' : undefined}
                 type="text"
                 inputMode="numeric"
                 maxLength={1}
@@ -241,15 +246,19 @@ export function OtpVerification({
 
           {/* Error Message */}
           {error && (
-            <p className="field-error text-center mb-4">{error}</p>
+            <Alert type="error" showIcon message={error} className="!mb-4 !rounded" />
           )}
 
           {/* Verify Button */}
-          <button
+          <Button
             id="otp-verify-btn"
-            className="btn-primary mb-6 flex items-center justify-center gap-2"
+            type="primary"
+            size="large"
+            block
+            className="mb-6 !h-11 !rounded !font-semibold"
             onClick={handleVerify}
             disabled={loading || otpValues.join('').length < OTP_LENGTH}
+            loading={loading}
           >
             {loading && (
               <span className="material-symbols-outlined text-[20px] animate-spin">
@@ -257,7 +266,7 @@ export function OtpVerification({
               </span>
             )}
             {loading ? 'Đang xác thực...' : 'Xác nhận'}
-          </button>
+          </Button>
 
           {/* Resend Section */}
           <div className="text-center">
@@ -265,14 +274,15 @@ export function OtpVerification({
               Không nhận được mã?
             </p>
             {canResend ? (
-              <button
+              <Button
                 id="otp-resend-btn"
-                className="link-primary bg-none border-none p-0 text-sm cursor-pointer"
+                type="link"
+                className="!h-auto !p-0 !font-semibold !text-primary"
                 onClick={handleResend}
                 disabled={loading}
               >
                 Gửi lại mã
-              </button>
+              </Button>
             ) : (
               <p className="text-[13px] text-[#9A9A9A]">
                 Gửi lại sau {resendTimer}s
@@ -301,10 +311,4 @@ function maskTarget(value, type) {
 
   const visibleName = name.slice(0, 2);
   return `${visibleName}***@${domain}`;
-}
-
-function formatTime(seconds) {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }

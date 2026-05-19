@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { isTechnicianRole } from '@/constants/routes';
 
 /**
  * Mobile Bottom Navigation Bar
@@ -12,12 +13,12 @@ export function MobileNav() {
   const pathname = usePathname();
   const { user, isAuthenticated } = useAuth();
 
-  const isTechnician = isAuthenticated && (user?.role === 'TECHNICIAN' || user?.role === 'WORKER');
+  const isTechnician = isAuthenticated && isTechnicianRole(user?.role);
 
   const navItems = [
     { href: '/', icon: 'home', label: 'Trang Chủ' },
     { 
-      href: isTechnician ? '/technician/orders' : '/orders', 
+      href: isTechnician ? '/technician/orders' : '/bookings', 
       icon: 'list_alt', 
       label: isTechnician ? 'Công việc' : 'Hoạt động' 
     },

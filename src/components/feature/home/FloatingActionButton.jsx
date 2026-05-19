@@ -1,22 +1,18 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { FloatButton } from "antd";
 
-/**
- * Floating Action Button - Quick booking CTA
- * Fixed position, expands on hover to show label
- */
 export function FloatingActionButton() {
   const router = useRouter();
 
   return (
-    <button 
-      onClick={() => router.push('/booking/create')} 
-      className="fab" 
+    <FloatButton
+      className="home-float-button"
+      icon={<span className="material-symbols-outlined">add</span>}
+      tooltip="Đặt Thợ Nhanh"
       aria-label="Đặt Thợ Nhanh"
-    >
-      <span className="material-symbols-outlined">add</span>
-      <span className="fab-label">Đặt Thợ Nhanh</span>
-    </button>
+      onClick={() => router.push('/booking/create')}
+    />
   );
 }
