@@ -28,15 +28,15 @@ export function SearchFilters() {
           <h4 className="font-small-bold mb-4 text-text-primary">Price Range (VND)</h4>
           <div className="space-y-3">
             <label className="flex items-center gap-3 font-small cursor-pointer text-text-secondary">
-              <input className="rounded focus:ring-primary h-4 w-4 border-border-light" style={{ accentColor: '#FF8228' }} type="checkbox" />
+              <input className="accent-primary rounded focus:ring-primary h-4 w-4 border-border-light" type="checkbox" />
               <span>Under 200,000</span>
             </label>
             <label className="flex items-center gap-3 font-small cursor-pointer text-text-secondary">
-              <input className="rounded focus:ring-primary h-4 w-4 border-border-light" style={{ accentColor: '#FF8228' }} type="checkbox" />
+              <input className="accent-primary rounded focus:ring-primary h-4 w-4 border-border-light" type="checkbox" />
               <span>200,000 - 500,000</span>
             </label>
             <label className="flex items-center gap-3 font-small cursor-pointer text-text-secondary">
-              <input className="rounded focus:ring-primary h-4 w-4 border-border-light" style={{ accentColor: '#FF8228' }} type="checkbox" />
+              <input className="accent-primary rounded focus:ring-primary h-4 w-4 border-border-light" type="checkbox" />
               <span>Over 500,000</span>
             </label>
           </div>
@@ -56,7 +56,7 @@ export function SearchFilters() {
                 </div>
                 <span className="flex items-center text-primary">
                   {[...Array(rating)].map((_, i) => (
-                    <span key={i} className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                    <span key={i} className="material-symbols-outlined text-[18px] material-symbols-filled">star</span>
                   ))}
                   <span className="text-text-tertiary ml-2">& up</span>
                 </span>
@@ -83,8 +83,7 @@ export function SearchFilters() {
             </div>
           </div>
           <input 
-            className="w-full h-2 bg-border-light rounded-lg appearance-none cursor-pointer" 
-            style={{ accentColor: '#FF8228' }} 
+            className="accent-primary w-full h-2 bg-border-light rounded-lg appearance-none cursor-pointer" 
             max="50" 
             min="1" 
             type="range" 
@@ -99,10 +98,10 @@ export function SearchFilters() {
       </div>
       
       {/* Ad/Promo Card */}
-      <div style={{ background: '#F2F8FF', border: '1px solid #006EF5' }} className="rounded-xl p-4 overflow-hidden relative">
+      <div className="relative overflow-hidden rounded-xl border border-[#006EF5] bg-[#F2F8FF] p-4">
         <h5 className="font-body-bold text-text-primary mb-2">Join Vua Thợ Pro</h5>
         <p className="text-small text-text-secondary mb-4">Boost your visibility and find more local clients today.</p>
-        <button className="font-small-bold bg-transparent border-none cursor-pointer p-0 hover:underline" style={{ color: '#006EF5' }}>Register now →</button>
+        <button className="font-small-bold cursor-pointer border-none bg-transparent p-0 text-[#006EF5] hover:underline">Register now →</button>
       </div>
     </>
   );
