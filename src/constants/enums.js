@@ -104,3 +104,20 @@ export const MEDIA_OWNER_TYPE = {
   SUPPORT_TICKET: 4,
   CERTIFICATE: 5,
 };
+
+/**
+ * Voucher Type
+ */
+export const VOUCHER_TYPE = {
+  PERCENT: 0,
+  FIXED: 1,
+};
+
+/**
+ * Voucher Status
+ */
+export const VOUCHER_STATUS = {
+  DRAFT: 0,
+  ACTIVE: 1,
+  DISABLED: 2,
+};

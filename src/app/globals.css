@@ -2159,6 +2159,14 @@ select {
   transition: color 0.2s ease, background 0.2s ease;
 }
 
+.technician-menu-label {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .technician-menu-item:hover {
   color: #FF8228;
   background: #FBF9F8;
@@ -2177,20 +2185,18 @@ select {
 }
 
 .technician-menu-badge {
-  position: absolute;
-  right: 14px;
-  top: 50%;
+  flex: 0 0 auto;
   min-width: 18px;
   height: 18px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transform: translateY(-50%);
   border-radius: 9999px;
   background: #EA4335;
   color: #FFFFFF;
   font-size: 10px;
   font-weight: 700;
+  line-height: 1;
 }
 
 .technician-sidebar-footer {

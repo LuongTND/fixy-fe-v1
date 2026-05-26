@@ -87,6 +87,7 @@ export const API_ENDPOINTS = {
     DETAIL: (id) => `/vouchers/${id}`,
     STATUS: (id) => `/vouchers/${id}/status`,
     APPLY: '/vouchers/apply',
+    ELIGIBLE: '/vouchers/eligible',
   },
   REVIEWS: {
     CREATE: (bookingId) => `/reviews/${bookingId}`,

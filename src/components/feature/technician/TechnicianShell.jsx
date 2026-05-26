@@ -5,7 +5,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useWorkerBookings } from '@/hooks/useWorkerBookings';
-import { Badge } from 'antd';
 
 const NAV_ITEMS = [
   { icon: 'dashboard', label: 'Dashboard', href: '/technician' },
@@ -82,18 +81,9 @@ export function TechnicianShell({ children }) {
                 className={`technician-menu-item ${isActive ? 'technician-menu-item-active' : ''}`}
               >
                 <span className="material-symbols-outlined">{item.icon}</span>
-                <span>{item.label}</span>
+                <span className="technician-menu-label">{item.label}</span>
                 {item.badge > 0 && (
-                  <Badge
-                    count={item.badge}
-                    color="#EA4335"
-                    style={{
-                      position: 'absolute',
-                      right: '24px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                    }}
-                  />
+                  <span className="technician-menu-badge">{item.badge}</span>
                 )}
               </Link>
             );
