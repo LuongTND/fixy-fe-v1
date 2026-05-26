@@ -51,28 +51,42 @@ export const formatBookingPrice = (value) => {
 };
 
 // Format booking date with "Chưa đặt lịch" fallback
+export const parseBackendDate = (value) => {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  if (typeof value !== 'string') return new Date(value);
+
+  const hasTimezone = /(?:z|[+-]\d{2}:?\d{2})$/i.test(value);
+  return new Date(hasTimezone ? value : `${value}Z`);
+};
+
 export const formatBookingDate = (value) => {
   if (!value) return 'Chưa đặt lịch';
-  return new Date(value).toLocaleString('vi-VN', {
+  const date = parseBackendDate(value);
+  if (!date || Number.isNaN(date.getTime())) return String(value);
+
+  return date.toLocaleString('vi-VN', {
     hour: '2-digit',
     minute: '2-digit',
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
+    timeZone: 'Asia/Ho_Chi_Minh',
   });
 };
 
 // Format transaction time
 export const formatTransactionTime = (value) => {
   if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value);
+  const date = parseBackendDate(value);
+  if (!date || Number.isNaN(date.getTime())) return String(value);
 
-  return new Intl.DateTimeFormat('vi-VN', {
+  return date.toLocaleString('vi-VN', {
     hour: '2-digit',
     minute: '2-digit',
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-  }).format(date);
+    timeZone: 'Asia/Ho_Chi_Minh',
+  });
 };

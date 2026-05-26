@@ -35,10 +35,28 @@ export const WORKER_STATUS_OPTIONS = [
  */
 export const BOOKING_STATUS = {
   PENDING: 0,
-  CONFIRMED: 1,
-  IN_PROGRESS: 2,
-  COMPLETED: 3,
-  CANCELLED: 4,
+  MATCHING: 1,
+  CONFIRMED: 2,
+  TRAVELING: 3,
+  ARRIVED: 4,
+  IN_PROGRESS: 5,
+  COMPLETED: 6,
+  CANCELLED: 7,
+  DISPUTED: 8,
+};
+
+export const BOOKING_SCHEDULED_TYPE = {
+  NOW: 0,
+  SCHEDULED: 1,
+};
+
+export const PAYMENT_METHOD = {
+  WALLET: 0,
+  VNPAY: 1,
+  MOMO: 2,
+  PAYOS: 3,
+  CARD: 4,
+  CASH: 5,
 };
 
 /**
@@ -69,14 +87,13 @@ export const ROLE_REGISTER_BY_USER_ROLE = {
 
 export const MEDIA_CATEGORY = {
   AVATAR: 0,
-  CCCD_FRONT: 1,
-  CCCD_BACK: 2,
-  PORTFOLIO: 3,
-  REQUEST: 4,
-  COMPLETION: 5,
-  REVIEW: 6,
-  ATTACHMENT: 7,
-  CERTIFICATE: 8,
+  IDENTIFICATION: 1,
+  PORTFOLIO: 2,
+  REQUEST: 3,
+  COMPLETION: 4,
+  REVIEW: 5,
+  ATTACHMENT: 6,
+  CERTIFICATE: 7,
 };
 
 export const MEDIA_OWNER_TYPE = {

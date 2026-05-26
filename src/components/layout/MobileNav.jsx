@@ -18,7 +18,7 @@ export function MobileNav() {
   const navItems = [
     { href: '/', icon: 'home', label: 'Trang Chủ' },
     { 
-      href: isTechnician ? '/technician/orders' : '/bookings', 
+      href: isTechnician ? '/technician/bookings' : '/bookings', 
       icon: 'list_alt', 
       label: isTechnician ? 'Công việc' : 'Hoạt động' 
     },
@@ -37,8 +37,7 @@ export function MobileNav() {
             className={`mobile-nav-item ${isActive ? 'active' : ''}`}
           >
             <span
-              className="material-symbols-outlined"
-              style={isActive ? { fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" } : {}}
+              className={`material-symbols-outlined ${isActive ? 'material-symbols-filled' : ''}`}
             >
               {item.icon}
             </span>
