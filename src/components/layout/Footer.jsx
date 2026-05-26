@@ -7,64 +7,24 @@ import Link from 'next/link';
  */
 export function Footer() {
   return (
-    <footer className="site-footer" style={{
-      borderTop: '1px solid #E8E8E8',
-      background: '#FFFFFF',
-      padding: '24px',
-    }}>
-      <div style={{
-        maxWidth: '1280px',
-        margin: '0 auto',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px',
-      }}>
-        {/* Desktop Layout: Flex row between */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '16px',
-        }}>
-          {/* Left: Brand & Copyright */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <div style={{
-              fontFamily: "'Montserrat', sans-serif",
-              fontSize: '24px',
-              fontWeight: 800,
-              color: '#FF8228',
-              letterSpacing: '-0.02em',
-            }}>
+    <footer className="site-footer border-t border-[#E8E8E8] bg-white p-6">
+      <div className="mx-auto flex max-w-[1280px] flex-col gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <div className="text-2xl font-extrabold tracking-normal text-[#FF8228]">
               Vua Thợ
             </div>
-            <p style={{
-              fontFamily: "'Montserrat', sans-serif",
-              fontSize: '13px',
-              color: '#818A91',
-            }}>
-              © 2024 Vua Thợ. Expert at your doorstep.
+            <p className="m-0 text-[13px] text-[#818A91]">
+              © 2026 Vua Thợ. Expert at your doorstep.
             </p>
           </div>
 
-          {/* Right: Links */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '24px',
-            flexWrap: 'wrap',
-          }}>
+          <div className="flex flex-wrap items-center gap-6">
             {['About Us', 'Privacy Policy', 'Terms of Service', 'Help Center', 'Contact'].map((link) => (
               <Link
                 key={link}
                 href="#"
-                style={{
-                  fontFamily: "'Montserrat', sans-serif",
-                  fontSize: '13px',
-                  color: '#4A4A4A',
-                  textDecoration: 'none',
-                  transition: 'color 200ms',
-                }}
+                className="text-[13px] text-[#4A4A4A] no-underline transition-colors hover:text-[#FF8228]"
               >
                 {link}
               </Link>

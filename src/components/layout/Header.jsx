@@ -22,10 +22,10 @@ export function Header() {
     { href: '/search', label: 'Find Pros' },
     isAuthenticated
       ? isTechnician
-        ? { href: '/technician/orders', label: 'Work Dashboard' }
+        ? { href: '/technician/bookings', label: 'Work Dashboard' }
         : { href: '/bookings', label: 'My Bookings' }
       : null,
-    isAuthenticated && !isTechnician ? { href: '/profile?tab=wallet', label: 'Wallet' } : null,
+    isAuthenticated && !isTechnician ? { href: '/wallet', label: 'Wallet' } : null,
     { href: '#', label: 'How it Works' },
   ].filter(Boolean);
 
@@ -46,11 +46,10 @@ export function Header() {
                 <Link
                   key={item.label}
                   href={item.href}
-                  className={`text-[15px] transition-all duration-200 no-underline pt-[6.5px] pb-1 border-b-[2.5px] ${
-                    isActive
+                  className={`text-[15px] transition-all duration-200 no-underline pt-[6.5px] pb-1 border-b-[2.5px] ${isActive
                       ? 'font-bold !text-[#383838] border-primary'
                       : 'font-medium !text-[#383838] border-transparent hover:!text-primary'
-                  }`}
+                    }`}
                 >
                   {item.label}
                 </Link>
@@ -118,11 +117,10 @@ export function Header() {
                   <Link
                     key={item.label}
                     href={item.href}
-                    className={`mobile-header-link block px-4 py-3 rounded-lg text-base transition-all no-underline ${
-                      isActive
+                    className={`mobile-header-link block px-4 py-3 rounded-lg text-base transition-all no-underline ${isActive
                         ? 'font-bold !text-[#383838] bg-primary-light'
                         : 'font-medium !text-[#383838] hover:bg-gray-lighter'
-                    }`}
+                      }`}
                   >
                     {item.label}
                   </Link>
