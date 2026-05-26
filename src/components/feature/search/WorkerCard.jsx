@@ -50,7 +50,7 @@ export function WorkerCard({ pro }) {
             <div className="flex items-start justify-between gap-3">
               <h3 className="m-0 truncate font-body-bold text-text-primary">{pro.fullName || 'Kỹ thuật viên'}</h3>
               <div className="flex shrink-0 items-center text-primary">
-                <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                <span className="material-symbols-outlined text-[18px] material-symbols-filled">star</span>
                 <span className="ml-[2px] font-small-bold">{Number(pro.ratingAvg || 0).toFixed(1)}</span>
               </div>
             </div>
@@ -78,7 +78,6 @@ export function WorkerCard({ pro }) {
         </div>
         <button
           className="cursor-pointer rounded-lg border-none bg-primary px-6 py-2 font-small-bold text-white transition-all hover:opacity-90 active:scale-95"
-          style={{ color: '#FFFFFF' }}
           onClick={(e) => {
             e.stopPropagation();
             router.push(href);
