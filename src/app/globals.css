@@ -164,6 +164,65 @@ select {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
+.material-symbols-filled {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.accent-primary {
+  accent-color: var(--color-primary);
+}
+
+.booking-map-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.booking-map-marker__bubble {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 3px solid #fff;
+  border-radius: 9999px;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(27, 28, 28, 0.24);
+}
+
+.booking-map-marker__bubble--worker {
+  background: #ff8228;
+}
+
+.booking-map-marker__bubble--destination {
+  background: #39b54a;
+}
+
+.booking-map-marker__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.booking-map-marker__icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.booking-map-marker__caption {
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 3px 8px;
+  color: #1b1c1c;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 8px 18px rgba(27, 28, 28, 0.16);
+}
+
 /* === Auth Form Styling === */
 .auth-input {
   width: 100%;

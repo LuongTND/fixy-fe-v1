@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+      <body className="min-h-full flex flex-col font-sans">
         <RootLayoutClient>{children}</RootLayoutClient>
       </body>
     </html>

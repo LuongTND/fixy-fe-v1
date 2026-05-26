@@ -6,7 +6,8 @@ export const APP_ROUTES = {
   BOOKINGS: '/bookings',
   ADMIN_DASHBOARD: '/dashboard',
   TECHNICIAN_SETUP: '/technician/setup',
-  TECHNICIAN_ORDERS: '/technician/orders',
+  TECHNICIAN_BOOKINGS: '/technician/bookings',
+  TECHNICIAN_ORDERS: '/technician/bookings',
 };
 
 const TECHNICIAN_ROLE_VALUES = new Set([
