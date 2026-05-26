@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { App, Image as AntImage } from 'antd';
+import { App, Image as AntImage, Modal } from 'antd';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { bookingApi } from '@/apis/booking.api';
@@ -9,6 +9,7 @@ import { goongApi } from '@/apis/goong.api';
 import { paymentApi } from '@/apis/payment.api';
 import { walletApi } from '@/apis/wallet.api';
 import { reviewApi } from '@/apis/review.api';
+import { voucherApi } from '@/apis/voucher.api';
 import { useAuth } from '@/hooks/useAuth';
 import { useChatHub } from '@/hooks/useChatHub';
 import { MEDIA_CATEGORY } from '@/constants/enums';
@@ -209,6 +210,15 @@ export function BookingDetailsView({ bookingId }) {
   const [wallet, setWallet] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('wallet'); // 'wallet' or 'vnpay'
   const [paying, setPaying] = useState(false);
+
+  // Voucher states
+  const [voucherCode, setVoucherCode] = useState('');
+  const [voucherApplying, setVoucherApplying] = useState(false);
+  const [selectedVoucher, setSelectedVoucher] = useState(null); // Selected eligible voucher object
+  const [voucherError, setVoucherError] = useState('');
+  const [eligibleVouchers, setEligibleVouchers] = useState([]);
+  const [loadingEligible, setLoadingEligible] = useState(false);
+  const [voucherModalOpen, setVoucherModalOpen] = useState(false);
   const [proposalActing, setProposalActing] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewHoverRating, setReviewHoverRating] = useState(0);
@@ -299,7 +309,7 @@ export function BookingDetailsView({ bookingId }) {
   };
 
   const fetchBookingReview = async () => {
-    if (!bookingId) return;
+    if (!bookingId || statusKey !== 'completed') return;
     setLoadingReview(true);
     try {
       const data = await reviewApi.getByBookingId(bookingId);
@@ -349,7 +359,6 @@ export function BookingDetailsView({ bookingId }) {
       if (!alive) return;
       fetchBooking(true);
       fetchWallet();
-      fetchBookingReview();
       fetchTracking();
     });
 
@@ -357,6 +366,31 @@ export function BookingDetailsView({ bookingId }) {
       alive = false;
     };
   }, [bookingId]);
+
+  // Load review when status is completed
+  useEffect(() => {
+    if (statusKey === 'completed') {
+      fetchBookingReview();
+    }
+  }, [bookingId, statusKey]);
+
+  // Load eligible vouchers when status is pendingpayment
+  useEffect(() => {
+    if (statusKey === 'pendingpayment') {
+      const loadEligible = async () => {
+        setLoadingEligible(true);
+        try {
+          const list = await voucherApi.getEligible(bookingId);
+          setEligibleVouchers(list || []);
+        } catch (error) {
+          console.warn('Failed to load eligible vouchers:', error);
+        } finally {
+          setLoadingEligible(false);
+        }
+      };
+      loadEligible();
+    }
+  }, [bookingId, statusKey]);
 
   // Polling for live status updates & chat messages
   useEffect(() => {
@@ -498,12 +532,71 @@ export function BookingDetailsView({ bookingId }) {
     }
   };
 
+  // Voucher
+  const handleApplyVoucher = async (codeToApply) => {
+    const code = (typeof codeToApply === 'string' ? codeToApply : voucherCode).trim().toUpperCase();
+    if (!code) {
+      setVoucherError('Vui lòng nhập mã voucher.');
+      return;
+    }
+    setVoucherError('');
+    setVoucherApplying(true);
+    try {
+      let list = eligibleVouchers;
+      if (list.length === 0) {
+        list = await voucherApi.getEligible(bookingId);
+        setEligibleVouchers(list || []);
+      }
+      
+      const found = list.find(v => v.code.toUpperCase() === code);
+      if (found) {
+        if (!found.isEligible) {
+          throw new Error(formatIneligibleReason(found.ineligibleReason) || 'Voucher không đủ điều kiện sử dụng.');
+        }
+        setSelectedVoucher(found);
+        setVoucherCode(code);
+        setVoucherModalOpen(false);
+        message.success(`Đã chọn voucher: ${code}. Chi tiết giảm giá hiển thị ở phần Chi phí.`);
+      } else {
+        throw new Error('Mã voucher không tồn tại hoặc không áp dụng cho đơn này.');
+      }
+    } catch (error) {
+      const errMsg = error.response?.data?.message || error.message || 'Mã voucher không hợp lệ.';
+      setVoucherError(errMsg);
+      if (typeof codeToApply === 'string') {
+        message.error(errMsg);
+      }
+    } finally {
+      setVoucherApplying(false);
+    }
+  };
+
+  const handleRemoveVoucher = () => {
+    setVoucherCode('');
+    setSelectedVoucher(null);
+    setVoucherError('');
+  };
+
   // Payment process
   const handleProcessPayment = async () => {
     setPaying(true);
     try {
+      if (selectedVoucher) {
+        try {
+          await voucherApi.apply({ code: selectedVoucher.code, bookingId });
+        } catch (voucherError) {
+          const errMsg = voucherError.response?.data?.message || voucherError.message || 'Không thể áp dụng voucher này.';
+          message.error(`Lỗi áp dụng voucher: ${errMsg}`);
+          setPaying(false);
+          return;
+        }
+      }
+
       if (paymentMethod === 'wallet') {
-        const total = booking?.totalAmount || booking?.estimatedPrice || booking?.finalPrice || 0;
+        const baseTotal = booking?.totalAmount || booking?.estimatedPrice || booking?.finalPrice || 0;
+        const discount = selectedVoucher ? selectedVoucher.calculatedDiscount : 0;
+        const total = Math.max(0, baseTotal - discount);
+        
         if (wallet && wallet.balance < total) {
           message.warning('Số dư ví không đủ. Vui lòng nạp thêm tiền hoặc chọn VNPay.');
           setPaying(false);
@@ -601,6 +694,8 @@ export function BookingDetailsView({ bookingId }) {
   const hasProposal = statusKey === 'pending' && isProposed;
 
   const totalAmount = booking?.totalAmount || booking?.finalPrice || booking?.estimatedPrice || 0;
+  const discountAmount = selectedVoucher ? selectedVoucher.calculatedDiscount : 0;
+  const finalTotalAmount = Math.max(0, totalAmount - discountAmount);
   const hasWorkerLocation = Boolean(
     tracking?.workerLat
     && tracking?.workerLng
@@ -857,6 +952,77 @@ export function BookingDetailsView({ bookingId }) {
               </div>
               <p className="text-xs text-[#818A91] mb-5">Vui lòng chọn phương thức thanh toán bên dưới để xác nhận công việc này.</p>
 
+              {/* Voucher input */}
+              <div className="mb-5">
+                <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#818A91] mb-2">
+                  <span className="material-symbols-outlined text-[15px] text-[#FF8228]">local_activity</span>
+                  Mã Voucher / Khuyến mãi
+                </label>
+
+                {selectedVoucher ? (
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                    <span className="material-symbols-outlined text-[18px] text-emerald-600 shrink-0">check_circle</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-extrabold text-emerald-700 uppercase tracking-wider truncate">{selectedVoucher.code}</p>
+                      {selectedVoucher.calculatedDiscount > 0 && (
+                        <p className="text-[10px] text-emerald-600 mt-0.5">Sẽ giảm {formatCurrency(selectedVoucher.calculatedDiscount)} (áp dụng khi thanh toán)</p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveVoucher}
+                      className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-emerald-100 text-emerald-500 transition-colors shrink-0"
+                      title="Xóa voucher"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">close</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={voucherCode}
+                      onChange={(e) => {
+                        setVoucherCode(e.target.value.toUpperCase());
+                        if (voucherError) setVoucherError('');
+                      }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleApplyVoucher(); }}
+                      placeholder="Nhập mã voucher..."
+                      disabled={voucherApplying}
+                      className="flex-1 min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-bold uppercase tracking-wider text-[#1b1c1c] placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400 outline-none focus:border-[#FF8228] focus:ring-2 focus:ring-[#FF8228]/15 transition-all disabled:opacity-60"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleApplyVoucher}
+                      disabled={voucherApplying || !voucherCode.trim()}
+                      className="shrink-0 px-3.5 py-2.5 rounded-xl bg-[#FF8228] text-white text-xs font-bold hover:brightness-105 active:scale-[0.97] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {voucherApplying ? '...' : 'Áp dụng'}
+                    </button>
+                  </div>
+                )}
+
+                {voucherError && (
+                  <p className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-rose-500">
+                    <span className="material-symbols-outlined text-[13px]">error</span>
+                    {voucherError}
+                  </p>
+                )}
+
+                {!selectedVoucher && (
+                  <div className="mt-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setVoucherModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FF8228] hover:text-[#E66F18] transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">local_activity</span>
+                      {loadingEligible ? 'Đang tải voucher...' : `Chọn voucher từ kho (${eligibleVouchers.filter(v => v.isEligible).length} khả dụng)`}
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 mb-6">
                 <button
                   type="button"
@@ -890,16 +1056,16 @@ export function BookingDetailsView({ bookingId }) {
                 </button>
               </div>
 
-              {paymentMethod === 'wallet' && wallet && wallet.balance < totalAmount && (
+              {paymentMethod === 'wallet' && wallet && wallet.balance < finalTotalAmount && (
                 <div className="mb-5 rounded-xl bg-rose-50 border border-rose-100 p-3 text-xs font-semibold text-rose-500 flex items-center gap-2">
                   <span className="material-symbols-outlined text-[16px]">info</span>
-                  <span>VÃ­ khÃ´ng Ä‘á»§ sá»‘ dÆ° Ä‘á»ƒ thanh toÃ¡n ({formatCurrency(totalAmount)}). Vui lÃ²ng náº¡p thÃªm hoáº·c chá»n VNPAY.</span>
+                  <span>Ví không đủ số dư để thanh toán ({formatCurrency(finalTotalAmount)}). Vui lòng nạp thêm hoặc chọn VNPAY.</span>
                 </div>
               )}
 
               <button
                 type="button"
-                disabled={paying || (paymentMethod === 'wallet' && wallet && wallet.balance < totalAmount)}
+                disabled={paying || (paymentMethod === 'wallet' && wallet && wallet.balance < finalTotalAmount)}
                 onClick={handleProcessPayment}
                 className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#FF8228] py-3 text-xs font-bold text-white shadow-md hover:brightness-105 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
@@ -1015,9 +1181,15 @@ export function BookingDetailsView({ bookingId }) {
                   <span className="font-semibold text-[#FF8228] bg-orange-50 px-2 py-0.5 rounded-md">{formatCurrency(booking.workerProposedPrice)}</span>
                 </div>
               )}
+              {selectedVoucher && (
+                <div className="flex justify-between items-center text-emerald-600 font-semibold text-xs">
+                  <span>Giảm giá ({selectedVoucher.code})</span>
+                  <span>-{formatCurrency(selectedVoucher.calculatedDiscount)}</span>
+                </div>
+              )}
               <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
                 <span className="font-bold text-slate-800">Tổng cộng</span>
-                <span className="text-xl font-black text-[#FF8228]">{formatCurrency(totalAmount)}</span>
+                <span className="text-xl font-black text-[#FF8228]">{formatCurrency(finalTotalAmount)}</span>
               </div>
             </div>
 
@@ -1301,6 +1473,147 @@ export function BookingDetailsView({ bookingId }) {
         </>
       )}
 
+      {/* Voucher Selection Modal */}
+      <Modal
+        title={
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+            <span className="material-symbols-outlined text-[#FF8228] text-[22px]">local_activity</span>
+            <span className="text-base font-black text-[#1b1c1c]">Kho Voucher Khuyến Mãi</span>
+          </div>
+        }
+        open={voucherModalOpen}
+        onCancel={() => setVoucherModalOpen(false)}
+        footer={null}
+        width={500}
+        destroyOnHidden
+        className="rounded-2xl overflow-hidden [&_.ant-modal-content]:!p-5 [&_.ant-modal-content]:!rounded-2xl"
+      >
+        <div className="py-2">
+          <p className="text-xs text-[#818A91] mb-4">Danh sách các mã giảm giá áp dụng cho đơn dịch vụ này của bạn.</p>
+          
+          {loadingEligible ? (
+            <div className="py-8 text-center text-xs font-bold text-slate-400">
+              Đang tải danh sách voucher...
+            </div>
+          ) : eligibleVouchers.length === 0 ? (
+            <div className="py-8 text-center border border-dashed border-slate-200 rounded-xl bg-slate-50">
+              <span className="material-symbols-outlined text-[32px] text-slate-300">sentiment_neutral</span>
+              <p className="mt-2 text-xs font-bold text-slate-400">Không tìm thấy voucher khả dụng.</p>
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1">
+              {eligibleVouchers.map((v) => {
+                const isSelected = selectedVoucher?.code === v.code;
+                return (
+                  <div
+                    key={v.id}
+                    className={`relative overflow-hidden rounded-xl border p-4 transition-all ${
+                      isSelected 
+                        ? 'border-[#FF8228] bg-orange-50/20' 
+                        : v.isEligible 
+                          ? 'border-slate-200 hover:border-[#FF8228]/50 hover:bg-[#FFF8F4]/20 cursor-pointer'
+                          : 'border-slate-100 bg-slate-50/50 opacity-70'
+                    }`}
+                    onClick={() => {
+                      if (v.isEligible) {
+                        handleApplyVoucher(v.code);
+                      }
+                    }}
+                  >
+                    {isSelected && (
+                      <span className="absolute top-0 right-0 rounded-bl-lg bg-[#FF8228] px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider">
+                        Đang chọn
+                      </span>
+                    )}
+
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="inline-flex items-center rounded bg-orange-50 border border-[#dec0b1]/30 px-2 py-0.5 text-xs font-black text-[#FF8228] uppercase tracking-wider">
+                          {v.code}
+                        </div>
+                        
+                        <p className="mt-2 text-xs font-bold text-slate-800 leading-snug">
+                          {v.description || (v.type === 0 ? `Giảm ${v.value}%` : `Giảm ${formatCurrency(v.value)}`)}
+                        </p>
+
+                        <div className="mt-2 space-y-1 text-[10px] font-semibold text-[#818A91]">
+                          {v.minOrderValue > 0 && (
+                            <p className="flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                              Đơn tối thiểu: <span className="text-[#4A4A4A] font-bold">{formatCurrency(v.minOrderValue)}</span>
+                            </p>
+                          )}
+                          {v.expiresAt && (
+                            <p className="flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                              Hạn dùng: <span className="text-[#4A4A4A] font-bold">{new Date(v.expiresAt).toLocaleDateString('vi-VN')}</span>
+                            </p>
+                          )}
+                        </div>
+
+                        {!v.isEligible && v.ineligibleReason && (
+                          <div className="mt-3 rounded-lg bg-rose-50 px-2.5 py-1.5 text-[10px] font-semibold text-rose-500 flex items-start gap-1">
+                            <span className="material-symbols-outlined text-[12px] shrink-0 mt-0.5">info</span>
+                            <span>{formatIneligibleReason(v.ineligibleReason)}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {v.isEligible && (
+                        <button
+                          type="button"
+                          className={`self-center rounded-lg px-3 py-1.5 text-xs font-bold transition-all shadow-sm shrink-0 ${
+                            isSelected
+                              ? 'bg-emerald-500 text-white hover:brightness-105'
+                              : 'bg-[#FF8228] text-white hover:brightness-105'
+                          }`}
+                        >
+                          {isSelected ? 'Đã chọn' : 'Dùng ngay'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          
+          <div className="mt-5 border-t border-slate-100 pt-4 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setVoucherModalOpen(false)}
+              className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-bold text-[#818A91] hover:bg-slate-50 transition-colors"
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      </Modal>
+
     </div>
   );
 }
+
+const formatIneligibleReason = (reason) => {
+  if (!reason) return '';
+  const text = String(reason).toLowerCase();
+  if (text.includes('already used') || text.includes('maximum number of times')) {
+    return 'Bạn đã sử dụng voucher này tối đa số lần cho phép';
+  }
+  if (text.includes('minordervalue') || text.includes('minimum order')) {
+    return 'Đơn hàng chưa đạt giá trị tối thiểu';
+  }
+  if (text.includes('category') || text.includes('service')) {
+    return 'Voucher không áp dụng cho dịch vụ này';
+  }
+  if (text.includes('expired')) {
+    return 'Voucher đã hết hạn';
+  }
+  if (text.includes('city')) {
+    return 'Không áp dụng tại thành phố của bạn';
+  }
+  if (text.includes('first order')) {
+    return 'Chỉ áp dụng cho đơn hàng đầu tiên';
+  }
+  return reason;
+};

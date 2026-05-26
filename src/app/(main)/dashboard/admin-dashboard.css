@@ -1518,6 +1518,14 @@
   padding: 24px;
 }
 
+.admin-promo-table-panel {
+  margin-top: 24px;
+}
+
+.admin-promo-modal {
+  top: 24px;
+}
+
 .admin-promo-table-card .ant-table {
   min-width: 0;
 }

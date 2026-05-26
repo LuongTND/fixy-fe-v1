@@ -224,13 +224,13 @@ export function BookingsView() {
                   key={item.key}
                   type="button"
                   onClick={() => setTab(item.key)}
-                  className={`flex min-w-fit items-center gap-2 whitespace-nowrap rounded-[8px] px-sm py-2 text-sm font-semibold transition-all sm:px-md ${
+                  className={`flex min-w-fit items-center gap-2 whitespace-nowrap rounded-[8px] px-sm py-2 text-sm font-semibold leading-none transition-all sm:px-md ${
                     tab === item.key ? 'bg-white text-primary-container shadow-sm' : 'text-text-secondary hover:bg-surface-variant'
                   }`}
                 >
-                  {item.label}
+                  <span className="leading-none">{item.label}</span>
                   {counts[item.key] > 0 && (
-                    <span className={`inline-flex h-4 min-w-4 shrink-0 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ${
+                    <span className={`inline-flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-none ${
                       tab === item.key ? 'bg-primary-container text-white' : 'bg-border-light text-text-secondary'
                     }`}>
                       {counts[item.key]}
