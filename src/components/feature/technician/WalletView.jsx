@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { App, Button, Empty, Input, InputNumber, Modal, Select, Table, Tag } from 'antd';
 import { payoutAccountApi, payoutApi } from '@/apis/payout.api';
 import { walletApi } from '@/apis/wallet.api';
+import { vietqrApi } from '@/apis/vietqr.api';
 
 const formatCurrency = (value = 0) => `${Number(value || 0).toLocaleString('vi-VN')}đ`;
 
@@ -119,10 +120,9 @@ export function WalletView() {
     async function loadBanks() {
       setBanksLoading(true);
       try {
-        const response = await fetch('https://api.vietqr.io/v2/banks');
-        const payload = await response.json();
+        const banksList = await vietqrApi.getBanks();
         if (!alive) return;
-        setBanks(Array.isArray(payload?.data) ? payload.data : []);
+        setBanks(banksList);
       } catch (error) {
         if (!alive) return;
         console.warn('Failed to load VietQR banks:', error);
