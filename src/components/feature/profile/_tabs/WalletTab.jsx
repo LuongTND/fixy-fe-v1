@@ -34,7 +34,7 @@ export function WalletTab({
             onClick={onOpenTopupModal}
             className="relative z-10 bg-white text-primary font-black px-7 py-3.5 rounded-2xl shadow-xl hover:shadow-2xl hover:-translate-y-0.5 active:scale-95 transition-all flex items-center gap-2 text-xs"
           >
-            <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>add_circle</span>
+            <span className="material-symbols-outlined text-[20px] material-symbols-filled">add_circle</span>
             Nạp tiền ngay
           </button>
         </div>

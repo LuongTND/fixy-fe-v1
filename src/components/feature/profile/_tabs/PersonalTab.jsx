@@ -143,7 +143,7 @@ export function PersonalTab({
                 >
                   {addr.isDefault && (
                     <div className="absolute top-4 right-4 text-primary z-10">
-                      <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                      <span className="material-symbols-outlined text-[20px] material-symbols-filled">star</span>
                     </div>
                   )}
 
@@ -152,7 +152,7 @@ export function PersonalTab({
                       ? 'bg-blue-50 text-blue-600 group-hover:bg-blue-100'
                       : 'bg-primary/10 text-primary group-hover:bg-primary/20'
                       }`}>
-                      <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                      <span className="material-symbols-outlined text-[20px] material-symbols-filled">
                         {addr.label?.toLowerCase() === 'văn phòng' ? 'work' : 'home'}
                       </span>
                     </div>
