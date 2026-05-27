@@ -121,3 +121,17 @@ export const VOUCHER_STATUS = {
   ACTIVE: 1,
   DISABLED: 2,
 };
+
+export const VOUCHER_CAMPAIGN_STATUS = {
+  DRAFT: 0,
+  ACTIVE: 1,
+  SUSPENDED: 2,
+  ENDED: 3,
+};
+
+export const VOUCHER_AUTO_TRIGGER_EVENT = {
+  MANUAL: 0,
+  NEW_CUSTOMER: 1,
+  FIRST_BOOKING: 2,
+  REACTIVATION: 3,
+};

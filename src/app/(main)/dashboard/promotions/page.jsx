@@ -5,10 +5,11 @@ import { App, Button, Card, DatePicker, Form, Input, InputNumber, Modal, Paginat
 import dayjs from 'dayjs';
 import '../admin-dashboard.css';
 import { voucherApi } from '@/apis/voucher.api';
+import { voucherCampaignApi } from '@/apis/voucher-campaign.api';
 import { serviceCategoryApi } from '@/apis/service-category.api';
 import { vietnamProvincesApi } from '@/apis/vietnam-provinces.api';
 import { AdminShell, SymbolIcon } from '../_components/AdminShell';
-import { VOUCHER_TYPE, VOUCHER_STATUS } from '@/constants/enums';
+import { VOUCHER_TYPE, VOUCHER_STATUS, VOUCHER_CAMPAIGN_STATUS, VOUCHER_AUTO_TRIGGER_EVENT } from '@/constants/enums';
 import { getVoucherTypeKey, getVoucherStatusKey, formatCurrency, formatVoucherValue, statusMap } from '@/utils';
 
 const normalizePaged = (payload) => ({
@@ -32,28 +33,93 @@ function toPayload(values, includeCode = true) {
     description: values.description || '',
     city: values.city || null,
     firstOrderOnly: Boolean(values.firstOrderOnly),
+    campaignId: values.campaignId || null,
   };
 
   if (includeCode) payload.code = values.code?.trim();
   return payload;
 }
 
+const campaignStatusMap = {
+  active: { label: 'Đang chạy', className: 'admin-promo-status-active' },
+  draft: { label: 'Nháp', className: 'admin-promo-status-draft' },
+  suspended: { label: 'Tạm dừng', className: 'admin-promo-status-suspended' },
+  ended: { label: 'Đã kết thúc', className: 'admin-promo-status-ended' },
+};
+
+const campaignTriggerOptions = [
+  { value: VOUCHER_AUTO_TRIGGER_EVENT.MANUAL, label: 'Thủ công' },
+  { value: VOUCHER_AUTO_TRIGGER_EVENT.NEW_CUSTOMER, label: 'Khách hàng mới' },
+  { value: VOUCHER_AUTO_TRIGGER_EVENT.FIRST_BOOKING, label: 'Đơn đầu tiên' },
+  { value: VOUCHER_AUTO_TRIGGER_EVENT.REACTIVATION, label: 'Kích hoạt lại' },
+];
+
+const getCampaignStatusKey = (status, expiresAt) => {
+  if (expiresAt && dayjs(expiresAt).isBefore(dayjs())) return 'ended';
+
+  if (typeof status === 'number') {
+    if (status === VOUCHER_CAMPAIGN_STATUS.ACTIVE) return 'active';
+    if (status === VOUCHER_CAMPAIGN_STATUS.SUSPENDED) return 'suspended';
+    if (status === VOUCHER_CAMPAIGN_STATUS.ENDED) return 'ended';
+    return 'draft';
+  }
+
+  const text = String(status || 'draft').toLowerCase();
+  if (text.includes('active')) return 'active';
+  if (text.includes('suspend') || text.includes('disabled')) return 'suspended';
+  if (text.includes('end') || text.includes('expire')) return 'ended';
+  return 'draft';
+};
+
+const getTriggerLabel = (value) => {
+  const option = campaignTriggerOptions.find((item) => item.value === Number(value || 0));
+  return option?.label || 'Thủ công';
+};
+
+function toCampaignPayload(values, includeStatus = false) {
+  const payload = {
+    name: values.name?.trim(),
+    description: values.description || '',
+    startsAt: values.dateRange?.[0]?.format(),
+    expiresAt: values.dateRange?.[1]?.format(),
+    budgetLimit: Number(values.budgetLimit || 0),
+    autoTriggerEvent: Number(values.autoTriggerEvent ?? VOUCHER_AUTO_TRIGGER_EVENT.MANUAL),
+  };
+
+  if (includeStatus) {
+    payload.status = Number(values.status ?? VOUCHER_CAMPAIGN_STATUS.DRAFT);
+  }
+
+  return payload;
+}
+
 export default function AdminPromotionsPage() {
   const { message, modal } = App.useApp();
   const [form] = Form.useForm();
+  const [campaignForm] = Form.useForm();
   const [vouchers, setVouchers] = useState([]);
+  const [campaigns, setCampaigns] = useState([]);
   const [categories, setCategories] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [meta, setMeta] = useState({ pageNumber: 1, pageSize: 10, totalCount: 0 });
+  const [campaignMeta, setCampaignMeta] = useState({ pageNumber: 1, pageSize: 10, totalCount: 0 });
   const [loading, setLoading] = useState(true);
+  const [campaignLoading, setCampaignLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [campaignSubmitting, setCampaignSubmitting] = useState(false);
   const [editingVoucher, setEditingVoucher] = useState(null);
+  const [editingCampaign, setEditingCampaign] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [campaignModalOpen, setCampaignModalOpen] = useState(false);
   
   const [filters, setFilters] = useState({
     SearchTerm: '',
     CategoryId: undefined,
     Type: undefined,
+    Status: 'all',
+  });
+  const [campaignFilters, setCampaignFilters] = useState({
+    SearchTerm: '',
     Status: 'all',
   });
 
@@ -81,17 +147,57 @@ export default function AdminPromotionsPage() {
     }
   }, [message, meta.pageNumber, meta.pageSize, filters]);
 
+  const loadCampaigns = useCallback(async (
+    pageNumber = campaignMeta.pageNumber,
+    pageSize = campaignMeta.pageSize
+  ) => {
+    setCampaignLoading(true);
+    try {
+      const response = await voucherCampaignApi.getAll({
+        PageNumber: pageNumber,
+        PageSize: pageSize,
+        SortBy: 'CreatedDate',
+        SortDescending: true,
+      });
+      const paged = normalizePaged(response);
+      setCampaigns(paged.items);
+      setCampaignMeta({ pageNumber: paged.pageNumber, pageSize: paged.pageSize, totalCount: paged.totalCount });
+    } catch (error) {
+      message.error(error.response?.data?.message || error.message || 'Không thể tải danh sách chiến dịch.');
+    } finally {
+      setCampaignLoading(false);
+    }
+  }, [campaignMeta.pageNumber, campaignMeta.pageSize, message]);
+
   useEffect(() => {
-    loadVouchers(1, 10);
+    let active = true;
+    queueMicrotask(() => {
+      if (active) {
+        loadVouchers(1, 10);
+        loadCampaigns(1, 10);
+      }
+    });
     
     serviceCategoryApi.getAll()
-      .then((data) => setCategories(Array.isArray(data) ? data : data?.items || []))
-      .catch(() => setCategories([]));
+      .then((data) => {
+        if (active) setCategories(Array.isArray(data) ? data : data?.items || []);
+      })
+      .catch(() => {
+        if (active) setCategories([]);
+      });
       
     vietnamProvincesApi.getProvinces()
-      .then((data) => setProvinces(data || []))
-      .catch(() => setProvinces([]));
-  }, []);
+      .then((data) => {
+        if (active) setProvinces(data || []);
+      })
+      .catch(() => {
+        if (active) setProvinces([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const activeCount = vouchers.filter((item) => getVoucherStatusKey(item.status, item.expiresAt) === 'active').length;
   const totalUsage = vouchers.reduce((sum, item) => sum + Number(item.usedCount || item.usageCount || item.used || 0), 0);
@@ -126,6 +232,15 @@ export default function AdminPromotionsPage() {
     },
   ], [activeCount, meta.totalCount, totalUsage]);
 
+  const campaignOptions = useMemo(() => campaigns.map((campaign) => {
+    const statusKey = getCampaignStatusKey(campaign.status, campaign.expiresAt);
+    const status = campaignStatusMap[statusKey] || campaignStatusMap.draft;
+    return {
+      value: campaign.id,
+      label: `${campaign.name || 'Chiến dịch'} - ${status.label}`,
+    };
+  }), [campaigns]);
+
   const openCreateModal = () => {
     setEditingVoucher(null);
     setModalOpen(true);
@@ -141,6 +256,7 @@ export default function AdminPromotionsPage() {
         dateRange: [dayjs(), dayjs().add(30, 'day')],
         city: undefined,
         firstOrderOnly: false,
+        campaignId: undefined,
       });
     }, 0);
   };
@@ -165,6 +281,7 @@ export default function AdminPromotionsPage() {
         description: record.description,
         city: record.city || undefined,
         firstOrderOnly: Boolean(record.firstOrderOnly),
+        campaignId: record.campaignId || undefined,
       });
     }, 0);
   };
@@ -213,6 +330,84 @@ export default function AdminPromotionsPage() {
     });
   };
 
+  const openCreateCampaignModal = () => {
+    setEditingCampaign(null);
+    setCampaignModalOpen(true);
+    setTimeout(() => {
+      campaignForm.resetFields();
+      campaignForm.setFieldsValue({
+        name: '',
+        description: '',
+        budgetLimit: 0,
+        status: VOUCHER_CAMPAIGN_STATUS.DRAFT,
+        autoTriggerEvent: VOUCHER_AUTO_TRIGGER_EVENT.MANUAL,
+        dateRange: [dayjs(), dayjs().add(30, 'day')],
+      });
+    }, 0);
+  };
+
+  const openEditCampaignModal = (record) => {
+    setEditingCampaign(record);
+    setCampaignModalOpen(true);
+    setTimeout(() => {
+      campaignForm.setFieldsValue({
+        name: record.name,
+        description: record.description,
+        budgetLimit: record.budgetLimit,
+        status: Number(record.status ?? VOUCHER_CAMPAIGN_STATUS.DRAFT),
+        autoTriggerEvent: Number(record.autoTriggerEvent ?? VOUCHER_AUTO_TRIGGER_EVENT.MANUAL),
+        dateRange: [
+          record.startsAt ? dayjs(record.startsAt) : null,
+          record.expiresAt ? dayjs(record.expiresAt) : null,
+        ],
+      });
+    }, 0);
+  };
+
+  const handleCampaignSubmit = async (values) => {
+    setCampaignSubmitting(true);
+    try {
+      if (editingCampaign) {
+        await voucherCampaignApi.update(editingCampaign.id, toCampaignPayload(values, false));
+        message.success('Đã cập nhật chiến dịch.');
+      } else {
+        await voucherCampaignApi.create(toCampaignPayload(values, true));
+        message.success('Đã tạo chiến dịch voucher.');
+      }
+      setCampaignModalOpen(false);
+      await loadCampaigns(1, campaignMeta.pageSize);
+    } catch (error) {
+      message.error(error.response?.data?.message || error.message || 'Không thể lưu chiến dịch.');
+    } finally {
+      setCampaignSubmitting(false);
+    }
+  };
+
+  const handleCampaignStatus = async (record, status) => {
+    try {
+      await voucherCampaignApi.updateStatus(record.id, status);
+      message.success('Đã cập nhật trạng thái chiến dịch.');
+      await loadCampaigns();
+    } catch (error) {
+      message.error(error.response?.data?.message || error.message || 'Không thể cập nhật trạng thái chiến dịch.');
+    }
+  };
+
+  const handleCampaignDelete = (record) => {
+    modal.confirm({
+      title: 'Xóa chiến dịch?',
+      content: `Chiến dịch ${record.name} sẽ bị xóa khỏi hệ thống.`,
+      okText: 'Xóa',
+      cancelText: 'Hủy',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        await voucherCampaignApi.delete(record.id);
+        message.success('Đã xóa chiến dịch.');
+        await loadCampaigns();
+      },
+    });
+  };
+
   const filteredVouchers = useMemo(() => {
     return vouchers.filter((item) => {
       if (filters.CategoryId && item.categoryId !== filters.CategoryId) {
@@ -230,6 +425,23 @@ export default function AdminPromotionsPage() {
       return true;
     });
   }, [vouchers, filters]);
+
+  const filteredCampaigns = useMemo(() => {
+    const keyword = campaignFilters.SearchTerm.trim().toLowerCase();
+    return campaigns.filter((item) => {
+      if (keyword) {
+        const searchableText = `${item.name || ''} ${item.description || ''}`.toLowerCase();
+        if (!searchableText.includes(keyword)) return false;
+      }
+
+      if (campaignFilters.Status && campaignFilters.Status !== 'all') {
+        const itemStatus = getCampaignStatusKey(item.status, item.expiresAt);
+        if (campaignFilters.Status !== itemStatus) return false;
+      }
+
+      return true;
+    });
+  }, [campaignFilters, campaigns]);
 
   const columns = [
     {
@@ -258,6 +470,12 @@ export default function AdminPromotionsPage() {
                 />
               </div>
               {record.description && <span className="block max-w-[200px] truncate text-xs text-[#818A91] mt-0.5">{record.description}</span>}
+              {record.campaignId && (
+                <Tag className="!m-0 !mt-1 !inline-flex !w-fit !items-center !gap-1 !rounded-full !border-0 !bg-[#FFF0E6] !px-2 !py-0.5 !text-[10px] !font-bold !text-[#FF8228]">
+                  <SymbolIcon className="!text-[12px]">campaign</SymbolIcon>
+                  {campaigns.find((campaign) => campaign.id === record.campaignId)?.name || 'Chiến dịch'}
+                </Tag>
+              )}
             </div>
           </div>
         );
@@ -441,6 +659,103 @@ export default function AdminPromotionsPage() {
       }
     }
   ];
+
+  const campaignColumns = [
+    {
+      title: 'Chiến dịch',
+      dataIndex: 'name',
+      width: 260,
+      render: (_, record) => (
+        <div className="flex items-center gap-3">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-[#FFF0E6] text-[#FF8228]">
+            <SymbolIcon className="!text-[20px]">campaign</SymbolIcon>
+          </span>
+          <div className="min-w-0">
+            <span className="block text-sm font-extrabold text-[#1b1c1c]">{record.name}</span>
+            {record.description && <span className="block max-w-[260px] truncate text-xs text-[#818A91]">{record.description}</span>}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Ngân sách',
+      dataIndex: 'budgetLimit',
+      width: 150,
+      render: (value) => <span className="text-sm font-black text-[#FF8228]">{formatCurrency(value)}</span>,
+    },
+    {
+      title: 'Tự động',
+      dataIndex: 'autoTriggerEvent',
+      width: 160,
+      render: (value) => (
+        <Tag className="!m-0 !rounded-full !border-0 !bg-[#E8F8FE] !px-2.5 !py-0.5 !text-xs !font-bold !text-[#00A8E8]">
+          {getTriggerLabel(value)}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Hiệu lực',
+      width: 190,
+      render: (_, record) => (
+        <div className="text-xs font-semibold text-[#4A4A4A]">
+          <div>{record.startsAt ? dayjs(record.startsAt).format('DD/MM/YYYY HH:mm') : 'Chưa có ngày bắt đầu'}</div>
+          <div className="mt-0.5 text-[#818A91]">{record.expiresAt ? dayjs(record.expiresAt).format('DD/MM/YYYY HH:mm') : 'Không giới hạn'}</div>
+        </div>
+      ),
+    },
+    {
+      title: 'Trạng thái',
+      width: 120,
+      render: (_, record) => {
+        const statusKey = getCampaignStatusKey(record.status, record.expiresAt);
+        const status = campaignStatusMap[statusKey] || campaignStatusMap.active;
+        return <Tag className={`admin-promo-status ${status.className}`}>{status.label}</Tag>;
+      },
+    },
+    {
+      title: 'Thao tác',
+      align: 'right',
+      width: 160,
+      render: (_, record) => {
+        const statusKey = getCampaignStatusKey(record.status, record.expiresAt);
+        const isEnded = statusKey === 'ended';
+        return (
+          <div className="flex items-center justify-end gap-1">
+            <Tooltip title="Chỉnh sửa">
+              <Button
+                type="text"
+                shape="circle"
+                className="!inline-flex !h-8 !w-8 !items-center !justify-center !p-0 text-[#555555] hover:!bg-[#FFF0E6] hover:!text-[#FF8228]"
+                icon={<SymbolIcon>edit</SymbolIcon>}
+                onClick={() => openEditCampaignModal(record)}
+              />
+            </Tooltip>
+            <Tooltip title={isEnded ? 'Chiến dịch đã kết thúc' : statusKey === 'active' ? 'Tạm dừng' : 'Kích hoạt'}>
+              <Button
+                type="text"
+                shape="circle"
+                className="!inline-flex !h-8 !w-8 !items-center !justify-center !p-0 text-[#818A91] hover:!bg-[#FFF0E6] hover:!text-[#FF8228]"
+                icon={<SymbolIcon>{statusKey === 'active' ? 'pause_circle' : 'play_circle'}</SymbolIcon>}
+                disabled={isEnded}
+                onClick={() => handleCampaignStatus(record, statusKey === 'active' ? VOUCHER_CAMPAIGN_STATUS.SUSPENDED : VOUCHER_CAMPAIGN_STATUS.ACTIVE)}
+              />
+            </Tooltip>
+            <Tooltip title="Xóa">
+              <Button
+                type="text"
+                shape="circle"
+                danger
+                className="!inline-flex !h-8 !w-8 !items-center !justify-center !p-0 hover:!bg-[#FFF5F5]"
+                icon={<SymbolIcon>delete</SymbolIcon>}
+                onClick={() => handleCampaignDelete(record)}
+              />
+            </Tooltip>
+          </div>
+        );
+      },
+    },
+  ];
+
   return (
     <AdminShell activeKey="promotions">
       <section className="admin-page-heading">
@@ -459,7 +774,7 @@ export default function AdminPromotionsPage() {
       </section>
 
       {/* KPI statistics cards */}
-      <section className="grid grid-cols-1 gap-5 md:grid-cols-3">
+      <section className="admin-promo-summary-grid grid grid-cols-1 gap-5 md:grid-cols-3">
         {summaryCards.map((item) => (
           <div 
             key={item.label} 
@@ -484,14 +799,14 @@ export default function AdminPromotionsPage() {
 
       <Card className="admin-panel admin-promo-table-panel">
         {/* Table Title and Refresh */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-[#F0F2F5]">
+        <div className="admin-promo-panel-head">
           <div>
             <h3 className="m-0 text-lg font-black text-[#1b1c1c]">Danh Sách Voucher</h3>
             <p className="m-0 mt-1 text-xs text-[#818A91]">Tìm kiếm, theo dõi và quản lý hiệu lực của các mã giảm giá.</p>
           </div>
           <div className="flex items-center gap-2">
             <Button 
-              className="!inline-flex !items-center !justify-center !gap-1.5 !rounded-lg !border-[#D9D9D9] !h-9 !px-3.5 !text-xs !font-bold text-[#555555] hover:!text-[#FF8228] hover:!border-[#FF8228]" 
+              className="admin-promo-refresh-button" 
               icon={<SymbolIcon className="!text-[16px]">refresh</SymbolIcon>}
               onClick={() => loadVouchers(meta.pageNumber, meta.pageSize)}
               loading={loading}
@@ -502,7 +817,7 @@ export default function AdminPromotionsPage() {
         </div>
 
         {/* Filters Toolbar */}
-        <div className="py-4 space-y-4">
+        <div className="admin-promo-toolbar space-y-4">
           {/* Row 1: Search Input */}
           <div>
             <Input.Search
@@ -573,7 +888,7 @@ export default function AdminPromotionsPage() {
           scroll={{ x: 1040 }}
         />
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-4 pt-1">
+        <div className="admin-promo-table-footer">
           <p className="m-0 text-sm text-[#555555]">Hiển thị {filteredVouchers.length} / {meta.totalCount} voucher</p>
           <Pagination
             className="admin-tech-pagination"
@@ -583,6 +898,83 @@ export default function AdminPromotionsPage() {
             showSizeChanger
             pageSizeOptions={[10, 20, 50, 100]}
             onChange={loadVouchers}
+          />
+        </div>
+      </Card>
+
+      <Card className="admin-panel admin-promo-table-panel">
+        <div className="admin-promo-panel-head">
+          <div>
+            <h3 className="m-0 text-lg font-black text-[#1b1c1c]">Chiến dịch voucher</h3>
+            <p className="m-0 mt-1 text-xs text-[#818A91]">Quản lý ngân sách, thời gian chạy và trigger tự động cho từng chiến dịch.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              className="admin-promo-refresh-button"
+              icon={<SymbolIcon className="!text-[16px]">refresh</SymbolIcon>}
+              onClick={() => loadCampaigns(campaignMeta.pageNumber, campaignMeta.pageSize)}
+              loading={campaignLoading}
+            >
+              Làm mới
+            </Button>
+            <Button
+              type="primary"
+              className="admin-primary-pill-button !h-9 !px-4 !text-xs"
+              icon={<SymbolIcon>add_circle</SymbolIcon>}
+              onClick={openCreateCampaignModal}
+            >
+              Tạo chiến dịch
+            </Button>
+          </div>
+        </div>
+
+        <div className="admin-promo-toolbar admin-promo-toolbar-row">
+          <div className="admin-promo-toolbar-search">
+            <Input.Search
+              allowClear
+              className="admin-tech-search"
+              placeholder="Tìm kiếm chiến dịch..."
+              onSearch={(value) => setCampaignFilters((current) => ({ ...current, SearchTerm: value }))}
+            />
+          </div>
+          <div className="admin-promo-toolbar-filters">
+            <Radio.Group
+              value={campaignFilters.Status}
+              onChange={(e) => setCampaignFilters((current) => ({ ...current, Status: e.target.value }))}
+              optionType="button"
+              buttonStyle="solid"
+              className="custom-radio-group [&_.ant-radio-button-wrapper-checked]:!bg-[#FF8228] [&_.ant-radio-button-wrapper-checked]:!border-[#FF8228] [&_.ant-radio-button-wrapper]:!text-xs [&_.ant-radio-button-wrapper]:!font-bold [&_.ant-radio-button-wrapper]:!h-10 [&_.ant-radio-button-wrapper]:!leading-[38px]"
+            >
+              <Radio.Button value="all">Tất cả</Radio.Button>
+              <Radio.Button value="draft">Nháp</Radio.Button>
+              <Radio.Button value="active">Đang chạy</Radio.Button>
+              <Radio.Button value="suspended">Tạm dừng</Radio.Button>
+              <Radio.Button value="ended">Kết thúc</Radio.Button>
+            </Radio.Group>
+          </div>
+        </div>
+
+        <Table
+          className="admin-tech-table"
+          columns={campaignColumns}
+          dataSource={filteredCampaigns}
+          rowKey={(record) => record.id}
+          loading={campaignLoading}
+          pagination={false}
+          rowClassName={(record) => (getCampaignStatusKey(record.status, record.expiresAt) === 'ended' ? 'admin-promo-row-expired' : '')}
+          scroll={{ x: 980 }}
+        />
+
+        <div className="admin-promo-table-footer">
+          <p className="m-0 text-sm text-[#555555]">Hiển thị {filteredCampaigns.length} / {campaignMeta.totalCount} chiến dịch</p>
+          <Pagination
+            className="admin-tech-pagination"
+            current={campaignMeta.pageNumber}
+            pageSize={campaignMeta.pageSize}
+            total={campaignMeta.totalCount}
+            showSizeChanger
+            pageSizeOptions={[10, 20, 50, 100]}
+            onChange={loadCampaigns}
           />
         </div>
       </Card>
@@ -625,6 +1017,17 @@ export default function AdminPromotionsPage() {
                 options={categories.map((category) => ({ value: category.id, label: category.name }))}
               />
             </Form.Item>
+
+            <Form.Item label="Chiến dịch" name="campaignId" extra="Có thể bỏ trống nếu voucher không thuộc chiến dịch nào">
+              <Select
+                allowClear
+                showSearch
+                placeholder="Chọn chiến dịch"
+                optionFilterProp="label"
+                className="!h-10 [&_.ant-select-selector]:!h-10 [&_.ant-select-selector]:!items-center"
+                options={campaignOptions}
+              />
+            </Form.Item>
           </div>
 
           <Form.Item label="Mô tả chương trình" name="description">
@@ -664,8 +1067,7 @@ export default function AdminPromotionsPage() {
             <Form.Item label="Đơn tối thiểu" name="minOrderValue">
               <Space.Compact className="!w-full">
                 <InputNumber 
-                  style={{ width: '100%' }}
-                  className="!h-10 [&_.ant-input-number-input]:!h-10" 
+                  className="!h-10 !w-full [&_.ant-input-number-input]:!h-10" 
                   min={0} 
                   placeholder="Đơn hàng tối thiểu để áp dụng"
                 />
@@ -678,8 +1080,7 @@ export default function AdminPromotionsPage() {
             <Form.Item label="Mức giảm tối đa" name="maxDiscount" extra="Chỉ áp dụng khi giảm theo phần trăm">
               <Space.Compact className="!w-full">
                 <InputNumber 
-                  style={{ width: '100%' }}
-                  className="!h-10 [&_.ant-input-number-input]:!h-10" 
+                  className="!h-10 !w-full [&_.ant-input-number-input]:!h-10" 
                   min={0} 
                   placeholder="Giảm tối đa (đ)"
                 />
@@ -740,6 +1141,77 @@ export default function AdminPromotionsPage() {
             </Button>
             <Button type="primary" htmlType="submit" loading={submitting} className="!h-10 !px-6 !font-bold !bg-[#FF8228] hover:!bg-[#E66F18]">
               {editingVoucher ? 'Cập nhật voucher' : 'Phát hành voucher'}
+            </Button>
+          </div>
+        </Form>
+      </Modal>
+
+      <Modal
+        title={editingCampaign ? 'Cập nhật chiến dịch' : 'Tạo chiến dịch voucher'}
+        open={campaignModalOpen}
+        onCancel={() => setCampaignModalOpen(false)}
+        footer={null}
+        width={680}
+        destroyOnHidden
+        className="admin-promo-modal"
+      >
+        <Form form={campaignForm} layout="vertical" onFinish={handleCampaignSubmit} requiredMark={false}>
+          <div className="mb-4 border-b border-[#F0F2F5] pb-2">
+            <h4 className="m-0 flex items-center gap-1.5 text-sm font-bold text-[#FF8228]">
+              <SymbolIcon className="!text-[18px]">campaign</SymbolIcon>
+              Thông tin chiến dịch
+            </h4>
+          </div>
+
+          <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2">
+            <Form.Item label="Tên chiến dịch" name="name" rules={[{ required: true, message: 'Nhập tên chiến dịch' }]} className="md:col-span-2">
+              <Input className="!h-10" placeholder="VD: Hè tiết kiệm 2026" />
+            </Form.Item>
+
+            <Form.Item label="Ngân sách tối đa" name="budgetLimit">
+              <InputNumber className="!h-10 !w-full [&_.ant-input-number-input]:!h-10" min={0} addonAfter="đ" placeholder="0 nếu không giới hạn" />
+            </Form.Item>
+
+            <Form.Item label="Trigger tự động" name="autoTriggerEvent" rules={[{ required: true }]}>
+              <Select
+                className="!h-10 [&_.ant-select-selector]:!h-10 [&_.ant-select-selector]:!items-center"
+                options={campaignTriggerOptions}
+              />
+            </Form.Item>
+
+            {!editingCampaign && (
+              <Form.Item label="Trạng thái ban đầu" name="status" rules={[{ required: true }]}>
+                <Select
+                  className="!h-10 [&_.ant-select-selector]:!h-10 [&_.ant-select-selector]:!items-center"
+                  options={[
+                    { value: VOUCHER_CAMPAIGN_STATUS.DRAFT, label: 'Nháp' },
+                    { value: VOUCHER_CAMPAIGN_STATUS.ACTIVE, label: 'Đang chạy' },
+                    { value: VOUCHER_CAMPAIGN_STATUS.SUSPENDED, label: 'Tạm dừng' },
+                  ]}
+                />
+              </Form.Item>
+            )}
+
+            <Form.Item label="Thời gian chạy" name="dateRange" rules={[{ required: true, message: 'Chọn thời gian chạy' }]} className={editingCampaign ? 'md:col-span-2' : ''}>
+              <DatePicker.RangePicker
+                className="!h-10 !w-full"
+                showTime
+                format="DD/MM/YYYY HH:mm"
+                placeholder={['Từ ngày', 'Đến ngày']}
+              />
+            </Form.Item>
+          </div>
+
+          <Form.Item label="Mô tả" name="description">
+            <Input.TextArea rows={3} placeholder="Mô tả mục tiêu hoặc điều kiện của chiến dịch..." />
+          </Form.Item>
+
+          <div className="mt-8 flex justify-end gap-3 border-t border-[#F0F2F5] pt-4">
+            <Button className="!h-10 !px-6 !font-bold" onClick={() => setCampaignModalOpen(false)}>
+              Hủy
+            </Button>
+            <Button type="primary" htmlType="submit" loading={campaignSubmitting} className="!h-10 !px-6 !font-bold !bg-[#FF8228] hover:!bg-[#E66F18]">
+              {editingCampaign ? 'Cập nhật chiến dịch' : 'Tạo chiến dịch'}
             </Button>
           </div>
         </Form>

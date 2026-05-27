@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BackNavigationButton } from '@/components/common/BackNavigationButton';
 
 export const metadata = {
   title: 'Không tìm thấy trang - Vua Thợ',
@@ -18,18 +19,17 @@ export default function NotFound() {
         </p>
 
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#FF8228] px-6 py-3 font-bold text-white no-underline shadow-sm transition-all hover:brightness-105"
+          <BackNavigationButton
+            className="inline-flex min-h-12 min-w-[190px] items-center justify-center gap-2 rounded-xl bg-[#FF8228] px-6 py-3 text-sm font-extrabold text-white shadow-sm transition-all hover:brightness-105 active:scale-[0.98]"
           >
-            <span className="material-symbols-outlined text-[18px]">home</span>
-            Về trang chủ
-          </Link>
+            <span className="material-symbols-outlined text-[19px] leading-none">arrow_back</span>
+            Quay lại
+          </BackNavigationButton>
           <Link
             href="/search"
-            className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-[#FF8228] px-6 py-3 font-bold text-[#FF8228] no-underline transition-all hover:bg-[#FF8228]/5"
+            className="inline-flex min-h-12 min-w-[190px] items-center justify-center gap-2 rounded-xl border-2 border-[#FF8228] px-6 py-3 text-sm font-extrabold !text-[#FF8228] no-underline transition-all hover:bg-[#FF8228]/5 hover:!text-[#FF8228] active:scale-[0.98]"
           >
-            <span className="material-symbols-outlined text-[18px]">engineering</span>
+            <span className="material-symbols-outlined text-[19px] leading-none">engineering</span>
             Tìm thợ
           </Link>
         </div>

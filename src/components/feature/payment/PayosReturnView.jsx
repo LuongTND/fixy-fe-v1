@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { BackNavigationButton } from '@/components/common/BackNavigationButton';
 
 function DetailRow({ label, value }) {
   if (!value) return null;
@@ -58,12 +59,12 @@ export function PayosReturnView() {
             </div>
 
             <div className="flex w-full flex-col gap-3">
-              <Link
-                href="/profile?tab=wallet"
-                className="block w-full rounded-full border-2 border-[#FF8228] !bg-[#FF8228] px-6 py-3.5 text-center text-sm font-bold !text-white no-underline shadow-sm transition-all hover:!bg-[#F97316] active:scale-95"
+              <BackNavigationButton
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-[#FF8228] bg-[#FF8228] px-6 py-3.5 text-center text-sm font-bold text-white shadow-sm transition-all hover:bg-[#F97316] active:scale-95"
               >
-                Về ví của tôi
-              </Link>
+                <span className="material-symbols-outlined text-[18px] leading-none">arrow_back</span>
+                Quay lại
+              </BackNavigationButton>
               <Link
                 href="/"
                 className="block w-full rounded-full border-2 border-[#FF8228] !bg-white px-6 py-3.5 text-center text-sm font-bold !text-[#FF8228] no-underline transition-all hover:!bg-[#FFF7F0] active:scale-95"

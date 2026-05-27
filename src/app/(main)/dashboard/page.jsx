@@ -1,14 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { App, Button, Card, Empty, Progress, Select, Spin } from 'antd';
+import { App, Button, Card, Empty, Select, Spin } from 'antd';
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis, PieChart, Pie, Cell } from 'recharts';
 import './admin-dashboard.css';
 import { dashboardApi } from '@/apis/dashboard.api';
 import { AdminShell, SymbolIcon } from './_components/AdminShell';
 
-const formatNumber = (value = 0) => Number(value || 0).toLocaleString('vi-VN');
-const formatCurrency = (value = 0) => `${Number(value || 0).toLocaleString('vi-VN')}đ`;
+import { formatNumber, formatBookingPrice as formatCurrency } from '@/utils/format';
 
 const serviceColors = ['#FF8228', '#5BC0DE', '#39B54A', '#555555', '#DDDDDD'];
 const headingButtonClass = '!inline-flex !h-9 !min-h-9 !items-center !justify-center !gap-2 !rounded-md !px-3.5 !text-sm !font-semibold !leading-none !text-[#383838] [&_.ant-btn-icon]:!inline-flex [&_.ant-btn-icon]:!items-center [&_.ant-btn-icon]:!justify-center [&_.ant-btn-icon]:!leading-none [&_.material-symbols-outlined]:!block [&_.material-symbols-outlined]:!text-[20px] [&_.material-symbols-outlined]:!leading-none';
@@ -61,6 +60,7 @@ function normalizeTopService(item, index, total) {
     name,
     value: Math.min(Math.max(percent, 0), 100),
     color: item.color || serviceColors[index % serviceColors.length],
+    colorClass: `admin-category-bullet-tone-${index % serviceColors.length}`,
   };
 }
 
@@ -118,7 +118,15 @@ export default function DashboardPage() {
   }, [message, selectedMonth, selectedYear]);
 
   useEffect(() => {
-    loadDashboard();
+    let active = true;
+    queueMicrotask(() => {
+      if (active) {
+        loadDashboard();
+      }
+    });
+    return () => {
+      active = false;
+    };
   }, [loadDashboard]);
 
   const stats = useMemo(() => [
@@ -260,7 +268,7 @@ export default function DashboardPage() {
             </div>
             {categoryStats.length > 0 ? (
               <div className="admin-category-panel-content">
-                <div className="admin-category-chart-container" style={{ position: 'relative' }}>
+                <div className="admin-category-chart-container">
                   <ResponsiveContainer width="100%" height={220}>
                     <PieChart>
                       <Pie
@@ -291,17 +299,10 @@ export default function DashboardPage() {
                       onMouseEnter={() => setActiveCategoryIndex(index)}
                     >
                       <div className="admin-category-item-info">
-                        <span className="admin-category-bullet" style={{ backgroundColor: category.color }} />
+                        <span className={`admin-category-bullet ${category.colorClass}`} />
                         <span className="admin-category-name">{category.name}</span>
                         <strong className="admin-category-percent">{category.value}%</strong>
                       </div>
-                      <Progress
-                        percent={category.value}
-                        showInfo={false}
-                        strokeColor={category.color}
-                        trailColor="#FBF9F8"
-                        size={6}
-                      />
                     </div>
                   ))}
                 </div>

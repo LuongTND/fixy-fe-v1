@@ -31,7 +31,7 @@ export const formatDateRange = (startDate, endDate) => {
 
 // Format number with commas
 export const formatNumber = (num) => {
-  return num.toLocaleString('vi-VN');
+  return Number(num || 0).toLocaleString('vi-VN');
 };
 
 // Format percentage

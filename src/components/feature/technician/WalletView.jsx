@@ -5,8 +5,7 @@ import { App, Button, Empty, Input, InputNumber, Modal, Select, Table, Tag } fro
 import { payoutAccountApi, payoutApi } from '@/apis/payout.api';
 import { walletApi } from '@/apis/wallet.api';
 import { vietqrApi } from '@/apis/vietqr.api';
-
-const formatCurrency = (value = 0) => `${Number(value || 0).toLocaleString('vi-VN')}đ`;
+import { formatBookingPrice as formatCurrency } from '@/utils/format';
 
 const normalizePaged = (payload) => ({
   items: Array.isArray(payload) ? payload : payload?.items || [],
@@ -111,8 +110,16 @@ export function WalletView() {
   }, [message, meta.pageNumber, meta.pageSize]);
 
   useEffect(() => {
-    loadData(1, 10);
-  }, []);
+    let active = true;
+    queueMicrotask(() => {
+      if (active) {
+        loadData(1, 10);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     let alive = true;
