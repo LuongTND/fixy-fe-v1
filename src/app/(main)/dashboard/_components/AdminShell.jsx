@@ -24,13 +24,29 @@ const navItems = [
 
 const iconButtonClass = '!inline-flex !h-10 !w-10 !items-center !justify-center !p-0 [&_.ant-btn-icon]:!inline-flex [&_.ant-btn-icon]:!items-center [&_.ant-btn-icon]:!justify-center [&_.ant-btn-icon]:!leading-none [&_.material-symbols-outlined]:!block [&_.material-symbols-outlined]:!text-[22px] [&_.material-symbols-outlined]:!leading-none';
 
+function getInitials(name = '') {
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'VT';
+  return parts.slice(-2).map((part) => part[0]).join('').toUpperCase();
+}
+
+function getRoleLabel(role) {
+  const value = String(role || '').trim().toLowerCase();
+  if (value === 'admin') return 'Quản trị viên';
+  if (value === 'worker' || value === 'technician') return 'Thợ nghề';
+  if (value === 'customer') return 'Khách hàng';
+  return role || 'Người dùng';
+}
+
 export function AdminShell({
   activeKey = 'dashboard',
   children,
 }) {
   const router = useRouter();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const displayName = user?.fullName || user?.email || user?.phone || 'Người dùng Vua Thợ';
+  const roleLabel = getRoleLabel(user?.role);
 
   const handleLogout = () => {
     logout();
@@ -101,13 +117,16 @@ export function AdminShell({
             <Button shape="circle" className={iconButtonClass} icon={<SymbolIcon>help</SymbolIcon>} />
             <div className="admin-user">
               <div>
-                <strong>Admin User</strong>
-                <span>Super Admin</span>
+                <strong>{displayName}</strong>
+                <span>{roleLabel}</span>
               </div>
               <Avatar
                 size={40}
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAr3TOAsdPlPHA5EwbQMxRXuXwuIUI6La5562uxHM1598ARW9UPKx3rGeYiCiuMVL_iS_epUGSi_98qI5bRPqjCA06MetbBsef0fjJfKIdLROhVqLKLKQ2DOsETTtQAR8-IBScuvw12fw3DtxjhbuFeCgSkYRnB1RpgWNd88q3Dg97CVI-E01NVvT08jbmlMivaCu7QlXjw-VBDkuWAFj6uFz2n-Sx2qLaJCrtQOCOVEJhYrJnQ8g0nGDSgazy8w6X1PwxiIj-y_lQ"
-              />
+                src={user?.avatarUrl}
+                className="!bg-[#FFF0E6] !font-bold !text-[#FF8228]"
+              >
+                {getInitials(displayName)}
+              </Avatar>
             </div>
           </div>
         </header>

@@ -7,11 +7,36 @@ import { userApi } from '@/apis/user.api';
 export const AuthContext = createContext(null);
 
 const USER_META_KEY = 'user_meta';
+const ROLE_CLAIM = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
+const NAME_CLAIM = 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name';
 
 function saveUserMeta(meta) {
   if (typeof window !== 'undefined') {
     localStorage.setItem(USER_META_KEY, JSON.stringify(meta));
   }
+}
+
+function decodeJwtPayload(token) {
+  try {
+    const payload = token?.split('.')?.[1];
+    if (!payload) return null;
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
+    return JSON.parse(window.atob(padded));
+  } catch {
+    return null;
+  }
+}
+
+function getMetaFromToken(token) {
+  const payload = decodeJwtPayload(token);
+  if (!payload) return null;
+
+  return {
+    userId: payload.sub || null,
+    role: payload[ROLE_CLAIM] || payload.role || payload.roles?.[0] || null,
+    email: payload.unique_name || payload.email || payload[NAME_CLAIM] || null,
+  };
 }
 
 function loadUserMeta() {
@@ -61,9 +86,10 @@ export function AuthProvider({ children }) {
     const checkAuthStatus = async () => {
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       if (token) {
-        const savedMeta = loadUserMeta();
+        const savedMeta = loadUserMeta() || getMetaFromToken(token);
         if (savedMeta) {
           setUser({ token, ...savedMeta });
+          saveUserMeta(savedMeta);
         }
         await fetchUserProfile(token, savedMeta);
       }
@@ -122,7 +148,7 @@ export function AuthProvider({ children }) {
   const refreshUser = useCallback(async () => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (token) {
-      const savedMeta = loadUserMeta();
+      const savedMeta = loadUserMeta() || getMetaFromToken(token);
       await fetchUserProfile(token, savedMeta);
     }
   }, [fetchUserProfile]);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Avatar, Button, Card, Image as AntImage, Input, Modal, Pagination, Select, Table, Tag, App } from 'antd';
 import { SymbolIcon } from '@/app/(main)/dashboard/_components/AdminShell';
 import { useWorkerProfiles } from '@/hooks/useWorkerProfiles';
@@ -174,33 +174,9 @@ export function TechnicianTable({ onProfilesLoaded }) {
     }
   }, [filters, getProfiles, onProfilesLoaded]);
 
-  /*
   useEffect(() => {
     queueMicrotask(fetchProfiles);
   }, [fetchProfiles]);
-
-  useEffect(() => {
-    let ignore = false;
-
-    legacyServiceCategoryLoader()
-      .then((response) => {
-        if (ignore) return;
-        const list = Array.isArray(response) ? response : [];
-        setParentCategories(
-          list
-            .map(normalizeCategory)
-            .filter((category) => category.id && !category.parentId),
-        );
-      })
-      .catch((error) => {
-        console.error('Failed to fetch parent service categories', error);
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
-  */
 
   const handleApprove = async (id) => {
     try {

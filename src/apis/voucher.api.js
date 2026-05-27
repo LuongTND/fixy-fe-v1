@@ -7,7 +7,7 @@ export const voucherApi = {
   create: async (payload) => axios.post(API_ENDPOINTS.VOUCHERS.BASE, payload),
   update: async (id, payload) => axios.put(API_ENDPOINTS.VOUCHERS.DETAIL(id), payload),
   delete: async (id) => axios.delete(API_ENDPOINTS.VOUCHERS.DETAIL(id)),
-  updateStatus: async (id, status) => axios.patch(API_ENDPOINTS.VOUCHERS.STATUS(id), null, { params: { status } }),
+  updateStatus: async (id, status) => axios.patch(API_ENDPOINTS.VOUCHERS.STATUS(id), { status }),
   apply: async ({ code, bookingId }) => axios.post(API_ENDPOINTS.VOUCHERS.APPLY, { code, bookingId }),
   getEligible: async (bookingId) => axios.post(API_ENDPOINTS.VOUCHERS.ELIGIBLE, { bookingId }),
 };

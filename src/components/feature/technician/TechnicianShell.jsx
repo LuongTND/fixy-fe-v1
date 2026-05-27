@@ -24,12 +24,28 @@ function getActiveLabel(pathname) {
   ))?.label || 'Dashboard';
 }
 
+function getInitials(name = '') {
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'VT';
+  return parts.slice(-2).map((part) => part[0]).join('').toUpperCase();
+}
+
+function getRoleLabel(role) {
+  const value = String(role || '').trim().toLowerCase();
+  if (value === 'admin') return 'Quản trị viên';
+  if (value === 'worker' || value === 'technician') return 'Thợ nghề';
+  if (value === 'customer') return 'Khách hàng';
+  return role || 'Người dùng';
+}
+
 export function TechnicianShell({ children }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const { bookings } = useWorkerBookings();
+  const displayName = user?.fullName || user?.email || user?.phone || 'Người dùng Vua Thợ';
+  const roleLabel = getRoleLabel(user?.role);
 
   const pendingCount = useMemo(() => {
     return bookings.filter((booking) =>
@@ -128,14 +144,20 @@ export function TechnicianShell({ children }) {
           <div className="h-7 w-px bg-outline-variant" />
           <div className="flex items-center gap-sm">
             <div className="hidden text-right sm:block">
-              <p className="text-xs font-semibold leading-none">Nguyễn Văn Thợ</p>
-              <p className="text-[11px] text-text-muted">Kỹ thuật viên điện lạnh</p>
+              <p className="text-xs font-semibold leading-none">{displayName}</p>
+              <p className="text-[11px] text-text-muted">{roleLabel}</p>
             </div>
-            <img
-              alt="Technician"
-              className="h-9 w-9 rounded-full border-2 border-primary-container object-cover"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDU-yt8hv3d_lQGiLHsM9H3I-S5LAJA1t73W2Zu2YsjBAxpyRdrXAiA2UUnqTaPxOEdg8sJTr4v70zmnuffAfEDlPRa4Wn4VFr6vPOztGW_xVk3RzC_83xYr6ESCacQp4PiVc9kL5tHqFutqxxyhrogAJZkG9RszYQ4ovgFPUIVM2zdppcJn30BHYFbS2y6bdKj1Q4JXg75nk9Cj0v4ZjjnKuwGjIccG4xFHaeSeoQVg4KtinggFTXnT1nQsQNfK1RdjPc1-FP2XnI"
-            />
+            {user?.avatarUrl ? (
+              <img
+                alt={displayName}
+                className="h-9 w-9 rounded-full border-2 border-primary-container object-cover"
+                src={user.avatarUrl}
+              />
+            ) : (
+              <div className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-primary-container bg-[#FFF0E6] text-xs font-bold text-[#FF8228]">
+                {getInitials(displayName)}
+              </div>
+            )}
           </div>
         </div>
       </header>

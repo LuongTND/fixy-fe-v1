@@ -369,10 +369,18 @@ export function BookingDetailsView({ bookingId }) {
 
   // Load review when status is completed
   useEffect(() => {
+    let alive = true;
     if (statusKey === 'completed') {
-      fetchBookingReview();
+      queueMicrotask(() => {
+        if (alive) {
+          fetchBookingReview();
+        }
+      });
     }
-  }, [bookingId, statusKey]);
+    return () => {
+      alive = false;
+    };
+  }, [bookingId, statusKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load eligible vouchers when status is pendingpayment
   useEffect(() => {

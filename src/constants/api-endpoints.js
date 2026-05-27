@@ -89,6 +89,11 @@ export const API_ENDPOINTS = {
     APPLY: '/vouchers/apply',
     ELIGIBLE: '/vouchers/eligible',
   },
+  VOUCHER_CAMPAIGNS: {
+    BASE: '/admin/voucher-campaigns',
+    DETAIL: (id) => `/admin/voucher-campaigns/${id}`,
+    STATUS: (id) => `/admin/voucher-campaigns/${id}/status`,
+  },
   REVIEWS: {
     CREATE: (bookingId) => `/reviews/${bookingId}`,
     REPLY: (reviewId) => `/reviews/${reviewId}/reply`,

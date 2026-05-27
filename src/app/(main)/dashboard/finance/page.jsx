@@ -4,10 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { App, Avatar, Button, Card, Input, Modal, Pagination, Table, Tag } from 'antd';
 import '../admin-dashboard.css';
 import { payoutApi } from '@/apis/payout.api';
-import { formatTransactionTime } from '@/utils/format';
+import { formatTransactionTime, formatBookingPrice as formatCurrency } from '@/utils/format';
 import { AdminShell, SymbolIcon } from '../_components/AdminShell';
-
-const formatCurrency = (value = 0) => `${Number(value || 0).toLocaleString('vi-VN')}đ`;
 
 const normalizePaged = (payload) => ({
   items: Array.isArray(payload) ? payload : payload?.items || [],
@@ -73,8 +71,16 @@ export default function AdminFinancePage() {
   }, [message, meta.pageNumber, meta.pageSize]);
 
   useEffect(() => {
-    loadPayouts(1, 10);
-  }, []);
+    let active = true;
+    queueMicrotask(() => {
+      if (active) {
+        loadPayouts(1, 10);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleApprove = (record) => {
     modal.confirm({
