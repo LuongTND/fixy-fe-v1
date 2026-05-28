@@ -2,6 +2,11 @@ import axios from "@/base/axios";
 import { API_ENDPOINTS } from "@/constants/api-endpoints";
 
 class UserService {
+  async getUsers(params) {
+    const res = await axios.get(API_ENDPOINTS.USER.BASE, { params });
+    return res;
+  }
+
   async getProfile() {
     const res = await axios.get(API_ENDPOINTS.USER.PROFILE);
     return res;
@@ -26,6 +31,16 @@ class UserService {
     const res = await axios.put(API_ENDPOINTS.USER.UPDATE, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
+    return res;
+  }
+
+  async activateUser(id) {
+    const res = await axios.put(API_ENDPOINTS.USER.ACTIVATE(id));
+    return res;
+  }
+
+  async deactivateUser(id) {
+    const res = await axios.put(API_ENDPOINTS.USER.DEACTIVATE(id));
     return res;
   }
 }

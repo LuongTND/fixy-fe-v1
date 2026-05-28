@@ -1,21 +1,13 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { getInitials } from '@/utils/helpers';
 
 function formatCurrency(value) {
   if (!value) return 'Chưa cập nhật';
   return `${Number(value).toLocaleString('vi-VN')}đ`;
 }
 
-function getInitials(name = '') {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(-2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase() || 'VT';
-}
 
 export function WorkerCard({ pro }) {
   const router = useRouter();

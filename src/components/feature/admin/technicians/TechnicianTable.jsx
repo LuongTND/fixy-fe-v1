@@ -6,6 +6,8 @@ import { SymbolIcon } from '@/app/(main)/dashboard/_components/AdminShell';
 import { useWorkerProfiles } from '@/hooks/useWorkerProfiles';
 import { useServiceCategories } from '@/hooks/useServiceCategories';
 import { WORKER_STATUS, WORKER_STATUS_TEXT, WORKER_STATUS_OPTIONS, WORKER_STATUS_UI } from '@/constants/enums';
+import { formatDate, formatCurrency } from '@/utils/format';
+import { extractCollectionPayload as extractProfilesPayload } from '@/utils/helpers';
 
 const mapStatus = (statusValue) => {
   if (typeof statusValue === 'string') {
@@ -19,19 +21,7 @@ const mapStatus = (statusValue) => {
   return WORKER_STATUS_TEXT[statusValue] || WORKER_STATUS_TEXT[WORKER_STATUS.PENDING];
 };
 
-const extractProfilesPayload = (payload) => {
-  if (Array.isArray(payload)) {
-    return { items: payload, totalCount: payload.length };
-  }
 
-  const items = payload?.items || payload?.data || payload?.results || payload?.records || [];
-  const totalCount = payload?.totalCount || payload?.totalItems || payload?.totalRecords || payload?.count || items.length;
-
-  return {
-    items: Array.isArray(items) ? items : [],
-    totalCount,
-  };
-};
 
 const getTechnicianName = (record) => (
   record.user?.fullName ||
@@ -115,15 +105,7 @@ const getAdminProfileDetailId = (record) => (
   record?.id
 );
 
-const formatCurrency = (value) => {
-  if (!Number.isFinite(Number(value))) return 'Chưa cập nhật';
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(value);
-};
 
-const formatDate = (value) => {
-  if (!value) return 'Chưa cập nhật';
-  return new Intl.DateTimeFormat('vi-VN').format(new Date(value));
-};
 
 export function TechnicianTable({ onProfilesLoaded }) {
   const { message } = App.useApp();

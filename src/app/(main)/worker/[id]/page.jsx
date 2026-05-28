@@ -6,6 +6,7 @@ import { message } from 'antd';
 import { workerProfileApi } from '@/apis/worker-profile.api';
 import { workerScheduleApi } from '@/apis/worker-schedule.api';
 import { reviewApi } from '@/apis/review.api';
+import { getInitials } from '@/utils/helpers';
 
 const DAY_META = [
   { dayOfWeek: 1, label: 'Thứ 2', short: 'T2' },
@@ -36,15 +37,6 @@ function buildScheduleMap(rows = []) {
   return Object.fromEntries(rows.map((row) => [row.dayOfWeek, row]));
 }
 
-function getInitials(name = '') {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(-2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase() || 'VT';
-}
 
 function getReviewItems(response) {
   if (Array.isArray(response)) return response;

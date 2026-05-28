@@ -1,56 +1,99 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Avatar, Badge, Button } from 'antd';
-import { useAuth } from '@/hooks/useAuth';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Avatar, Badge, Button } from "antd";
+import { useAuth } from "@/hooks/useAuth";
+import { getInitials } from "@/utils/helpers";
 
-export function SymbolIcon({ children, className = '' }) {
-  return <span className={`material-symbols-outlined ${className}`}>{children}</span>;
+export function SymbolIcon({ children, className = "" }) {
+  return (
+    <span className={`material-symbols-outlined ${className}`}>{children}</span>
+  );
 }
 
 const navItems = [
-  { key: 'dashboard', icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
-  { key: 'technicians', icon: 'engineering', label: 'Kỹ thuật viên', href: '/dashboard/technicians' },
-  { key: 'customers', icon: 'group', label: 'Khách hàng', href: '/dashboard/customers' },
-  { key: 'orders', icon: 'receipt_long', label: 'Đơn hàng', href: '/dashboard/orders' },
-  { key: 'categories', icon: 'category', label: 'Danh mục', href: '/dashboard/categories' },
-  { key: 'finance', icon: 'payments', label: 'Tài chính', href: '/dashboard/finance' },
-  { key: 'promotions', icon: 'campaign', label: 'Khuyến mãi', href: '/dashboard/promotions' },
-  { key: 'support', icon: 'support_agent', label: 'Hỗ trợ', href: '/dashboard/support' },
-  { key: 'reports', icon: 'analytics', label: 'Báo cáo', href: '/dashboard/reports' },
+  {
+    key: "dashboard",
+    icon: "dashboard",
+    label: "Dashboard",
+    href: "/dashboard",
+  },
+  {
+    key: "technicians",
+    icon: "engineering",
+    label: "Kỹ thuật viên",
+    href: "/dashboard/technicians",
+  },
+  {
+    key: "customers",
+    icon: "group",
+    label: "Khách hàng",
+    href: "/dashboard/customers",
+  },
+  {
+    key: "orders",
+    icon: "receipt_long",
+    label: "Đơn hàng",
+    href: "/dashboard/orders",
+  },
+  {
+    key: "categories",
+    icon: "category",
+    label: "Danh mục",
+    href: "/dashboard/categories",
+  },
+  {
+    key: "finance",
+    icon: "payments",
+    label: "Tài chính",
+    href: "/dashboard/finance",
+  },
+  {
+    key: "promotions",
+    icon: "campaign",
+    label: "Khuyến mãi",
+    href: "/dashboard/promotions",
+  },
+  {
+    key: "support",
+    icon: "support_agent",
+    label: "Hỗ trợ",
+    href: "/dashboard/support",
+  },
+  {
+    key: "reports",
+    icon: "analytics",
+    label: "Báo cáo",
+    href: "/dashboard/reports",
+  },
 ];
 
-const iconButtonClass = '!inline-flex !h-10 !w-10 !items-center !justify-center !p-0 [&_.ant-btn-icon]:!inline-flex [&_.ant-btn-icon]:!items-center [&_.ant-btn-icon]:!justify-center [&_.ant-btn-icon]:!leading-none [&_.material-symbols-outlined]:!block [&_.material-symbols-outlined]:!text-[22px] [&_.material-symbols-outlined]:!leading-none';
-
-function getInitials(name = '') {
-  const parts = String(name).trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return 'VT';
-  return parts.slice(-2).map((part) => part[0]).join('').toUpperCase();
-}
+const iconButtonClass =
+  "!inline-flex !h-10 !w-10 !items-center !justify-center !p-0 [&_.ant-btn-icon]:!inline-flex [&_.ant-btn-icon]:!items-center [&_.ant-btn-icon]:!justify-center [&_.ant-btn-icon]:!leading-none [&_.material-symbols-outlined]:!block [&_.material-symbols-outlined]:!text-[22px] [&_.material-symbols-outlined]:!leading-none";
 
 function getRoleLabel(role) {
-  const value = String(role || '').trim().toLowerCase();
-  if (value === 'admin') return 'Quản trị viên';
-  if (value === 'worker' || value === 'technician') return 'Thợ nghề';
-  if (value === 'customer') return 'Khách hàng';
-  return role || 'Người dùng';
+  const value = String(role || "")
+    .trim()
+    .toLowerCase();
+  if (value === "admin") return "Quản trị viên";
+  if (value === "worker" || value === "technician") return "Thợ nghề";
+  if (value === "customer") return "Khách hàng";
+  return role || "Người dùng";
 }
 
-export function AdminShell({
-  activeKey = 'dashboard',
-  children,
-}) {
+export function AdminShell({ activeKey = "dashboard", children }) {
   const router = useRouter();
   const { logout, user } = useAuth();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const displayName = user?.fullName || user?.email || user?.phone || 'Người dùng Vua Thợ';
+  const displayName =
+    user?.fullName || user?.email || user?.phone || "Người dùng Vua Thợ";
   const roleLabel = getRoleLabel(user?.role);
 
   const handleLogout = () => {
     logout();
-    router.push('/');
+    router.push("/");
   };
 
   return (
@@ -63,7 +106,7 @@ export function AdminShell({
         />
       )}
 
-      <aside className={`admin-sidebar ${mobileNavOpen ? 'is-open' : ''}`}>
+      <aside className={`admin-sidebar ${mobileNavOpen ? "is-open" : ""}`}>
         <div className="admin-brand">
           <h1>Vua Thợ</h1>
           <p>Admin Panel</p>
@@ -78,7 +121,7 @@ export function AdminShell({
                 key={item.key}
                 href={item.href}
                 onClick={() => setMobileNavOpen(false)}
-                className={`admin-menu-item ${isActive ? 'admin-menu-item-active' : ''}`}
+                className={`admin-menu-item ${isActive ? "admin-menu-item-active" : ""}`}
               >
                 <SymbolIcon>{item.icon}</SymbolIcon>
                 <span>{item.label}</span>
@@ -112,9 +155,17 @@ export function AdminShell({
           />
           <div className="admin-topbar-actions">
             <Badge dot>
-              <Button shape="circle" className={iconButtonClass} icon={<SymbolIcon>notifications</SymbolIcon>} />
+              <Button
+                shape="circle"
+                className={iconButtonClass}
+                icon={<SymbolIcon>notifications</SymbolIcon>}
+              />
             </Badge>
-            <Button shape="circle" className={iconButtonClass} icon={<SymbolIcon>help</SymbolIcon>} />
+            <Button
+              shape="circle"
+              className={iconButtonClass}
+              icon={<SymbolIcon>help</SymbolIcon>}
+            />
             <div className="admin-user">
               <div>
                 <strong>{displayName}</strong>
@@ -131,9 +182,7 @@ export function AdminShell({
           </div>
         </header>
 
-        <main className="admin-content">
-          {children}
-        </main>
+        <main className="admin-content">{children}</main>
       </div>
     </div>
   );

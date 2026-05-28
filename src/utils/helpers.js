@@ -68,6 +68,17 @@ export const normalizeGender = (value) => {
   return '';
 };
 
+export const formatGenderLabel = (value, fallback = 'Chưa cập nhật') => {
+  const normalized = normalizeGender(value);
+  return GENDER_LABELS[normalized] || fallback;
+};
+
+export const GENDER_STRING_OPTIONS = [
+  { value: 'male', label: GENDER_LABELS[0] },
+  { value: 'female', label: GENDER_LABELS[1] },
+  { value: 'other', label: GENDER_LABELS[2] },
+];
+
 // Safely extract token userId/sub claim
 export const getUserIdFromToken = (token) => {
   try {
@@ -154,4 +165,31 @@ export const getTransactionTitle = (tx) => {
 export const getTransactionStatus = (tx) => {
   const status = String(tx?.status || tx?.transactionStatus || '').toLowerCase();
   return WALLET_TRANSACTION_STATUS_LABELS[status] || tx?.status || tx?.transactionStatus || 'Hoàn tất';
+};
+
+// Extract initials from user's full name
+export const getInitials = (name, fallback = 'VT') => {
+  const parts = String(name || '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (!parts.length) return fallback;
+  return parts.slice(-2).map((part) => part[0]).join('').toUpperCase();
+};
+
+// Safe wrapper to unpack paginated/array collection responses from APIs
+export const extractCollectionPayload = (payload) => {
+  if (Array.isArray(payload)) {
+    return { items: payload, totalCount: payload.length, pageNumber: 1, pageSize: payload.length || 10 };
+  }
+
+  const items = payload?.items || payload?.data || payload?.results || payload?.records || [];
+
+  return {
+    items: Array.isArray(items) ? items : [],
+    totalCount: payload?.totalCount || payload?.totalItems || payload?.totalRecords || payload?.count || items.length || 0,
+    pageNumber: payload?.pageNumber || 1,
+    pageSize: payload?.pageSize || 10,
+  };
 };
