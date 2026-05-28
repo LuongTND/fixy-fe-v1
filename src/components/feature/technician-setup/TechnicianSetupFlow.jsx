@@ -5,6 +5,7 @@ import { App } from 'antd';
 import { workerProfileApi } from '@/apis/worker-profile.api';
 import { userApi } from '@/apis/user.api';
 import { WORKER_STATUS } from '@/constants/enums';
+import { normalizeGender } from '@/utils/helpers';
 import { Step1BasicInfo } from './Step1BasicInfo';
 import { Step2Verification } from './Step2Verification';
 import { Step3Portfolio } from './Step3Portfolio';
@@ -61,18 +62,6 @@ function mapProfileToSetupData(profile) {
   const addr = profile?.address || (Array.isArray(profile?.addresses) ? profile.addresses[0] : null);
 
   // API returns gender as string ('Male','Female','Other') — normalize to numeric for the dropdown
-  function normalizeGender(g) {
-    if (g === null || g === undefined || g === '') return '';
-    if (g === 0 || g === 1 || g === 2) return g;           // already numeric
-    if (typeof g === 'string') {
-      const lower = g.toLowerCase();
-      if (lower === 'male') return 0;
-      if (lower === 'female') return 1;
-      return 2;
-    }
-    return Number(g);
-  }
-
   const idImages = profile?.identificationImages || [];
   const identificationUploads = idImages.map((img, index) => ({
     uid: img.id || `id-img-${index}`,

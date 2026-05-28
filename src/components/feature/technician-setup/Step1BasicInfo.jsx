@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Steps } from 'antd';
 import { useServiceCategories } from '@/hooks/useServiceCategories';
+import { GENDER_LABELS } from '@/utils/helpers';
 
 const fallbackCategories = [
   { id: 'electrician', name: 'Electrician', icon: 'bolt' },
@@ -115,9 +116,9 @@ export function Step1BasicInfo({ onNext, onUpdate, data = {} }) {
                     required
                   >
                     <option value="">Select gender</option>
-                    <option value="0">Male</option>
-                    <option value="1">Female</option>
-                    <option value="2">Other</option>
+                    {Object.entries(GENDER_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
                   </select>
                 </div>
               </div>

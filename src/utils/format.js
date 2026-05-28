@@ -90,3 +90,20 @@ export const formatTransactionTime = (value) => {
     timeZone: 'Asia/Ho_Chi_Minh',
   });
 };
+
+// Format date and time to full string with Vietnamese locale and timezone
+export const formatFullDateTime = (value, fallback = 'Chưa cập nhật') => {
+  if (!value) return fallback;
+  const date = parseBackendDate(value);
+  if (!date || Number.isNaN(date.getTime())) return fallback;
+
+  return date.toLocaleString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'Asia/Ho_Chi_Minh',
+  });
+};
+

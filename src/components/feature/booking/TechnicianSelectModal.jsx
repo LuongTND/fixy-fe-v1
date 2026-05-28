@@ -4,21 +4,13 @@ import { useCallback, useMemo, useState } from 'react';
 import { App } from 'antd';
 import { WORKER_STATUS } from '@/constants/enums';
 import { usePagedWorkerProfiles } from '@/hooks/usePagedWorkerProfiles';
+import { getInitials } from '@/utils/helpers';
 
 function formatCurrency(value) {
   if (!value) return 'Chưa cập nhật';
   return `${Number(value).toLocaleString('vi-VN')}đ`;
 }
 
-function getInitials(name = '') {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(-2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase() || 'VT';
-}
 
 export function TechnicianSelectModal({ isOpen, onClose, categoryId, selectedWorker, onSelect }) {
   const { message } = App.useApp();

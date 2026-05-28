@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button, Checkbox, Divider, Form, Input, Select, Tag } from 'antd';
 import { USER_ROLES } from '@/constants/enums';
 import { VALIDATION_RULES } from '@/constants/messages';
+import { GENDER_STRING_OPTIONS } from '@/utils/helpers';
 
 export function RegisterForm({ role, initialData = {}, loading, onSubmit, onBack }) {
   const isWorker = role === USER_ROLES.WORKER;
@@ -84,11 +85,7 @@ export function RegisterForm({ role, initialData = {}, loading, onSubmit, onBack
                 <Select
                   size="large"
                   placeholder="Chọn giới tính"
-                  options={[
-                    { value: 'male', label: 'Nam' },
-                    { value: 'female', label: 'Nữ' },
-                    { value: 'other', label: 'Khác' },
-                  ]}
+                  options={GENDER_STRING_OPTIONS}
                 />
               </Form.Item>
             </>

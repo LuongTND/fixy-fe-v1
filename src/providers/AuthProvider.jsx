@@ -55,7 +55,7 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState(null);
 
   /**
-   * Fetch full profile from GET /api/user and update state + localStorage.
+   * Fetch full profile from GET /api/user/profile and update state + localStorage.
    * @param {string} token - JWT access token
    * @param {object} meta  - { userId, role, email } from login response or localStorage
    */

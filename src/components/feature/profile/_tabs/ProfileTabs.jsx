@@ -56,6 +56,14 @@ export function ProfileTabs(props) {
           activeNotifFilter={props.activeNotifFilter}
           setActiveNotifFilter={props.setActiveNotifFilter}
           filteredNotifs={props.filteredNotifs}
+          notifLoading={props.notifLoading}
+          notifHasMore={props.notifHasMore}
+          notifPage={props.notifPage}
+          notifSettings={props.notifSettings}
+          fetchNotifications={props.fetchNotifications}
+          markRead={props.markRead}
+          markAllRead={props.markAllRead}
+          updateSettings={props.updateSettings}
         />
       )}
     </div>
