@@ -48,11 +48,59 @@ function createMarkerElement({ variant = 'worker', icon, label, imageUrl }) {
   return wrapper;
 }
 
+// Polyline decoder helper
+function decodePolyline(encodedString) {
+  let index = 0,
+      lat = 0,
+      lng = 0,
+      coordinates = [],
+      shift = 0,
+      result = 0,
+      byte = null,
+      lat_change,
+      lng_change;
+
+  const factor = Math.pow(10, 5);
+
+  while (index < encodedString.length) {
+    byte = null;
+    shift = 0;
+    result = 0;
+
+    do {
+      byte = encodedString.charCodeAt(index++) - 63;
+      result |= (byte & 0x1f) << shift;
+      shift += 5;
+    } while (byte >= 0x20);
+
+    lat_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
+    lat += lat_change;
+
+    shift = 0;
+    result = 0;
+
+    do {
+      byte = encodedString.charCodeAt(index++) - 63;
+      result |= (byte & 0x1f) << shift;
+      shift += 5;
+    } while (byte >= 0x20);
+
+    lng_change = ((result & 1) ? ~(result >> 1) : (result >> 1));
+    lng += lng_change;
+
+    coordinates.push([lng / factor, lat / factor]);
+  }
+
+  return coordinates;
+}
+
 function TrackingGoongMap({ workerLocation, destination, workerInfo }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const workerMarkerRef = useRef(null);
   const destinationMarkerRef = useRef(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [routeGeometry, setRouteGeometry] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -143,7 +191,10 @@ function TrackingGoongMap({ workerLocation, destination, workerInfo }) {
         destinationMarkerRef.current.setLngLat(destination).addTo(mapRef.current);
       }
 
-      mapRef.current.on('load', resizeMap);
+      mapRef.current.on('load', () => {
+        resizeMap();
+        setMapLoaded(true);
+      });
       resizeObserver = new ResizeObserver(resizeMap);
       resizeObserver.observe(containerRef.current);
       requestAnimationFrame(resizeMap);
@@ -154,6 +205,8 @@ function TrackingGoongMap({ workerLocation, destination, workerInfo }) {
 
     return () => {
       cancelled = true;
+      setMapLoaded(false);
+      setRouteGeometry(null);
       resizeObserver?.disconnect();
       workerMarkerRef.current?.remove();
       destinationMarkerRef.current?.remove();
@@ -191,6 +244,102 @@ function TrackingGoongMap({ workerLocation, destination, workerInfo }) {
       mapRef.current.flyTo({ center: workerLocation || destination, zoom: 15, essential: true });
     }
   }, [workerLocation?.[0], workerLocation?.[1], destination?.[0], destination?.[1]]);
+
+  // 1. Fetch route line from Goong Trip API
+  useEffect(() => {
+    if (!workerLocation || !destination) {
+      setRouteGeometry(null);
+      return;
+    }
+
+    let active = true;
+    async function getRoute() {
+      try {
+        const originStr = `${workerLocation[1]},${workerLocation[0]}`;
+        const destStr = `${destination[1]},${destination[0]}`;
+        const res = await goongApi.trip({
+          origin: originStr,
+          destination: destStr,
+          vehicle: 'bike',
+          roundtrip: 'false',
+        });
+        if (!active) return;
+        const geom = res?.trips?.[0]?.geometry || null;
+        setRouteGeometry(geom);
+      } catch (err) {
+        console.warn('Failed to load map route path:', err);
+      }
+    }
+    getRoute();
+
+    return () => {
+      active = false;
+    };
+  }, [workerLocation?.[0], workerLocation?.[1], destination?.[0], destination?.[1]]);
+
+  // 2. Draw or update the route line layer on Goong Map
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+
+    const mapInstance = mapRef.current;
+
+    if (!routeGeometry) {
+      if (mapInstance.getLayer('route-line')) {
+        mapInstance.removeLayer('route-line');
+      }
+      if (mapInstance.getSource('route')) {
+        mapInstance.removeSource('route');
+      }
+      return;
+    }
+
+    let coordinates = decodePolyline(routeGeometry);
+    if (coordinates.length > 0 && workerLocation && destination) {
+      coordinates = [
+        [workerLocation[0], workerLocation[1]],
+        ...coordinates,
+        [destination[0], destination[1]]
+      ];
+    }
+
+    if (mapInstance.getSource('route')) {
+      mapInstance.getSource('route').setData({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates,
+        },
+      });
+    } else {
+      mapInstance.addSource('route', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates,
+          },
+        },
+      });
+
+      mapInstance.addLayer({
+        id: 'route-line',
+        type: 'line',
+        source: 'route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+        },
+        paint: {
+          'line-color': '#FF8228',
+          'line-width': 5,
+          'line-opacity': 0.75,
+        },
+      });
+    }
+  }, [routeGeometry, mapLoaded, workerLocation?.[0], workerLocation?.[1], destination?.[0], destination?.[1]]);
 
   return (
     <div className="relative h-[260px] overflow-hidden bg-slate-100 md:h-[320px]">
