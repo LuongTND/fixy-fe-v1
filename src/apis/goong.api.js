@@ -21,4 +21,12 @@ export const goongApi = {
 
     return response.data;
   },
+
+  async trip(params) {
+    const response = await axios.get(API_ENDPOINTS.LOCAL_API.GOONG_TRIP, {
+      params,
+    });
+
+    return response.data;
+  },
 };

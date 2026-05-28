@@ -14,8 +14,11 @@ export const API_ENDPOINTS = {
     CHANGE_PASSWORD: '/auth/password/change',
   },
   USER: {
-    PROFILE: '/user',
+    BASE: '/user',
+    PROFILE: '/user/profile',
     UPDATE: '/user',
+    ACTIVATE: (id) => `/user/${id}/activate`,
+    DEACTIVATE: (id) => `/user/${id}/deactivate`,
     CHANGE_PASSWORD: '/user/change-password',
     UPLOAD_AVATAR: '/user/upload-avatar',
     ENABLE_2FA: '/user/enable-2fa',
@@ -123,9 +126,17 @@ export const API_ENDPOINTS = {
   WORKERS: {
     LOCATION: '/workers/location',
   },
+  NOTIFICATIONS: {
+    BASE: '/Notification',
+    UNREAD_COUNT: '/Notification/unread-count',
+    READ: (id) => `/Notification/${id}/read`,
+    READ_ALL: '/Notification/read-all',
+    SETTINGS: '/Notification/settings',
+  },
   LOCAL_API: {
     GOONG_AUTOCOMPLETE: '/api/goong/autocomplete',
     GOONG_GEOCODE: '/api/goong/geocode',
+    GOONG_TRIP: '/api/goong/trip',
     FPT_ID_RECOGNITION: '/api/fpt/identity-recognition',
   },
 };
