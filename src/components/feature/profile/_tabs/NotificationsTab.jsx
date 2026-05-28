@@ -1,15 +1,68 @@
 'use client';
 
+import { useState } from 'react';
+
 export function NotificationsTab({
   notifFilters,
   activeNotifFilter,
   setActiveNotifFilter,
   filteredNotifs,
+  notifLoading,
+  notifHasMore,
+  notifPage,
+  notifSettings,
+  fetchNotifications,
+  markRead,
+  markAllRead,
+  updateSettings,
 }) {
+  const [settingsOpen, setSettingsOpen] = useState(false);
   return (
     <>
       <div className="animate-fade-in">
                       <div className="bg-white rounded-2xl shadow-sm border border-[#E8E8E8] overflow-hidden">
+
+                        {/* Collapsible settings row */}
+                        <div className="border-b border-[#F5F5F5] bg-[#fbf9f8]/60">
+                          <button 
+                            onClick={() => setSettingsOpen(!settingsOpen)}
+                            className="w-full flex items-center justify-between px-5 py-4 text-sm font-bold text-[#4A4A4A] hover:text-[#1b1c1c] transition-colors cursor-pointer bg-transparent border-none"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="material-symbols-outlined text-[20px] text-primary">settings</span>
+                              <span>Cài đặt thông báo</span>
+                            </div>
+                            <span className="material-symbols-outlined transition-transform duration-200" style={{ transform: settingsOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                              expand_more
+                            </span>
+                          </button>
+
+                          {settingsOpen && (
+                            <div className="px-6 pb-6 pt-2 grid grid-cols-1 md:grid-cols-2 gap-5 border-t border-[#F5F5F5] animate-fade-in bg-white">
+                              {[
+                                { key: 'newBooking', label: 'Đơn hàng mới', desc: 'Nhận thông báo khi có yêu cầu công việc mới.' },
+                                { key: 'payment', label: 'Thanh toán', desc: 'Nhận thông báo về thanh toán và hoàn tiền.' },
+                                { key: 'statusUpdate', label: 'Cập nhật trạng thái', desc: 'Nhận cập nhật về tiến độ thực hiện đơn hàng.' },
+                                { key: 'promotions', label: 'Khuyến mãi', desc: 'Nhận cập nhật về ưu đãi, mã giảm giá.' },
+                                { key: 'viaPush', label: 'Thông báo đẩy (Push Notification)', desc: 'Cho phép nhận thông báo qua ứng dụng.' },
+                                { key: 'viaInApp', label: 'Thông báo trong ứng dụng', desc: 'Cho phép nhận thông báo trong bảng thông báo.' },
+                              ].map((item) => (
+                                <div key={item.key} className="flex items-center justify-between gap-4 p-3 bg-[#fbf9f8]/40 rounded-xl border border-[#F5F5F5]">
+                                  <div className="flex-1 min-w-0">
+                                    <h6 className="font-bold text-xs text-[#1b1c1c]">{item.label}</h6>
+                                    <p className="text-[10px] text-[#818A91] mt-0.5 leading-snug">{item.desc}</p>
+                                  </div>
+                                  <button 
+                                    onClick={() => updateSettings({ [item.key]: !notifSettings[item.key] })}
+                                    className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none cursor-pointer border-none ${notifSettings[item.key] ? 'bg-primary' : 'bg-[#E8E8E8]'}`}
+                                  >
+                                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${notifSettings[item.key] ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
       
                         {/* Filter pills */}
                         <div className="flex items-center gap-1 border-b border-[#F5F5F5] px-4 overflow-x-auto scrollbar-hide">
@@ -27,8 +80,8 @@ export function NotificationsTab({
                             </button>
                           ))}
                           <button
-                            className="ml-auto text-xs text-primary font-bold whitespace-nowrap px-2 hover:underline"
-                            onClick={() => {}}
+                            className="ml-auto text-xs text-primary font-bold whitespace-nowrap px-2 hover:underline bg-transparent border-none cursor-pointer"
+                            onClick={() => markAllRead()}
                           >
                             Đánh dấu tất cả đã đọc
                           </button>
@@ -44,9 +97,27 @@ export function NotificationsTab({
                           ) : filteredNotifs.map((notif) => (
                             <div
                               key={notif.id}
+                              onClick={() => {
+                                if (notif.unread) {
+                                  markRead(notif.id);
+                                }
+                                const deepLink = notif.raw?.deepLink;
+                                if (deepLink) {
+                                  const target = deepLink.startsWith('/worker/') 
+                                    ? deepLink.replace('/worker/', '/technician/') 
+                                    : deepLink;
+                                  window.location.href = target;
+                                  return;
+                                }
+                                if (notif.bookingId) {
+                                  window.location.href = notif.raw?.type?.toLowerCase().includes('worker') 
+                                    ? `/technician/bookings` 
+                                    : `/bookings`;
+                                }
+                              }}
                               className={`relative flex gap-4 p-4 md:p-5 cursor-pointer transition-colors hover:bg-[#fbf9f8] ${
                                 notif.unread ? 'bg-primary/[0.03]' : ''
-                              } ${!notif.unread ? 'opacity-80' : ''}`}
+                              } ${!notif.unread ? 'opacity-75' : ''}`}
                             >
                               {/* Icon */}
                               <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${notif.iconBg}`}>
@@ -99,11 +170,18 @@ export function NotificationsTab({
                         </div>
       
                         {/* Footer */}
-                        <div className="p-4 text-center border-t border-[#F5F5F5]">
-                          <button className="text-primary font-bold text-sm hover:underline">
-                            Xem các thông báo cũ hơn
-                          </button>
-                        </div>
+                        {notifHasMore && (
+                          <div className="p-4 text-center border-t border-[#F5F5F5] bg-[#fbf9f8]/20">
+                            <button 
+                              disabled={notifLoading}
+                              onClick={() => fetchNotifications(notifPage + 1, true)}
+                              className="text-primary font-bold text-sm hover:underline bg-transparent border-none cursor-pointer disabled:opacity-65 disabled:cursor-not-allowed flex items-center justify-center gap-2 mx-auto"
+                            >
+                              {notifLoading && <span className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />}
+                              Xem các thông báo cũ hơn
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
     </>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { authApi } from '@/apis/auth.api';
 import { userApi } from '@/apis/user.api';
@@ -10,11 +11,13 @@ import { paymentApi } from '@/apis/payment.api';
 import { vietnamProvincesApi, matchProvince, matchWard, filterAddressOption } from '@/apis/vietnam-provinces.api';
 import { PAYMENT_METHOD } from '@/constants/enums';
 import { useWalletOverview } from '@/hooks/useWalletOverview';
+import { useNotifications } from '@/hooks/useNotifications';
 import { message, Popconfirm, Select } from 'antd';
 import { ProfileTabs } from './_tabs/ProfileTabs';
 
 import {
   GENDER_LABELS,
+  formatGenderLabel,
   normalizeGender,
   formatTransactionTime,
   getTransactionAmount,
@@ -29,16 +32,17 @@ import {
  */
 export default function ProfileView() {
   const { isAuthenticated, loading: authLoading, user, refreshUser } = useAuth();
-  const [activeTab, setActiveTab] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const tab = params.get('tab');
-      if (tab && ['personal', 'wallet', 'security', 'notifications'].includes(tab)) {
-        return tab;
-      }
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState('personal');
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['personal', 'wallet', 'security', 'notifications', 'notification'].includes(tab)) {
+      const normalizedTab = tab === 'notification' ? 'notifications' : tab;
+      setActiveTab(normalizedTab);
     }
-    return 'personal';
-  });
+  }, [searchParams]);
+
   const [activeNotifFilter, setActiveNotifFilter] = useState('all'); // 'all', 'order', 'promo', 'system'
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -500,51 +504,21 @@ export default function ProfileView() {
     { id: 'system', label: 'Hệ thống' },
   ];
 
-  const notifications = [
-    {
-      id: 1, filter: 'order', unread: true,
-      icon: 'local_shipping', iconBg: 'bg-[#7CDFFE]/20', iconColor: 'text-primary',
-      title: 'Thợ đang trên đường đến', time: 'Vừa xong',
-      body: 'Kỹ thuật viên Nguyễn Văn A đang di chuyển đến nhà bạn cho đơn hàng #VT12345. Dự kiến đến sau 15 phút.',
-      actions: [
-        { label: 'Theo dõi vị trí', variant: 'primary' },
-        { label: 'Liên hệ thợ', variant: 'outline' },
-      ],
-    },
-    {
-      id: 2, filter: 'order', unread: true,
-      icon: 'schedule', iconBg: 'bg-[#DEC0B1]/20', iconColor: 'text-[#818A91]',
-      title: 'Nhắc nhở lịch hẹn', time: '1 giờ trước',
-      body: 'Lịch sửa chữa Máy lạnh của bạn sẽ bắt đầu sau 1 giờ (14:00 hôm nay). Vui lòng chuẩn bị khu vực làm việc thông thoáng.',
-      actions: [],
-    },
-    {
-      id: 3, filter: 'promo', unread: false,
-      icon: 'confirmation_number', iconBg: 'bg-primary/10', iconColor: 'text-primary',
-      title: 'Voucher giảm 20% cho bạn!', time: '3 giờ trước',
-      body: 'Chúc mừng! Bạn nhận được mã ưu đãi GIAM20 cho dịch vụ Điện nước. Hạn dùng đến 31/12/2023.',
-      voucher: 'GIAM20',
-      actions: [],
-    },
-    {
-      id: 4, filter: 'order', unread: false,
-      icon: 'check_circle', iconBg: 'bg-[#39B54A]/10', iconColor: 'text-[#39B54A]',
-      title: 'Dịch vụ hoàn tất', time: 'Hôm qua',
-      body: 'Đơn hàng #VT12300 Sửa bồn cầu đã hoàn thành. Hãy dành chút thời gian đánh giá thợ bạn nhé!',
-      actions: [{ label: 'Đánh giá ngay', variant: 'outline-primary' }],
-    },
-    {
-      id: 5, filter: 'system', unread: false,
-      icon: 'assignment_turned_in', iconBg: 'bg-[#7CDFFE]/10', iconColor: 'text-[#818A91]',
-      title: 'Xác nhận đơn hàng', time: '2 ngày trước',
-      body: 'Yêu cầu Thông tắc cống của bạn đã được hệ thống xác nhận thành công.',
-      actions: [],
-    },
-  ];
+  const {
+    notifications: liveNotifications,
+    loading: notifLoading,
+    hasMore: notifHasMore,
+    page: notifPage,
+    settings: notifSettings,
+    fetchNotifications,
+    markRead,
+    markAllRead,
+    updateSettings,
+  } = useNotifications();
 
   const filteredNotifs = activeNotifFilter === 'all'
-    ? notifications
-    : notifications.filter((n) => n.filter === activeNotifFilter);
+    ? liveNotifications
+    : liveNotifications.filter((n) => n.filter === activeNotifFilter);
 
   return (
     <div className="min-h-screen bg-[#fbf9f8] py-0 font-sans">
@@ -571,10 +545,10 @@ export default function ProfileView() {
                 type="button"
                 onClick={handleAvatarClick}
                 disabled={avatarUploading}
-                className="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full shadow-lg hover:scale-105 transition-transform active:scale-95 flex items-center justify-center disabled:cursor-not-allowed disabled:opacity-70"
+                className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-transform hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
                 aria-label="Cập nhật ảnh đại diện"
               >
-                <span className="material-symbols-outlined text-[16px]">{avatarUploading ? 'hourglass_top' : 'edit'}</span>
+                <span className="material-symbols-outlined text-[17px] leading-none">{avatarUploading ? 'hourglass_top' : 'edit'}</span>
               </button>
             </div>
 
@@ -634,7 +608,7 @@ export default function ProfileView() {
             formData={formData}
             setFormData={setFormData}
             genderLabels={GENDER_LABELS}
-            getGenderLabel={(value) => GENDER_LABELS[normalizeGender(value)] || 'Chưa cập nhật'}
+            getGenderLabel={formatGenderLabel}
             addresses={addresses}
             handleOpenAddressModal={handleOpenAddressModal}
             walletLoading={walletLoading}
@@ -654,6 +628,14 @@ export default function ProfileView() {
             activeNotifFilter={activeNotifFilter}
             setActiveNotifFilter={setActiveNotifFilter}
             filteredNotifs={filteredNotifs}
+            notifLoading={notifLoading}
+            notifHasMore={notifHasMore}
+            notifPage={notifPage}
+            notifSettings={notifSettings}
+            fetchNotifications={fetchNotifications}
+            markRead={markRead}
+            markAllRead={markAllRead}
+            updateSettings={updateSettings}
           />
 
           {/* Sidebar Column */}
