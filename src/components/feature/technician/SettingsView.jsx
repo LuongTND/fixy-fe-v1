@@ -1,17 +1,52 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { notificationApi } from '@/apis/notification.api';
 
 export function SettingsView() {
-  const [notifications, setNotifications] = useState({
-    newJobs: true,
-    payments: true,
-    promotions: false,
+  const [settings, setSettings] = useState({
+    newBooking: true,
+    payment: true,
+    statusUpdate: true,
+    promotions: true,
+    viaPush: true,
+    viaInApp: true,
   });
 
   const [tfa, setTfa] = useState(false);
 
-  const toggleNotification = (key) => {
-    setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await notificationApi.getSettings();
+        const data = response?.data || response;
+        if (data && typeof data === 'object') {
+          setSettings((prev) => ({
+            ...prev,
+            ...data,
+          }));
+        }
+      } catch (err) {
+        console.error('Failed to load settings in SettingsView:', err);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  const toggleNotification = async (key) => {
+    try {
+      const updatedValue = !settings[key];
+      const nextSettings = { ...settings, [key]: updatedValue };
+      setSettings(nextSettings);
+      await notificationApi.updateSettings(nextSettings);
+    } catch (err) {
+      console.error('Failed to update settings in SettingsView:', err);
+      // Revert
+      try {
+        const response = await notificationApi.getSettings();
+        const data = response?.data || response;
+        if (data) setSettings(data);
+      } catch {}
+    }
   };
 
   return (
@@ -37,10 +72,10 @@ export function SettingsView() {
               <p className="font-caption text-caption text-text-secondary">Nhận thông báo ngay khi có yêu cầu công việc mới phù hợp.</p>
             </div>
             <button 
-              onClick={() => toggleNotification('newJobs')}
-              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none ${notifications.newJobs ? 'bg-primary-container' : 'bg-surface-variant'}`}
+              onClick={() => toggleNotification('newBooking')}
+              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none cursor-pointer border-none ${settings.newBooking ? 'bg-primary-container' : 'bg-surface-variant'}`}
             >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notifications.newJobs ? 'translate-x-6' : 'translate-x-1'}`} />
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.newBooking ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
           </div>
           <hr className="border-border-light" />
@@ -51,10 +86,10 @@ export function SettingsView() {
               <p className="font-caption text-caption text-text-secondary">Cảnh báo về các khoản thanh toán thành công và chuyển ví.</p>
             </div>
             <button 
-              onClick={() => toggleNotification('payments')}
-              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none ${notifications.payments ? 'bg-primary-container' : 'bg-surface-variant'}`}
+              onClick={() => toggleNotification('payment')}
+              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none cursor-pointer border-none ${settings.payment ? 'bg-primary-container' : 'bg-surface-variant'}`}
             >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notifications.payments ? 'translate-x-6' : 'translate-x-1'}`} />
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.payment ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
           </div>
           <hr className="border-border-light" />
@@ -66,9 +101,9 @@ export function SettingsView() {
             </div>
             <button 
               onClick={() => toggleNotification('promotions')}
-              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none ${notifications.promotions ? 'bg-primary-container' : 'bg-surface-variant'}`}
+              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none cursor-pointer border-none ${settings.promotions ? 'bg-primary-container' : 'bg-surface-variant'}`}
             >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notifications.promotions ? 'translate-x-6' : 'translate-x-1'}`} />
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings.promotions ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
           </div>
         </div>

@@ -3,6 +3,7 @@
 import '@ant-design/v5-patch-for-react-19';
 import { AntdProvider } from '@/providers/AntdProvider';
 import { AuthProvider } from '@/providers/AuthProvider';
+import { NotificationProvider } from '@/providers/NotificationProvider';
 
 /**
  * Root Layout Client Wrapper
@@ -11,7 +12,9 @@ import { AuthProvider } from '@/providers/AuthProvider';
 export function RootLayoutClient({ children }) {
   return (
     <AuthProvider>
-      <AntdProvider>{children}</AntdProvider>
+      <NotificationProvider>
+        <AntdProvider>{children}</AntdProvider>
+      </NotificationProvider>
     </AuthProvider>
   );
 }
