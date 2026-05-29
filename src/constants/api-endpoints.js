@@ -91,6 +91,7 @@ export const API_ENDPOINTS = {
     STATUS: (id) => `/vouchers/${id}/status`,
     APPLY: '/vouchers/apply',
     ELIGIBLE: '/vouchers/eligible',
+    PREVIEW: '/vouchers/preview',
   },
   VOUCHER_CAMPAIGNS: {
     BASE: '/admin/voucher-campaigns',
@@ -132,6 +133,18 @@ export const API_ENDPOINTS = {
     READ: (id) => `/Notification/${id}/read`,
     READ_ALL: '/Notification/read-all',
     SETTINGS: '/Notification/settings',
+  },
+  SUPPORT_TICKETS: {
+    BASE: '/support/tickets',
+    DETAIL: (id) => `/support/tickets/${id}`,
+    MESSAGES: (id) => `/support/tickets/${id}/messages`,
+  },
+  ADMIN_SUPPORT_TICKETS: {
+    BASE: '/admin/support/tickets',
+    DETAIL: (id) => `/admin/support/tickets/${id}`,
+    ASSIGN: (id) => `/admin/support/tickets/${id}/assign`,
+    STATUS: (id) => `/admin/support/tickets/${id}/status`,
+    MESSAGES: (id) => `/admin/support/tickets/${id}/messages`,
   },
   LOCAL_API: {
     GOONG_AUTOCOMPLETE: '/api/goong/autocomplete',

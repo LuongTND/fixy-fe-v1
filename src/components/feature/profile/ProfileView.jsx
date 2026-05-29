@@ -9,10 +9,11 @@ import { addressApi } from '@/apis/address.api';
 import { goongApi } from '@/apis/goong.api';
 import { paymentApi } from '@/apis/payment.api';
 import { vietnamProvincesApi, matchProvince, matchWard, filterAddressOption } from '@/apis/vietnam-provinces.api';
-import { PAYMENT_METHOD } from '@/constants/enums';
+import { PAYMENT_METHOD, SUPPORT_CATEGORY, SUPPORT_PRIORITY } from '@/constants/enums';
 import { useWalletOverview } from '@/hooks/useWalletOverview';
 import { useNotifications } from '@/hooks/useNotifications';
 import { message, Popconfirm, Select } from 'antd';
+import { SupportTicketModal } from '@/components/common/SupportTicketModal';
 import { ProfileTabs } from './_tabs/ProfileTabs';
 
 import {
@@ -53,6 +54,7 @@ export default function ProfileView() {
   const [topupMethod, setTopupMethod] = useState(PAYMENT_METHOD.VNPAY);
   const [topupLoading, setTopupLoading] = useState(false);
   const [isTopupModalOpen, setIsTopupModalOpen] = useState(false);
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [messageApi, contextHolder] = message.useMessage();
@@ -663,11 +665,18 @@ export default function ProfileView() {
               <h3 className="font-black text-[#1b1c1c] mb-4 px-1 text-sm">Hỗ trợ khách hàng</h3>
               <div className="space-y-1">
                 {[
-                  { icon: 'help', label: 'Trung tâm trợ giúp' },
+                  { icon: 'help', label: 'Trung tâm trợ giúp', action: 'support' },
                   { icon: 'description', label: 'Điều khoản & Dịch vụ' },
                   { icon: 'shield', label: 'Chính sách bảo mật' }
                 ].map((item) => (
-                  <button key={item.label} className="w-full flex items-center justify-between p-3 hover:bg-[#F5F5F5] rounded-xl transition-all group">
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={() => {
+                      if (item.action === 'support') setIsSupportModalOpen(true);
+                    }}
+                    className="w-full flex items-center justify-between p-3 hover:bg-[#F5F5F5] rounded-xl transition-all group"
+                  >
                     <div className="flex items-center gap-3">
                       <span className="material-symbols-outlined text-[#818A91] group-hover:text-primary transition-colors text-[18px]">{item.icon}</span>
                       <span className="text-[#4A4A4A] font-bold text-xs group-hover:text-[#1b1c1c] transition-colors">{item.label}</span>
@@ -979,6 +988,16 @@ export default function ProfileView() {
           </div>
         </div>
       )}
+
+      <SupportTicketModal
+        open={isSupportModalOpen}
+        onClose={() => setIsSupportModalOpen(false)}
+        defaultCategory={SUPPORT_CATEGORY.OTHER}
+        defaultPriority={SUPPORT_PRIORITY.NORMAL}
+        defaultSubject="Cần hỗ trợ tài khoản khách hàng"
+        defaultDescription="Tôi cần hỗ trợ về tài khoản, hồ sơ hoặc quá trình sử dụng dịch vụ."
+        contextLabel="Bạn có thể gửi câu hỏi chung chưa gắn với booking cụ thể."
+      />
 
       <style jsx global>{`
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }

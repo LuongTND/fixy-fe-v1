@@ -5,6 +5,8 @@ import { App, Button, Empty, Input, InputNumber, Modal, Select, Table, Tag } fro
 import { payoutAccountApi, payoutApi } from '@/apis/payout.api';
 import { walletApi } from '@/apis/wallet.api';
 import { vietqrApi } from '@/apis/vietqr.api';
+import { SupportTicketModal } from '@/components/common/SupportTicketModal';
+import { SUPPORT_CATEGORY, SUPPORT_PRIORITY } from '@/constants/enums';
 import { formatBookingPrice as formatCurrency } from '@/utils/format';
 
 const normalizePaged = (payload) => ({
@@ -42,6 +44,7 @@ export function WalletView() {
   const [loading, setLoading] = useState(true);
   const [accountModalOpen, setAccountModalOpen] = useState(false);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [banks, setBanks] = useState([]);
   const [banksLoading, setBanksLoading] = useState(false);
@@ -267,6 +270,13 @@ export function WalletView() {
           <p className="text-sm text-text-secondary">Quản lý thu nhập, tài khoản nhận tiền và yêu cầu rút tiền.</p>
         </div>
         <div className="flex gap-sm">
+          <Button
+            onClick={() => setSupportOpen(true)}
+            className="!inline-flex !items-center !justify-center !gap-2 [&_.ant-btn-icon]:!inline-flex [&_.ant-btn-icon]:!items-center [&_.ant-btn-icon]:!leading-none"
+            icon={<span className="material-symbols-outlined !text-[18px] !leading-none">support_agent</span>}
+          >
+            Hỗ trợ thanh toán
+          </Button>
           <Button
             onClick={() => setAccountModalOpen(true)}
             className="!inline-flex !items-center !justify-center !gap-2 [&_.ant-btn-icon]:!inline-flex [&_.ant-btn-icon]:!items-center [&_.ant-btn-icon]:!leading-none"
@@ -546,6 +556,16 @@ export function WalletView() {
           </Button>
         </form>
       </Modal>
+
+      <SupportTicketModal
+        open={supportOpen}
+        onClose={() => setSupportOpen(false)}
+        defaultCategory={SUPPORT_CATEGORY.PAYMENT}
+        defaultPriority={SUPPORT_PRIORITY.NORMAL}
+        defaultSubject="Cần hỗ trợ ví và rút tiền"
+        defaultDescription="Tôi cần hỗ trợ về ví, tài khoản nhận tiền hoặc yêu cầu rút tiền."
+        contextLabel="Dành cho vấn đề số dư, rút tiền, tài khoản ngân hàng và đối soát."
+      />
     </main>
   );
 }

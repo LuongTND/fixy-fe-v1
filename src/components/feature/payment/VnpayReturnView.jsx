@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { paymentApi } from '@/apis/payment.api';
 import { BackNavigationButton } from '@/components/common/BackNavigationButton';
+import { SupportTicketModal } from '@/components/common/SupportTicketModal';
+import { SUPPORT_CATEGORY, SUPPORT_PRIORITY } from '@/constants/enums';
 import { VNPAY_RESPONSE_MESSAGES } from '@/constants/payment';
 import { formatVnpayAmount } from '@/utils/format';
 
@@ -51,6 +53,7 @@ export function VnpayReturnView() {
   const searchParams = useSearchParams();
   const [isVerifying, setIsVerifying] = useState(true);
   const [verificationError, setVerificationError] = useState(null);
+  const [supportOpen, setSupportOpen] = useState(false);
 
   const responseCode = searchParams.get('vnp_ResponseCode') || '99';
   const transactionStatus = searchParams.get('vnp_TransactionStatus');
@@ -137,6 +140,16 @@ export function VnpayReturnView() {
             </div>
 
             <div className="flex w-full flex-col gap-3">
+              {!isSuccess && (
+                <button
+                  type="button"
+                  onClick={() => setSupportOpen(true)}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-[#EA4335] bg-white px-6 py-3.5 text-center text-sm font-bold text-[#EA4335] transition-all hover:bg-[#FFF4F3] active:scale-95"
+                >
+                  <span className="material-symbols-outlined text-[18px] leading-none">support_agent</span>
+                  Liên hệ hỗ trợ thanh toán
+                </button>
+              )}
               <BackNavigationButton
                 className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-[#FF8228] bg-[#FF8228] px-6 py-3.5 text-center text-sm font-bold text-white shadow-sm transition-all hover:bg-[#F97316] active:scale-95"
               >
@@ -168,6 +181,15 @@ export function VnpayReturnView() {
       </main>
 
       <MobileBottomNav isSuccess={isSuccess} />
+      <SupportTicketModal
+        open={supportOpen}
+        onClose={() => setSupportOpen(false)}
+        defaultCategory={SUPPORT_CATEGORY.PAYMENT}
+        defaultPriority={SUPPORT_PRIORITY.HIGH}
+        defaultSubject="Cần hỗ trợ giao dịch VNPAY"
+        defaultDescription={`Tôi cần hỗ trợ giao dịch VNPAY${txnRef ? `, mã tham chiếu ${txnRef}` : ''}${transactionNo ? `, mã giao dịch ${transactionNo}` : ''}.`}
+        contextLabel="Dành cho giao dịch VNPAY bị lỗi, bị trừ tiền hoặc chưa ghi nhận."
+      />
     </div>
   );
 }

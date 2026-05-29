@@ -1,6 +1,11 @@
 'use client';
 
+import { useState } from 'react';
+import { SupportTicketModal } from '@/components/common/SupportTicketModal';
+import { SUPPORT_CATEGORY, SUPPORT_PRIORITY } from '@/constants/enums';
+
 export function StatusSuspended({ profile }) {
+  const [supportOpen, setSupportOpen] = useState(false);
   const services = profile?.services || [];
 
   return (
@@ -60,7 +65,11 @@ export function StatusSuspended({ profile }) {
                   Cập nhật lại thông tin nếu được yêu cầu.
                 </li>
               </ul>
-              <button type="button" className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-[#FF8228] px-5 py-3 font-bold text-white shadow-sm transition-all hover:brightness-110 active:scale-95">
+              <button
+                type="button"
+                onClick={() => setSupportOpen(true)}
+                className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-[#FF8228] px-5 py-3 font-bold text-white shadow-sm transition-all hover:brightness-110 active:scale-95"
+              >
                 <span className="material-symbols-outlined">support_agent</span>
                 Liên hệ hỗ trợ
               </button>
@@ -68,6 +77,16 @@ export function StatusSuspended({ profile }) {
           </aside>
         </div>
       </section>
+
+      <SupportTicketModal
+        open={supportOpen}
+        onClose={() => setSupportOpen(false)}
+        defaultCategory={SUPPORT_CATEGORY.TECHNICAL}
+        defaultPriority={SUPPORT_PRIORITY.HIGH}
+        defaultSubject="Cần hỗ trợ tài khoản kỹ thuật viên bị tạm ngưng"
+        defaultDescription="Hồ sơ kỹ thuật viên của tôi đang bị tạm ngưng. Tôi cần hỗ trợ xác nhận nguyên nhân và hướng xử lý."
+        contextLabel="Dành cho trạng thái hồ sơ, hạn chế nhận việc hoặc xác minh kỹ thuật viên."
+      />
     </div>
   );
 }

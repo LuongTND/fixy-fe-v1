@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { App, Image as AntImage, Modal } from 'antd';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { SupportTicketModal } from '@/components/common/SupportTicketModal';
 import { bookingApi } from '@/apis/booking.api';
 import { goongApi } from '@/apis/goong.api';
 import { paymentApi } from '@/apis/payment.api';
@@ -12,7 +13,7 @@ import { reviewApi } from '@/apis/review.api';
 import { voucherApi } from '@/apis/voucher.api';
 import { useAuth } from '@/hooks/useAuth';
 import { useChatHub } from '@/hooks/useChatHub';
-import { MEDIA_CATEGORY } from '@/constants/enums';
+import { MEDIA_CATEGORY, SUPPORT_CATEGORY, SUPPORT_PRIORITY } from '@/constants/enums';
 import { formatBookingPrice as formatCurrency, formatBookingDate as formatDate, parseBackendDate } from '@/utils/format';
 import { getBookingStatusKey, STATUS_CONFIGS } from '@/utils/booking';
 
@@ -387,6 +388,14 @@ export function BookingDetailsView({ bookingId }) {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatText, setChatText] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [supportTicket, setSupportTicket] = useState({
+    open: false,
+    category: SUPPORT_CATEGORY.DISPUTE,
+    priority: SUPPORT_PRIORITY.HIGH,
+    subject: '',
+    description: '',
+    contextLabel: '',
+  });
   const messagesEndRef = useRef(null);
   const [token, setToken] = useState(null);
 
@@ -420,6 +429,16 @@ export function BookingDetailsView({ bookingId }) {
   const isChatActive = booking && ['confirmed', 'traveling', 'arrived', 'inprogress', 'pendingpayment'].includes(statusKey);
   const shouldConnectChatHub = chatOpen && isChatActive;
   const { isConnected } = useChatHub(bookingId, token, handleIncomingMessage, shouldConnectChatHub);
+
+  const openSupportTicket = ({
+    category = SUPPORT_CATEGORY.DISPUTE,
+    priority = SUPPORT_PRIORITY.HIGH,
+    subject = 'Báo cáo vấn đề đặt lịch',
+    description = '',
+    contextLabel = 'Ticket sẽ được gắn với booking hiện tại để đội hỗ trợ kiểm tra nhanh hơn.',
+  } = {}) => {
+    setSupportTicket({ open: true, category, priority, subject, description, contextLabel });
+  };
 
   useEffect(() => {
     reviewImagesRef.current = reviewImages;
@@ -931,9 +950,19 @@ export function BookingDetailsView({ bookingId }) {
             <p className="text-xs font-semibold text-[#818A91] mt-0.5">Mã đặt lịch: #{booking.code || booking.id.substring(0, 8).toUpperCase()}</p>
           </div>
         </div>
-        <div className={`flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-wider ${statusMeta.color} shadow-sm w-fit`}>
-          <span className="material-symbols-outlined text-[16px]">{statusMeta.icon}</span>
-          <span>{statusMeta.label}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => openSupportTicket()}
+            className="inline-flex items-center gap-2 rounded-full border border-[#FF8228]/40 bg-white px-4 py-2 text-xs font-bold text-[#FF8228] shadow-sm transition-all hover:bg-[#FFF4ED]"
+          >
+            <span className="material-symbols-outlined text-[16px]">report</span>
+            Báo cáo vấn đề
+          </button>
+          <div className={`flex w-fit items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-wider ${statusMeta.color} shadow-sm`}>
+            <span className="material-symbols-outlined text-[16px]">{statusMeta.icon}</span>
+            <span>{statusMeta.label}</span>
+          </div>
         </div>
       </div>
 
@@ -1108,6 +1137,21 @@ export function BookingDetailsView({ bookingId }) {
                 <h3 className="text-base font-bold">Thanh toán đặt lịch</h3>
               </div>
               <p className="text-xs text-[#818A91] mb-5">Vui lòng chọn phương thức thanh toán bên dưới để xác nhận công việc này.</p>
+
+              <button
+                type="button"
+                onClick={() => openSupportTicket({
+                  category: SUPPORT_CATEGORY.PAYMENT,
+                  priority: SUPPORT_PRIORITY.HIGH,
+                  subject: 'Cần hỗ trợ thanh toán booking',
+                  description: `Tôi cần hỗ trợ thanh toán cho booking #${String(bookingId).slice(0, 8).toUpperCase()}.`,
+                  contextLabel: 'Dành cho lỗi ví, voucher hoặc cổng thanh toán của booking này.',
+                })}
+                className="mb-5 inline-flex items-center gap-2 rounded-xl border border-[#FF8228]/30 bg-[#FFF8F5] px-4 py-2 text-xs font-bold text-[#FF8228] transition-all hover:bg-[#FFF0E6]"
+              >
+                <span className="material-symbols-outlined text-[16px]">support_agent</span>
+                Báo lỗi thanh toán
+              </button>
 
               {/* Voucher input */}
               <div className="mb-5">
@@ -1629,6 +1673,17 @@ export function BookingDetailsView({ bookingId }) {
           </div>
         </>
       )}
+
+      <SupportTicketModal
+        open={supportTicket.open}
+        onClose={() => setSupportTicket((current) => ({ ...current, open: false }))}
+        bookingId={bookingId}
+        defaultCategory={supportTicket.category}
+        defaultPriority={supportTicket.priority}
+        defaultSubject={supportTicket.subject}
+        defaultDescription={supportTicket.description}
+        contextLabel={supportTicket.contextLabel}
+      />
 
       {/* Voucher Selection Modal */}
       <Modal

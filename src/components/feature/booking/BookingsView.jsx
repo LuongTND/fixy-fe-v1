@@ -3,6 +3,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import { App } from 'antd';
 import Link from 'next/link';
+import { SupportTicketModal } from '@/components/common/SupportTicketModal';
+import { SUPPORT_CATEGORY, SUPPORT_PRIORITY } from '@/constants/enums';
 import { useCustomerBookings } from '@/hooks/useCustomerBookings';
 import { normalizeStatus, getBookingTitle, formatBookingPrice, formatBookingDate, getBookingStatusKey, STATUS_CONFIGS } from '@/utils';
 
@@ -16,6 +18,7 @@ const FILTERS = [
 export function BookingsView() {
   const { message } = App.useApp();
   const [filter, setFilter] = useState('all');
+  const [supportOpen, setSupportOpen] = useState(false);
   const handleLoadError = useCallback((error) => {
     message.error(error.response?.data?.message || error.message || 'KhÃ´ng thá»ƒ táº£i danh sÃ¡ch Ä‘áº·t lá»‹ch.');
   }, [message]);
@@ -189,16 +192,29 @@ export function BookingsView() {
             <p className="mt-1 text-sm opacity-80">Đã hoàn thành {completedCount} dịch vụ.</p>
           </div>
 
-          <div className="rounded-2xl border border-[#dec0b1]/30 bg-[#eae8e7] p-6">
+          <div className="rounded-2xl border border-[#dec0b1]/30 bg-white p-6 shadow-sm">
             <h4 className="mb-1 font-bold text-[#1b1c1c]">Cần trợ giúp?</h4>
             <p className="mb-4 text-sm text-[#4A4A4A]">Đội ngũ hỗ trợ luôn sẵn sàng giúp bạn kiểm tra tiến độ hoặc xử lý vấn đề phát sinh.</p>
-            <Link href="#" className="flex items-center gap-1 font-bold text-[#FF8228] hover:underline">
+            <button
+              type="button"
+              onClick={() => setSupportOpen(true)}
+              className="group inline-flex items-center gap-2 border-0 bg-transparent p-0 font-bold text-[#FF8228] transition-colors hover:text-[#E86F18]"
+            >
               <span>Trung tâm hỗ trợ</span>
-              <span className="material-symbols-outlined text-sm">arrow_forward</span>
-            </Link>
+              <span className="material-symbols-outlined text-[20px] leading-none transition-transform group-hover:translate-x-1">arrow_forward</span>
+            </button>
           </div>
         </div>
       </div>
+
+      <SupportTicketModal
+        open={supportOpen}
+        onClose={() => setSupportOpen(false)}
+        defaultCategory={SUPPORT_CATEGORY.OTHER}
+        defaultPriority={SUPPORT_PRIORITY.NORMAL}
+        defaultSubject="Cần hỗ trợ về đặt lịch"
+        contextLabel="Bạn có thể gửi câu hỏi chung hoặc vấn đề chưa gắn với booking cụ thể."
+      />
     </div>
   );
 }

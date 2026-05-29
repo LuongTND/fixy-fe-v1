@@ -1,9 +1,11 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { BackNavigationButton } from '@/components/common/BackNavigationButton';
+import { SupportTicketModal } from '@/components/common/SupportTicketModal';
+import { SUPPORT_CATEGORY, SUPPORT_PRIORITY } from '@/constants/enums';
 
 function DetailRow({ label, value }) {
   if (!value) return null;
@@ -18,6 +20,7 @@ function DetailRow({ label, value }) {
 
 export function PayosReturnView() {
   const searchParams = useSearchParams();
+  const [supportOpen, setSupportOpen] = useState(false);
 
   const params = useMemo(() => Object.fromEntries(searchParams.entries()), [searchParams]);
   const isCancelled = params.cancel === 'true';
@@ -59,6 +62,16 @@ export function PayosReturnView() {
             </div>
 
             <div className="flex w-full flex-col gap-3">
+              {!isSuccess && (
+                <button
+                  type="button"
+                  onClick={() => setSupportOpen(true)}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-[#EA4335] bg-white px-6 py-3.5 text-center text-sm font-bold text-[#EA4335] transition-all hover:bg-[#FFF4F3] active:scale-95"
+                >
+                  <span className="material-symbols-outlined text-[18px] leading-none">support_agent</span>
+                  Liên hệ hỗ trợ thanh toán
+                </button>
+              )}
               <BackNavigationButton
                 className="inline-flex w-full items-center justify-center gap-2 rounded-full border-2 border-[#FF8228] bg-[#FF8228] px-6 py-3.5 text-center text-sm font-bold text-white shadow-sm transition-all hover:bg-[#F97316] active:scale-95"
               >
@@ -80,6 +93,15 @@ export function PayosReturnView() {
           </div>
         </section>
       </main>
+      <SupportTicketModal
+        open={supportOpen}
+        onClose={() => setSupportOpen(false)}
+        defaultCategory={SUPPORT_CATEGORY.PAYMENT}
+        defaultPriority={SUPPORT_PRIORITY.HIGH}
+        defaultSubject="Cần hỗ trợ giao dịch PayOS"
+        defaultDescription={`Tôi cần hỗ trợ giao dịch PayOS${params.orderCode ? `, mã đơn ${params.orderCode}` : ''}${params.id ? `, mã giao dịch ${params.id}` : ''}.`}
+        contextLabel="Dành cho giao dịch PayOS bị hủy, lỗi hoặc chưa ghi nhận."
+      />
     </div>
   );
 }
