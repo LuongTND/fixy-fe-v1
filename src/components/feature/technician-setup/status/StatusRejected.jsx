@@ -1,9 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Image as AntImage } from 'antd';
+import { SupportTicketModal } from '@/components/common/SupportTicketModal';
+import { SUPPORT_CATEGORY, SUPPORT_PRIORITY } from '@/constants/enums';
 
 export function StatusRejected({ profile, onStartEdit }) {
+  const [supportOpen, setSupportOpen] = useState(false);
   const idImages = profile?.identificationImages || profile?.identificateImages || [];
   const services = profile?.services || [];
   const reason = profile?.rejectionReason || profile?.rejectReason || profile?.reason;
@@ -82,7 +86,11 @@ export function StatusRejected({ profile, onStartEdit }) {
                 Chỉnh sửa và gửi lại
               </Link>
             )}
-            <button type="button" className="flex items-center justify-center gap-2 rounded-full border-2 border-primary px-5 py-3 font-bold text-primary transition-all hover:bg-primary/5 active:scale-95">
+            <button
+              type="button"
+              onClick={() => setSupportOpen(true)}
+              className="flex items-center justify-center gap-2 rounded-full border-2 border-primary px-5 py-3 font-bold text-primary transition-all hover:bg-primary/5 active:scale-95"
+            >
               <span className="material-symbols-outlined">support_agent</span>
               Liên hệ hỗ trợ
             </button>
@@ -93,6 +101,16 @@ export function StatusRejected({ profile, onStartEdit }) {
           </div>
         </aside>
       </div>
+
+      <SupportTicketModal
+        open={supportOpen}
+        onClose={() => setSupportOpen(false)}
+        defaultCategory={SUPPORT_CATEGORY.TECHNICAL}
+        defaultPriority={SUPPORT_PRIORITY.NORMAL}
+        defaultSubject="Cần hỗ trợ hồ sơ kỹ thuật viên"
+        defaultDescription={`Hồ sơ kỹ thuật viên của tôi bị từ chối${reason ? ` với lý do: ${reason}` : ''}. Tôi cần hỗ trợ kiểm tra và hướng dẫn cập nhật.`}
+        contextLabel="Dành cho lỗi hồ sơ, CCCD, chứng chỉ hoặc quá trình xét duyệt."
+      />
     </div>
   );
 }

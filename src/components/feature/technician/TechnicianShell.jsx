@@ -132,16 +132,9 @@ export function TechnicianShell({ children }) {
                 <span className="material-symbols-outlined">{item.icon}</span>
                 <span className="technician-menu-label">{item.label}</span>
                 {item.badge > 0 && (
-                  <Badge
-                    count={item.badge}
-                    color="#EA4335"
-                    style={{
-                      position: "absolute",
-                      right: "24px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                    }}
-                  />
+                  <span className="absolute right-6 top-1/2 flex h-6 min-w-6 -translate-y-1/2 items-center justify-center rounded-full bg-error px-1.5 text-xs font-bold leading-none text-white">
+                    {item.badge > 99 ? "99+" : item.badge}
+                  </span>
                 )}
               </Link>
             );

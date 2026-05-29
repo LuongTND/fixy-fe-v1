@@ -135,3 +135,29 @@ export const VOUCHER_AUTO_TRIGGER_EVENT = {
   FIRST_BOOKING: 2,
   REACTIVATION: 3,
 };
+
+export const SUPPORT_CATEGORY = {
+  DISPUTE: 0,
+  PAYMENT: 1,
+  TECHNICAL: 2,
+  OTHER: 3,
+};
+
+export const SUPPORT_PRIORITY = {
+  LOW: 0,
+  NORMAL: 1,
+  HIGH: 2,
+  URGENT: 3,
+};
+
+export const SUPPORT_REPORTER_TYPE = {
+  CUSTOMER: 0,
+  WORKER: 1,
+};
+
+export const SUPPORT_STATUS = {
+  OPEN: 0,
+  IN_PROGRESS: 1,
+  RESOLVED: 2,
+  CLOSED: 3,
+};

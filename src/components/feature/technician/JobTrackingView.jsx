@@ -5,9 +5,10 @@ import { App, Image as AntImage } from 'antd';
 import { bookingApi } from '@/apis/booking.api';
 import { mediaApi } from '@/apis/media.api';
 import { reviewApi } from '@/apis/review.api';
+import { SupportTicketModal } from '@/components/common/SupportTicketModal';
 import { useAuth } from '@/hooks/useAuth';
 import { useChatHub } from '@/hooks/useChatHub';
-import { MEDIA_CATEGORY, MEDIA_OWNER_TYPE } from '@/constants/enums';
+import { MEDIA_CATEGORY, MEDIA_OWNER_TYPE, SUPPORT_CATEGORY, SUPPORT_PRIORITY } from '@/constants/enums';
 import { formatBookingPrice as formatCurrency, formatBookingDate as formatDate, parseBackendDate } from '@/utils/format';
 import { getBookingStatusKey } from '@/utils/booking';
 
@@ -73,6 +74,14 @@ export function JobTrackingView({ bookingId }) {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatText, setChatText] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [supportTicket, setSupportTicket] = useState({
+    open: false,
+    category: SUPPORT_CATEGORY.DISPUTE,
+    priority: SUPPORT_PRIORITY.HIGH,
+    subject: '',
+    description: '',
+    contextLabel: '',
+  });
   const messagesEndRef = useRef(null);
   const lastLocationUpdateRef = useRef({ at: 0, coords: null });
   const [token, setToken] = useState(null);
@@ -107,6 +116,16 @@ export function JobTrackingView({ bookingId }) {
   const isChatActive = booking && ['confirmed', 'traveling', 'arrived', 'inprogress', 'pendingpayment'].includes(statusKey);
   const shouldConnectChatHub = chatOpen && isChatActive;
   const { isConnected } = useChatHub(bookingId, token, handleIncomingMessage, shouldConnectChatHub);
+
+  const openSupportTicket = ({
+    category = SUPPORT_CATEGORY.DISPUTE,
+    priority = SUPPORT_PRIORITY.HIGH,
+    subject = 'Báo cáo sự cố công việc',
+    description = '',
+    contextLabel = 'Ticket sẽ được gắn với công việc hiện tại để đội hỗ trợ kiểm tra nhanh hơn.',
+  } = {}) => {
+    setSupportTicket({ open: true, category, priority, subject, description, contextLabel });
+  };
 
   // Fetch Booking Detail
   const fetchBooking = async (showLoading = false) => {
@@ -509,7 +528,15 @@ export function JobTrackingView({ bookingId }) {
             Thời gian hẹn: {formatDate(booking.scheduledAt || booking.createdDate)}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => openSupportTicket()}
+            className="inline-flex items-center gap-2 rounded-full border border-[#FF8228]/40 bg-white px-4 py-2 text-xs font-bold text-[#FF8228] shadow-sm transition-all hover:bg-[#FFF4ED]"
+          >
+            <span className="material-symbols-outlined text-[16px]">report</span>
+            Báo cáo sự cố
+          </button>
           <span className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider shadow-sm border ${
             statusKey === 'pending' ? 'text-amber-500 bg-amber-50 border-amber-200' :
             statusKey === 'matching' ? 'text-orange-500 bg-orange-50 border-orange-200' :
@@ -657,6 +684,20 @@ export function JobTrackingView({ bookingId }) {
               <p className="text-xs text-[#818A91] mt-1 max-w-[400px] mx-auto leading-relaxed">
                 Khách hàng đã chấp nhận điều kiện dịch vụ và đang tiến hành thanh toán. Hệ thống sẽ tự động thông báo khi đơn được xác nhận.
               </p>
+              <button
+                type="button"
+                onClick={() => openSupportTicket({
+                  category: SUPPORT_CATEGORY.PAYMENT,
+                  priority: SUPPORT_PRIORITY.HIGH,
+                  subject: 'Cần hỗ trợ thanh toán công việc',
+                  description: `Tôi cần hỗ trợ trạng thái thanh toán cho công việc #${String(bookingId).slice(0, 8).toUpperCase()}.`,
+                  contextLabel: 'Dành cho lỗi thanh toán, đối soát hoặc chưa ghi nhận tiền của công việc này.',
+                })}
+                className="mt-5 inline-flex items-center gap-2 rounded-xl border border-[#FF8228]/30 bg-[#FFF8F5] px-4 py-2 text-xs font-bold text-[#FF8228] transition-all hover:bg-[#FFF0E6]"
+              >
+                <span className="material-symbols-outlined text-[16px]">support_agent</span>
+                Báo lỗi thanh toán
+              </button>
             </section>
           )}
 
@@ -1087,6 +1128,17 @@ export function JobTrackingView({ bookingId }) {
           </div>
         </>
       )}
+
+      <SupportTicketModal
+        open={supportTicket.open}
+        onClose={() => setSupportTicket((current) => ({ ...current, open: false }))}
+        bookingId={bookingId}
+        defaultCategory={supportTicket.category}
+        defaultPriority={supportTicket.priority}
+        defaultSubject={supportTicket.subject}
+        defaultDescription={supportTicket.description}
+        contextLabel={supportTicket.contextLabel}
+      />
 
     </main>
   );
