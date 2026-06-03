@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useWorkerBookings } from "@/hooks/useWorkerBookings";
 import { useNotifications } from "@/hooks/useNotifications";
 import { getInitials } from "@/utils/helpers";
+import { normalizeNotificationDeepLink } from "@/utils/notifications";
 
 const NAV_ITEMS = [
   { icon: "dashboard", label: "Dashboard", href: "/technician" },
@@ -19,6 +20,7 @@ const NAV_ITEMS = [
   { icon: "assignment", label: "Công việc", href: "/technician/bookings" },
   { icon: "event_note", label: "Lịch làm việc", href: "/technician/schedule" },
   { icon: "payments", label: "Thanh toán", href: "/technician/wallet" },
+  { icon: "support_agent", label: "Hỗ trợ", href: "/technician/help" },
   { icon: "settings", label: "Cài đặt", href: "/technician/settings" },
 ];
 
@@ -55,12 +57,9 @@ export function TechnicianShell({ children }) {
     markRead(notif.id);
     setNotifOpen(false);
 
-    const deepLink = notif.raw?.deepLink;
+    const deepLink = normalizeNotificationDeepLink(notif.raw?.deepLink);
     if (deepLink) {
-      const target = deepLink.startsWith("/worker/")
-        ? deepLink.replace("/worker/", "/technician/")
-        : deepLink;
-      router.push(target);
+      router.push(deepLink);
       return;
     }
 

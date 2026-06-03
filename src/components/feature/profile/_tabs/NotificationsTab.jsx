@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { normalizeNotificationDeepLink } from '@/utils/notifications';
 
 export function NotificationsTab({
   notifFilters,
@@ -101,18 +102,13 @@ export function NotificationsTab({
                                 if (notif.unread) {
                                   markRead(notif.id);
                                 }
-                                const deepLink = notif.raw?.deepLink;
+                                const deepLink = normalizeNotificationDeepLink(notif.raw?.deepLink);
                                 if (deepLink) {
-                                  const target = deepLink.startsWith('/worker/') 
-                                    ? deepLink.replace('/worker/', '/technician/') 
-                                    : deepLink;
-                                  window.location.href = target;
+                                  window.location.href = deepLink;
                                   return;
                                 }
                                 if (notif.bookingId) {
-                                  window.location.href = notif.raw?.type?.toLowerCase().includes('worker') 
-                                    ? `/technician/bookings` 
-                                    : `/bookings`;
+                                  window.location.href = `/bookings/${notif.bookingId}`;
                                 }
                               }}
                               className={`relative flex gap-4 p-4 md:p-5 cursor-pointer transition-colors hover:bg-[#fbf9f8] ${

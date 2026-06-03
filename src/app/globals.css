@@ -2261,6 +2261,103 @@ select {
   padding-top: 64px;
 }
 
+.support-create-ticket-btn.ant-btn {
+  display: inline-flex;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 9999px;
+  padding: 0 26px;
+  line-height: 1;
+}
+
+.support-create-ticket-btn.ant-btn .ant-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.support-create-ticket-btn.ant-btn .material-symbols-outlined {
+  display: block;
+  line-height: 1;
+}
+
+.support-ticket-list-card.ant-card {
+  min-height: 560px;
+}
+
+.support-ticket-list-card.ant-card .ant-card-body {
+  min-height: 560px;
+  display: flex;
+  flex-direction: column;
+}
+
+.support-ticket-search {
+  display: flex;
+  width: 100%;
+  align-items: stretch;
+}
+
+.support-ticket-search-input {
+  min-width: 0;
+  height: 44px;
+  flex: 1 1 auto;
+  border: 1px solid #d4d4d4;
+  border-right: 0;
+  border-radius: 8px 0 0 8px;
+  padding: 0 14px;
+  background: #ffffff;
+  color: #1b1c1c;
+  font-size: 14px;
+  line-height: 1;
+  outline: none;
+}
+
+.support-ticket-search-input:focus {
+  border-color: #ff8228;
+  box-shadow: 0 0 0 2px rgba(255, 130, 40, 0.12);
+}
+
+.support-ticket-search-input::placeholder {
+  color: #b7bec5;
+}
+
+.support-ticket-search-button {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d4d4d4;
+  border-radius: 0 8px 8px 0;
+  background: #ffffff;
+  color: #818a91;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.support-ticket-search-button:hover {
+  border-color: #ff8228;
+  background: #fff8f5;
+  color: #ff8228;
+}
+
+.support-ticket-search-button .material-symbols-outlined {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.support-ticket-list-results {
+  flex: 1 1 auto;
+}
+
+.support-ticket-list-pagination {
+  margin-top: auto;
+  padding-top: 16px;
+}
+
 @media (min-width: 768px) {
   .technician-sidebar {
     transform: translateX(0);

@@ -22,8 +22,8 @@ export function MobileNav() {
       icon: 'list_alt', 
       label: isTechnician ? 'Công việc' : 'Hoạt động' 
     },
-    { href: '/chat', icon: 'message', label: 'Tin Nhắn' },
-    { href: '/profile', icon: 'person', label: 'Tài Khoản' },
+    { href: isTechnician ? '/technician/help' : '/help', icon: 'support_agent', label: 'Hỗ trợ' },
+    { href: isTechnician ? '/technician/profile' : '/profile', icon: 'person', label: 'Tài Khoản' },
   ];
 
   return (

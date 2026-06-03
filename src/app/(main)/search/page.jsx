@@ -2,94 +2,47 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { App } from 'antd';
-import { WORKER_STATUS } from '@/constants/enums';
-import { usePagedWorkerProfiles } from '@/hooks/usePagedWorkerProfiles';
-import { SearchFilters } from '@/components/feature/search/SearchFilters';
+import { SearchFilters, DEFAULT_FILTERS } from '@/components/feature/search/SearchFilters';
 import { WorkerCard } from '@/components/feature/search/WorkerCard';
+import { useWorkerSearch } from '@/hooks/useWorkerSearch';
 
-/*
-function getPagedItems(payload) {
-  if (Array.isArray(payload)) return { items: payload, totalCount: payload.length, pageNumber: 1, totalPages: 1 };
-  return {
-    items: payload?.items || [],
-    totalCount: payload?.totalCount || 0,
-    pageNumber: payload?.pageNumber || 1,
-    totalPages: payload?.totalPages || 1,
-  };
-}
-*/
+const SORT_MAP = {
+  rating: { SortBy: 'rating', SortDescending: true },
+  experience: { SortBy: 'experience', SortDescending: true },
+  price: { SortBy: 'price', SortDescending: false },
+};
 
 export default function SearchPage() {
   const { message } = App.useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [pendingSearch, setPendingSearch] = useState('');
   const [sortBy, setSortBy] = useState('rating');
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+
   const handleLoadError = useCallback((error) => {
     message.error(error.response?.data?.message || error.message || 'Không thể tải danh sách kỹ thuật viên');
   }, [message]);
-  const workerParams = useMemo(() => ({
-    Status: WORKER_STATUS.APPROVED,
-    PageNumber: 1,
-    PageSize: 12,
-    SearchTerm: searchTerm || undefined,
-  }), [searchTerm]);
-  const { workers, meta, loading } = usePagedWorkerProfiles({
-    params: workerParams,
+
+  const searchParams = useMemo(() => {
+    const sort = SORT_MAP[sortBy] || SORT_MAP.rating;
+    return {
+      PageNumber: 1,
+      PageSize: 12,
+      SearchTerm: searchTerm || undefined,
+      CategoryId: filters.CategoryId || undefined,
+      IsOnline: filters.IsOnline || undefined,
+      MinPrice: filters.MinPrice,
+      MaxPrice: filters.MaxPrice,
+      MinRating: filters.MinRating,
+      RadiusKm: filters.RadiusKm,
+      ...sort,
+    };
+  }, [searchTerm, filters, sortBy]);
+
+  const { workers, meta, loading } = useWorkerSearch({
+    params: searchParams,
     onError: handleLoadError,
   });
-
-  /*
-  useEffect(() => {
-    let alive = true;
-
-    async function loadWorkers() {
-      setLoading(true);
-      try {
-        const response = await legacyWorkerProfileLoader({
-          Status: WORKER_STATUS.APPROVED,
-          PageNumber: 1,
-          PageSize: 12,
-          SearchTerm: searchTerm || undefined,
-        });
-        if (!alive) return;
-        const paged = getPagedItems(response);
-        setWorkers(paged.items);
-        setMeta({
-          totalCount: paged.totalCount,
-          pageNumber: paged.pageNumber,
-          totalPages: paged.totalPages,
-        });
-      } catch (error) {
-        if (!alive) return;
-        message.error(error.response?.data?.message || error.message || 'Không thể tải danh sách kỹ thuật viên');
-        setWorkers([]);
-        setMeta({ totalCount: 0, pageNumber: 1, totalPages: 1 });
-      } finally {
-        if (alive) setLoading(false);
-      }
-    }
-
-    loadWorkers();
-    return () => {
-      alive = false;
-    };
-  }, [message, searchTerm]);
-  */
-
-  const sortedWorkers = useMemo(() => {
-    const list = [...workers];
-    if (sortBy === 'price') {
-      return list.sort((a, b) => {
-        const aPrice = a.services?.find((service) => service.isPrimary)?.basePrice || a.services?.[0]?.basePrice || 0;
-        const bPrice = b.services?.find((service) => service.isPrimary)?.basePrice || b.services?.[0]?.basePrice || 0;
-        return aPrice - bPrice;
-      });
-    }
-    if (sortBy === 'experience') {
-      return list.sort((a, b) => (b.experienceYears || 0) - (a.experienceYears || 0));
-    }
-    return list.sort((a, b) => (b.ratingAvg || 0) - (a.ratingAvg || 0));
-  }, [workers, sortBy]);
 
   const handleSearch = () => {
     setSearchTerm(pendingSearch.trim());
@@ -130,7 +83,7 @@ export default function SearchPage() {
 
       <div className="flex flex-col gap-6 md:flex-row">
         <aside className="w-full shrink-0 space-y-6 md:w-[280px]">
-          <SearchFilters />
+          <SearchFilters filters={filters} onFiltersChange={setFilters} />
         </aside>
 
         <div className="flex-1">
@@ -159,9 +112,9 @@ export default function SearchPage() {
             <div className="rounded-xl border border-border-light bg-surface-bg p-10 text-center text-text-tertiary">
               Đang tải danh sách kỹ thuật viên...
             </div>
-          ) : sortedWorkers.length ? (
+          ) : workers.length ? (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {sortedWorkers.map((worker) => (
+              {workers.map((worker) => (
                 <WorkerCard key={worker.id} pro={worker} />
               ))}
             </div>

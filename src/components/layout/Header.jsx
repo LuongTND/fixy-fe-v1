@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
 import { APP_ROUTES, isTechnicianRole } from '@/constants/routes';
+import { normalizeNotificationDeepLink } from '@/utils/notifications';
 
 export function Header() {
   const pathname = usePathname();
@@ -22,12 +23,9 @@ export function Header() {
     markRead(notif.id);
     setNotifOpen(false);
 
-    const deepLink = notif.raw?.deepLink;
+    const deepLink = normalizeNotificationDeepLink(notif.raw?.deepLink);
     if (deepLink) {
-      const target = deepLink.startsWith('/worker/') 
-        ? deepLink.replace('/worker/', '/technician/') 
-        : deepLink;
-      router.push(target);
+      router.push(deepLink);
       return;
     }
 
@@ -84,14 +82,6 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="hidden lg:flex items-center bg-gray-lighter rounded-full px-4 py-1.5 border-2 border-border-light focus-within:border-primary focus-within:bg-white transition-all">
-            <span className="material-symbols-outlined text-[20px] text-gray-light">search</span>
-            <input
-              type="text"
-              placeholder="Search for services..."
-              className="bg-transparent border-none outline-none text-sm !text-[#383838] w-[180px] px-2 py-0.5 focus-visible:!outline-none focus:!ring-0"
-            />
-          </div>
 
           {authLoading ? (
             <div className="w-24 h-9" />
@@ -101,9 +91,9 @@ export function Header() {
                 <div className="relative">
                   <button 
                     onClick={() => setNotifOpen(!notifOpen)}
-                    className="p-2 rounded-full bg-transparent border-none !text-gray hover:bg-gray-lighter transition-colors cursor-pointer flex items-center justify-center"
+                    className="p-2 rounded-full bg-transparent border-none hover:bg-gray-lighter transition-colors cursor-pointer flex items-center justify-center text-[#383838]"
                   >
-                    <span className="material-symbols-outlined">notifications</span>
+                    <span className="material-symbols-outlined text-[#383838]">notifications</span>
                     {unreadCount > 0 && (
                       <span className="absolute top-1 right-1 bg-primary text-white font-bold text-[9px] rounded-full h-4 w-4 flex items-center justify-center border border-white">
                         {unreadCount > 99 ? '99+' : unreadCount}
@@ -174,11 +164,15 @@ export function Header() {
                   )}
                 </div>
 
-                <button className="p-2 rounded-full bg-transparent border-none !text-gray hover:bg-gray-lighter transition-colors cursor-pointer flex items-center justify-center">
-                  <span className="material-symbols-outlined">chat</span>
-                </button>
+                <Link
+                  href={isTechnician ? '/technician/help' : '/help'}
+                  className="p-2 rounded-full bg-transparent border-none hover:bg-gray-lighter transition-colors cursor-pointer flex items-center justify-center no-underline text-[#383838]"
+                  aria-label="Trung tâm hỗ trợ"
+                >
+                  <span className="material-symbols-outlined text-[#383838]">support_agent</span>
+                </Link>
               </div>
-              <Link href={profileHref} className="w-9 h-9 rounded-full !bg-primary !text-white flex items-center justify-center no-underline hover:brightness-105 transition-all">
+              <Link href={profileHref} className="w-9 h-9 rounded-full !bg-[#383838] !text-white flex items-center justify-center no-underline hover:brightness-105 transition-all">
                 <span className="material-symbols-outlined text-[22px]">person</span>
               </Link>
               <button

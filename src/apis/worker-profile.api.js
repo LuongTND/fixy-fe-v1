@@ -97,6 +97,7 @@ export const workerProfileApi = {
     buildWorkerProfileFormData(data),
     { headers: { 'Content-Type': 'multipart/form-data' } },
   ),
+  search: async (params) => axios.get(API_ENDPOINTS.WORKER_PROFILES.SEARCH, { params }),
   getAll: async (params) => axios.get(API_ENDPOINTS.WORKER_PROFILES.BASE, { params }),
   getMe: async () => axios.get(API_ENDPOINTS.WORKER_PROFILES.ME),
   getById: async (id) => axios.get(API_ENDPOINTS.WORKER_PROFILES.DETAIL(id)),
