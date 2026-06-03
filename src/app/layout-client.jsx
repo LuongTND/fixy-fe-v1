@@ -12,9 +12,9 @@ import { NotificationProvider } from '@/providers/NotificationProvider';
 export function RootLayoutClient({ children }) {
   return (
     <AuthProvider>
-      <NotificationProvider>
-        <AntdProvider>{children}</AntdProvider>
-      </NotificationProvider>
+      <AntdProvider>
+        <NotificationProvider>{children}</NotificationProvider>
+      </AntdProvider>
     </AuthProvider>
   );
 }

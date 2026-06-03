@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { authApi } from '@/apis/auth.api';
@@ -9,11 +10,10 @@ import { addressApi } from '@/apis/address.api';
 import { goongApi } from '@/apis/goong.api';
 import { paymentApi } from '@/apis/payment.api';
 import { vietnamProvincesApi, matchProvince, matchWard, filterAddressOption } from '@/apis/vietnam-provinces.api';
-import { PAYMENT_METHOD, SUPPORT_CATEGORY, SUPPORT_PRIORITY } from '@/constants/enums';
+import { PAYMENT_METHOD } from '@/constants/enums';
 import { useWalletOverview } from '@/hooks/useWalletOverview';
 import { useNotifications } from '@/hooks/useNotifications';
 import { message, Popconfirm, Select } from 'antd';
-import { SupportTicketModal } from '@/components/common/SupportTicketModal';
 import { ProfileTabs } from './_tabs/ProfileTabs';
 
 import {
@@ -54,7 +54,6 @@ export default function ProfileView() {
   const [topupMethod, setTopupMethod] = useState(PAYMENT_METHOD.VNPAY);
   const [topupLoading, setTopupLoading] = useState(false);
   const [isTopupModalOpen, setIsTopupModalOpen] = useState(false);
-  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [messageApi, contextHolder] = message.useMessage();
@@ -116,6 +115,18 @@ export default function ProfileView() {
   ];
 
   const selectedTopupMethod = topupMethodOptions.find((method) => method.value === topupMethod) || topupMethodOptions[0];
+
+  const {
+    notifications: liveNotifications,
+    loading: notifLoading,
+    hasMore: notifHasMore,
+    page: notifPage,
+    settings: notifSettings,
+    fetchNotifications,
+    markRead,
+    markAllRead,
+    updateSettings,
+  } = useNotifications();
 
   const fetchAddresses = useCallback(async () => {
     try {
@@ -484,6 +495,10 @@ export default function ProfileView() {
     }
   };
 
+  const filteredNotifs = activeNotifFilter === 'all'
+    ? liveNotifications
+    : liveNotifications.filter((n) => n.filter === activeNotifFilter);
+
   if (authLoading || !isAuthenticated) {
     return (
       <div className="flex justify-center items-center h-screen bg-[#fbf9f8]">
@@ -505,22 +520,6 @@ export default function ProfileView() {
     { id: 'promo', label: 'Khuyến mãi' },
     { id: 'system', label: 'Hệ thống' },
   ];
-
-  const {
-    notifications: liveNotifications,
-    loading: notifLoading,
-    hasMore: notifHasMore,
-    page: notifPage,
-    settings: notifSettings,
-    fetchNotifications,
-    markRead,
-    markAllRead,
-    updateSettings,
-  } = useNotifications();
-
-  const filteredNotifs = activeNotifFilter === 'all'
-    ? liveNotifications
-    : liveNotifications.filter((n) => n.filter === activeNotifFilter);
 
   return (
     <div className="min-h-screen bg-[#fbf9f8] py-0 font-sans">
@@ -665,25 +664,36 @@ export default function ProfileView() {
               <h3 className="font-black text-[#1b1c1c] mb-4 px-1 text-sm">Hỗ trợ khách hàng</h3>
               <div className="space-y-1">
                 {[
-                  { icon: 'help', label: 'Trung tâm trợ giúp', action: 'support' },
+                  { icon: 'help', label: 'Trung tâm trợ giúp', href: '/help' },
                   { icon: 'description', label: 'Điều khoản & Dịch vụ' },
                   { icon: 'shield', label: 'Chính sách bảo mật' }
-                ].map((item) => (
+                ].map((item) => {
+                  const content = (
+                    <>
+                      <div className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-[#818A91] group-hover:text-primary transition-colors text-[18px]">{item.icon}</span>
+                        <span className="text-[#4A4A4A] font-bold text-xs group-hover:text-[#1b1c1c] transition-colors">{item.label}</span>
+                      </div>
+                      <span className="material-symbols-outlined text-[#818A91] group-hover:translate-x-1 transition-transform text-[18px]">chevron_right</span>
+                    </>
+                  );
+                  if (item.href) {
+                    return (
+                      <Link key={item.label} href={item.href} className="w-full flex items-center justify-between p-3 hover:bg-[#F5F5F5] rounded-xl transition-all group no-underline">
+                        {content}
+                      </Link>
+                    );
+                  }
+                  return (
                   <button
                     key={item.label}
                     type="button"
-                    onClick={() => {
-                      if (item.action === 'support') setIsSupportModalOpen(true);
-                    }}
                     className="w-full flex items-center justify-between p-3 hover:bg-[#F5F5F5] rounded-xl transition-all group"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-[#818A91] group-hover:text-primary transition-colors text-[18px]">{item.icon}</span>
-                      <span className="text-[#4A4A4A] font-bold text-xs group-hover:text-[#1b1c1c] transition-colors">{item.label}</span>
-                    </div>
-                    <span className="material-symbols-outlined text-[#818A91] group-hover:translate-x-1 transition-transform text-[18px]">chevron_right</span>
+                    {content}
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -988,16 +998,6 @@ export default function ProfileView() {
           </div>
         </div>
       )}
-
-      <SupportTicketModal
-        open={isSupportModalOpen}
-        onClose={() => setIsSupportModalOpen(false)}
-        defaultCategory={SUPPORT_CATEGORY.OTHER}
-        defaultPriority={SUPPORT_PRIORITY.NORMAL}
-        defaultSubject="Cần hỗ trợ tài khoản khách hàng"
-        defaultDescription="Tôi cần hỗ trợ về tài khoản, hồ sơ hoặc quá trình sử dụng dịch vụ."
-        contextLabel="Bạn có thể gửi câu hỏi chung chưa gắn với booking cụ thể."
-      />
 
       <style jsx global>{`
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }

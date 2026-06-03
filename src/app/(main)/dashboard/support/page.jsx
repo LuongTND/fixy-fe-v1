@@ -444,8 +444,8 @@ export default function AdminSupportPage() {
         destroyOnHidden
       >
         {selectedTicket ? (
-          <div className="space-y-5">
-            <Card loading={detailLoading} className="admin-tech-stat-card">
+          <div className="flex flex-col gap-6">
+            <Card loading={detailLoading} className="admin-tech-stat-card !mb-0">
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                   <p className="m-0 text-xs font-bold uppercase tracking-wider text-[#818A91]">Ticket #{String(selectedTicketId || '').slice(0, 8).toUpperCase()}</p>
@@ -474,7 +474,7 @@ export default function AdminSupportPage() {
               </div>
             </Card>
 
-            <Card className="admin-tech-stat-card">
+            <Card className="admin-tech-stat-card !mb-0">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h4 className="m-0 text-base font-bold text-[#383838]">Điều phối ticket</h4>
@@ -486,7 +486,7 @@ export default function AdminSupportPage() {
               </div>
 
               <Form form={form} layout="vertical">
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-5">
                   <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Chọn trạng thái' }]}>
                     <Select options={statusOptions.map(({ value, label }) => ({ value, label }))} />
                   </Form.Item>
@@ -503,7 +503,7 @@ export default function AdminSupportPage() {
               </Form>
             </Card>
 
-            <Card className="admin-tech-stat-card">
+            <Card className="admin-tech-stat-card !mb-0">
               <div className="mb-4">
                 <h4 className="m-0 text-base font-bold text-[#383838]">Trao đổi</h4>
                 <p className="m-0 mt-1 text-xs text-[#818A91]">Tin nhắn giữa người gửi và đội hỗ trợ.</p>
@@ -533,7 +533,7 @@ export default function AdminSupportPage() {
                 <Empty description="Chưa có tin nhắn" />
               )}
 
-              <div className="mt-4 space-y-3">
+              <div className="mt-4 space-y-4">
                 <Input.TextArea
                   rows={4}
                   maxLength={800}
@@ -542,8 +542,8 @@ export default function AdminSupportPage() {
                   value={reply}
                   onChange={(event) => setReply(event.target.value)}
                 />
-                <Space className="w-full justify-end">
-                  <Button onClick={() => setReply('')}>Xóa nội dung</Button>
+                <Space className="w-full justify-end border-t border-[#F1F1F1] pt-4">
+                  <Button className="min-w-[120px]" onClick={() => setReply('')}>Xóa nội dung</Button>
                   <Button type="primary" className="!bg-[#FF8228]" loading={acting} onClick={handleSendReply}>
                     Gửi phản hồi
                   </Button>

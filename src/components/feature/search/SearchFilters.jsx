@@ -1,22 +1,76 @@
 'use client';
-import { useState } from 'react';
+import { useServiceCategories } from '@/hooks/useServiceCategories';
 
-export function SearchFilters() {
-  const [radius, setRadius] = useState(10);
+const PRICE_RANGES = [
+  { label: 'Under 200,000', min: undefined, max: 200000 },
+  { label: '200,000 - 500,000', min: 200000, max: 500000 },
+  { label: 'Over 500,000', min: 500000, max: undefined },
+];
+
+const DEFAULT_FILTERS = {
+  CategoryId: undefined,
+  IsOnline: false,
+  MinPrice: undefined,
+  MaxPrice: undefined,
+  MinRating: undefined,
+  RadiusKm: 10,
+};
+
+export { DEFAULT_FILTERS };
+
+export function SearchFilters({ filters = DEFAULT_FILTERS, onFiltersChange }) {
+  const { categories, loading: categoriesLoading } = useServiceCategories({ parentsOnly: true });
+
+  const update = (patch) => {
+    onFiltersChange?.({ ...filters, ...patch });
+  };
+
+  const handleClearAll = () => {
+    onFiltersChange?.(DEFAULT_FILTERS);
+  };
+
+  const selectedPriceIndex = PRICE_RANGES.findIndex(
+    (r) => r.min === filters.MinPrice && r.max === filters.MaxPrice,
+  );
 
   return (
     <>
       <div className="bg-surface-bg rounded-xl border border-border-light p-4 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-h3 text-text-primary">Filters</h3>
-          <button className="text-primary font-small-bold text-small bg-transparent border-none cursor-pointer">Clear All</button>
+          <button
+            className="text-primary font-small-bold text-small bg-transparent border-none cursor-pointer"
+            onClick={handleClearAll}
+          >
+            Clear All
+          </button>
         </div>
-        
-        {/* Online Status */}
+
+        {/* Service Category */}
         <div className="mb-6">
+          <h4 className="font-small-bold mb-3 text-text-primary">Service Category</h4>
+          <select
+            className="w-full rounded-lg border-2 border-border-light bg-white px-3 py-2.5 text-small text-text-primary outline-none transition-all hover:border-primary/50 focus:!border-primary focus:!outline-none focus:!ring-0"
+            value={filters.CategoryId || ''}
+            onChange={(e) => update({ CategoryId: e.target.value || undefined })}
+          >
+            <option value="">All categories</option>
+            {!categoriesLoading && categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Online Status */}
+        <div className="mb-6 border-t border-border-light pt-4">
           <label className="flex items-center gap-3 cursor-pointer group">
             <div className="relative inline-flex items-center">
-              <input className="sr-only peer" type="checkbox" />
+              <input
+                className="sr-only peer"
+                type="checkbox"
+                checked={!!filters.IsOnline}
+                onChange={(e) => update({ IsOnline: e.target.checked || undefined })}
+              />
               <div className="w-11 h-6 bg-border-light peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-success"></div>
             </div>
             <span className="font-body text-text-primary">Available Now</span>
@@ -27,18 +81,23 @@ export function SearchFilters() {
         <div className="mb-6 border-t border-border-light pt-4">
           <h4 className="font-small-bold mb-4 text-text-primary">Price Range (VND)</h4>
           <div className="space-y-3">
-            <label className="flex items-center gap-3 font-small cursor-pointer text-text-secondary">
-              <input className="accent-primary rounded focus:ring-primary h-4 w-4 border-border-light" type="checkbox" />
-              <span>Under 200,000</span>
-            </label>
-            <label className="flex items-center gap-3 font-small cursor-pointer text-text-secondary">
-              <input className="accent-primary rounded focus:ring-primary h-4 w-4 border-border-light" type="checkbox" />
-              <span>200,000 - 500,000</span>
-            </label>
-            <label className="flex items-center gap-3 font-small cursor-pointer text-text-secondary">
-              <input className="accent-primary rounded focus:ring-primary h-4 w-4 border-border-light" type="checkbox" />
-              <span>Over 500,000</span>
-            </label>
+            {PRICE_RANGES.map((range, index) => (
+              <label key={range.label} className="flex items-center gap-3 font-small cursor-pointer text-text-secondary">
+                <input
+                  className="accent-primary rounded focus:ring-primary h-4 w-4 border-border-light"
+                  type="checkbox"
+                  checked={selectedPriceIndex === index}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      update({ MinPrice: range.min, MaxPrice: range.max });
+                    } else {
+                      update({ MinPrice: undefined, MaxPrice: undefined });
+                    }
+                  }}
+                />
+                <span>{range.label}</span>
+              </label>
+            ))}
           </div>
         </div>
         
@@ -49,7 +108,13 @@ export function SearchFilters() {
             {[4, 3].map((rating) => (
               <label key={rating} className="flex items-center gap-3 font-small cursor-pointer group">
                 <div className="relative flex items-center justify-center">
-                  <input className="sr-only peer" name="rating" type="radio" />
+                  <input
+                    className="sr-only peer"
+                    name="rating"
+                    type="radio"
+                    checked={filters.MinRating === rating}
+                    onChange={() => update({ MinRating: rating })}
+                  />
                   <div className="w-5 h-5 rounded-full border-2 border-border-light peer-checked:border-primary peer-checked:bg-primary transition-all flex items-center justify-center">
                     <div className="w-2 h-2 rounded-full bg-white scale-0 peer-checked:scale-100 transition-transform"></div>
                   </div>
@@ -62,6 +127,21 @@ export function SearchFilters() {
                 </span>
               </label>
             ))}
+            <label className="flex items-center gap-3 font-small cursor-pointer group">
+              <div className="relative flex items-center justify-center">
+                <input
+                  className="sr-only peer"
+                  name="rating"
+                  type="radio"
+                  checked={filters.MinRating === undefined}
+                  onChange={() => update({ MinRating: undefined })}
+                />
+                <div className="w-5 h-5 rounded-full border-2 border-border-light peer-checked:border-primary peer-checked:bg-primary transition-all flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-white scale-0 peer-checked:scale-100 transition-transform"></div>
+                </div>
+              </div>
+              <span className="text-text-secondary">Any rating</span>
+            </label>
           </div>
         </div>
         
@@ -72,10 +152,10 @@ export function SearchFilters() {
             <div className="flex items-center gap-1.5">
               <input 
                 type="number" 
-                value={radius}
+                value={filters.RadiusKm ?? 10}
                 onChange={(e) => {
                   const val = parseInt(e.target.value);
-                  if (!isNaN(val)) setRadius(Math.min(50, Math.max(1, val)));
+                  if (!isNaN(val)) update({ RadiusKm: Math.min(50, Math.max(1, val)) });
                 }}
                 className="w-12 h-7 text-center text-primary font-bold text-sm bg-primary/10 border-none rounded-md focus:ring-1 focus:ring-primary outline-none"
               />
@@ -87,8 +167,8 @@ export function SearchFilters() {
             max="50" 
             min="1" 
             type="range" 
-            value={radius}
-            onChange={(e) => setRadius(parseInt(e.target.value))}
+            value={filters.RadiusKm ?? 10}
+            onChange={(e) => update({ RadiusKm: parseInt(e.target.value) })}
           />
           <div className="flex justify-between text-xs mt-2 text-text-tertiary">
             <span>1 km</span>

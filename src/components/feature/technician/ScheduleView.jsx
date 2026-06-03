@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { App, DatePicker, Input, Spin, Tooltip } from 'antd';
+import { App, DatePicker, Input, Modal, Spin, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import { workerScheduleApi } from '@/apis/worker-schedule.api';
 import { workerProfileApi } from '@/apis/worker-profile.api';
@@ -68,6 +68,7 @@ export function ScheduleView() {
   const [dayOffDate, setDayOffDate] = useState(null);
   const [dayOffReason, setDayOffReason] = useState('');
   const [removingDate, setRemovingDate] = useState(null);
+  const [pendingDeleteDayOff, setPendingDeleteDayOff] = useState(null);
 
   const debounceRef = useRef({});
 
@@ -198,11 +199,23 @@ export function ScheduleView() {
     }
   };
 
-  const handleRemoveDayOff = async (dateStr) => {
+  const handleRequestRemoveDayOff = (exception) => {
+    setPendingDeleteDayOff(exception);
+  };
+
+  const handleCancelRemoveDayOff = () => {
+    if (removingDate) return;
+    setPendingDeleteDayOff(null);
+  };
+
+  const handleRemoveDayOff = async () => {
+    const dateStr = pendingDeleteDayOff?.date || pendingDeleteDayOff?.Date;
     if (!workerProfileId) return;
+    if (!dateStr) return;
     setRemovingDate(dateStr);
     try {
       await workerScheduleApi.removeDayOff(workerProfileId, dateStr);
+      setPendingDeleteDayOff(null);
       message.success('Đã xoá ngày nghỉ.');
       refreshSchedule(workerProfileId);
     } catch {
@@ -231,6 +244,7 @@ export function ScheduleView() {
   }
 
   return (
+    <>
     <main className="mx-auto max-w-[1400px] grid grid-cols-12 gap-5 p-5 md:p-6">
 
       {/* ── LEFT (8 cols): Weekly schedule ── */}
@@ -371,7 +385,7 @@ export function ScheduleView() {
                     <Tooltip title="Xoá ngày nghỉ">
                       <button
                         type="button"
-                        onClick={() => handleRemoveDayOff(dateStr)}
+                        onClick={() => handleRequestRemoveDayOff(ex)}
                         disabled={removingDate === dateStr}
                         className="flex h-8 w-8 items-center justify-center rounded-full text-[#EA4335] transition hover:bg-red-50 disabled:opacity-50"
                       >
@@ -449,5 +463,50 @@ export function ScheduleView() {
         </section>
       </div>
     </main>
+    <Modal
+      open={Boolean(pendingDeleteDayOff)}
+      title={(
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFF1F0] text-[#EA4335]">
+            <span className="material-symbols-outlined text-[20px]">event_busy</span>
+          </span>
+          <div>
+            <p className="m-0 text-lg font-bold text-[#1b1c1c]">Xoá ngày nghỉ?</p>
+            <p className="m-0 mt-1 text-xs font-medium text-[#818A91]">Ngày này sẽ được mở lại để nhận lịch đặt dịch vụ.</p>
+          </div>
+        </div>
+      )}
+      centered
+      width={460}
+      okText="Xoá ngày nghỉ"
+      cancelText="Huỷ"
+      okButtonProps={{
+        danger: true,
+        loading: Boolean(removingDate),
+        className: '!font-bold',
+      }}
+      cancelButtonProps={{
+        disabled: Boolean(removingDate),
+      }}
+      onOk={handleRemoveDayOff}
+      onCancel={handleCancelRemoveDayOff}
+      maskClosable={!removingDate}
+      closable={!removingDate}
+    >
+      {pendingDeleteDayOff && (
+        <div className="rounded-xl border border-[#F1D5CD] bg-[#FFF8F5] p-4">
+          <p className="m-0 text-xs font-bold uppercase tracking-[0.08em] text-[#818A91]">Ngày nghỉ</p>
+          <p className="m-0 mt-1 text-base font-bold text-[#1b1c1c]">
+            {dayjs(pendingDeleteDayOff.date || pendingDeleteDayOff.Date).format('DD/MM/YYYY')}
+          </p>
+          {(pendingDeleteDayOff.reason || pendingDeleteDayOff.Reason) && (
+            <p className="m-0 mt-2 text-sm leading-6 text-[#555555]">
+              {pendingDeleteDayOff.reason || pendingDeleteDayOff.Reason}
+            </p>
+          )}
+        </div>
+      )}
+    </Modal>
+    </>
   );
 }

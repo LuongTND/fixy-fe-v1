@@ -4,7 +4,7 @@ import React, { createContext, useState, useEffect, useCallback, useRef } from '
 import { useAuth } from '@/hooks/useAuth';
 import { notificationApi } from '@/apis/notification.api';
 import { HubConnectionBuilder, LogLevel, HttpTransportType } from '@microsoft/signalr';
-import { notification as AntdNotification } from 'antd';
+import { App } from 'antd';
 
 export const NotificationContext = createContext(null);
 
@@ -131,6 +131,7 @@ function mapNotificationToUI(notif) {
 
 export function NotificationProvider({ children }) {
   const { isAuthenticated } = useAuth();
+  const { notification } = App.useApp();
   
   const [unreadCount, setUnreadCount] = useState(0);
   const connectionRef = useRef(null);
@@ -356,7 +357,7 @@ export function NotificationProvider({ children }) {
             });
             setUnreadCount((prev) => prev + 1);
 
-            AntdNotification.open({
+            notification.open({
               message: <span className="font-bold text-xs text-[#1b1c1c]">{mapped.title}</span>,
               description: <p className="text-[11px] text-[#4A4A4A] mt-0.5 leading-normal">{mapped.body}</p>,
               placement: 'topRight',
@@ -385,7 +386,7 @@ export function NotificationProvider({ children }) {
           .catch((err) => console.error('Error stopping SignalR NotificationHub connection:', err));
       }
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, notification]);
 
   // Strategy 2: Smart Polling every 60 seconds
   useEffect(() => {
