@@ -1,23 +1,26 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import { useNotifications } from '@/hooks/useNotifications';
-import { APP_ROUTES, isTechnicianRole } from '@/constants/routes';
-import { normalizeNotificationDeepLink } from '@/utils/notifications';
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { useNotifications } from "@/hooks/useNotifications";
+import { APP_ROUTES, isTechnicianRole } from "@/constants/routes";
+import { normalizeNotificationDeepLink } from "@/utils/notifications";
 
 export function Header() {
   const pathname = usePathname();
   const { isAuthenticated, logout, loading: authLoading, user } = useAuth();
-  const { unreadCount, notifications, markRead, markAllRead } = useNotifications();
+  const { unreadCount, notifications, markRead, markAllRead } =
+    useNotifications();
   const [notifOpen, setNotifOpen] = useState(false);
   const router = useRouter();
 
   const isTechnician = isTechnicianRole(user?.role);
 
-  const profileHref = isTechnician ? APP_ROUTES.TECHNICIAN_ORDERS : APP_ROUTES.PROFILE;
+  const profileHref = isTechnician
+    ? APP_ROUTES.TECHNICIAN_ORDERS
+    : APP_ROUTES.PROFILE;
 
   const handleNotifClick = (notif) => {
     markRead(notif.id);
@@ -32,26 +35,26 @@ export function Header() {
     if (notif.bookingId) {
       router.push(isTechnician ? `/technician/bookings` : `/bookings`);
     } else {
-      router.push(profileHref + '?tab=notifications');
+      router.push(profileHref + "?tab=notifications");
     }
   };
 
   const handleLogout = () => {
     logout();
-    if (typeof window !== 'undefined') {
-      window.location.href = '/';
+    if (typeof window !== "undefined") {
+      window.location.href = "/";
     }
   };
 
   const navItems = [
-    { href: '/search', label: 'Find Pros' },
+    { href: "/search", label: "Tìm thợ" },
     isAuthenticated
       ? isTechnician
-        ? { href: '/technician/bookings', label: 'Work Dashboard' }
-        : { href: '/bookings', label: 'My Bookings' }
+        ? { href: "/technician/bookings", label: "Bảng làm việc" }
+        : { href: "/bookings", label: "Lịch đặt của tôi" }
       : null,
-    isAuthenticated && !isTechnician ? { href: '/wallet', label: 'Wallet' } : null,
-    { href: '#', label: 'How it Works' },
+    isAuthenticated && !isTechnician ? { href: "/wallet", label: "Ví" } : null,
+    { href: "#", label: "Hoạt động" },
   ].filter(Boolean);
 
   return (
@@ -59,20 +62,29 @@ export function Header() {
       <div className="max-w-[1280px] mx-auto h-[70px] flex items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-6 lg:gap-10 min-w-0">
           <Link href="/" className="flex items-center gap-2 no-underline group">
-            <span className="material-symbols-outlined text-[32px] !text-primary leading-none">handyman</span>
-            <span className="text-[26px] font-extrabold !text-[#383838] tracking-tight leading-none">Vua Thợ</span>
+            <span className="material-symbols-outlined text-[32px] !text-primary leading-none">
+              handyman
+            </span>
+            <span className="text-[26px] font-extrabold !text-[#383838] tracking-tight leading-none">
+              Fixy
+            </span>
           </Link>
           <nav className="hidden md:flex items-center gap-8">
             {navItems.map((item) => {
-              const isActive = pathname === item.href || (item.href !== '/' && item.href !== '#' && pathname?.startsWith(item.href));
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/" &&
+                  item.href !== "#" &&
+                  pathname?.startsWith(item.href));
               return (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className={`text-[15px] transition-all duration-200 no-underline pt-[6.5px] pb-1 border-b-[2.5px] ${isActive
-                      ? 'font-bold !text-[#383838] border-primary'
-                      : 'font-medium !text-[#383838] border-transparent hover:!text-primary'
-                    }`}
+                  className={`text-[15px] transition-all duration-200 no-underline pt-[6.5px] pb-1 border-b-[2.5px] ${
+                    isActive
+                      ? "font-bold !text-[#383838] border-primary"
+                      : "font-medium !text-[#383838] border-transparent hover:!text-primary"
+                  }`}
                 >
                   {item.label}
                 </Link>
@@ -82,33 +94,39 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-4">
-
           {authLoading ? (
             <div className="w-24 h-9" />
           ) : isAuthenticated ? (
             <div className="flex items-center gap-4">
               <div className="flex gap-1 relative">
                 <div className="relative">
-                  <button 
+                  <button
                     onClick={() => setNotifOpen(!notifOpen)}
                     className="p-2 rounded-full bg-transparent border-none hover:bg-gray-lighter transition-colors cursor-pointer flex items-center justify-center text-[#383838]"
                   >
-                    <span className="material-symbols-outlined text-[#383838]">notifications</span>
+                    <span className="material-symbols-outlined text-[#383838]">
+                      notifications
+                    </span>
                     {unreadCount > 0 && (
                       <span className="absolute top-1 right-1 bg-primary text-white font-bold text-[9px] rounded-full h-4 w-4 flex items-center justify-center border border-white">
-                        {unreadCount > 99 ? '99+' : unreadCount}
+                        {unreadCount > 99 ? "99+" : unreadCount}
                       </span>
                     )}
                   </button>
 
                   {notifOpen && (
                     <>
-                      <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setNotifOpen(false)}
+                      />
                       <div className="absolute right-0 top-11 mt-2 w-[340px] md:w-[360px] bg-white rounded-2xl shadow-xl border border-[#E8E8E8] z-50 overflow-hidden animate-fade-in font-sans">
                         <div className="px-4 py-3 border-b border-[#F5F5F5] flex justify-between items-center">
-                          <span className="font-extrabold text-[#1b1c1c] text-xs">Thông báo ({unreadCount})</span>
+                          <span className="font-extrabold text-[#1b1c1c] text-xs">
+                            Thông báo ({unreadCount})
+                          </span>
                           {unreadCount > 0 && (
-                            <button 
+                            <button
                               onClick={() => markAllRead()}
                               className="text-xs text-primary font-bold hover:underline bg-transparent border-none cursor-pointer p-0"
                             >
@@ -120,8 +138,12 @@ export function Header() {
                         <div className="max-h-[300px] overflow-y-auto divide-y divide-[#F5F5F5]">
                           {notifications.length === 0 ? (
                             <div className="py-8 flex flex-col items-center text-[#818A91] text-xs">
-                              <span className="material-symbols-outlined text-[32px] mb-2 opacity-35">notifications_off</span>
-                              <p className="font-bold">Không có thông báo mới</p>
+                              <span className="material-symbols-outlined text-[32px] mb-2 opacity-35">
+                                notifications_off
+                              </span>
+                              <p className="font-bold">
+                                Không có thông báo mới
+                              </p>
                             </div>
                           ) : (
                             notifications.slice(0, 5).map((notif) => (
@@ -129,21 +151,41 @@ export function Header() {
                                 key={notif.id}
                                 onClick={() => handleNotifClick(notif)}
                                 className={`flex gap-3 p-3 hover:bg-[#fbf9f8] transition-colors cursor-pointer text-left ${
-                                  notif.unread ? 'bg-primary/[0.02]' : 'opacity-75'
+                                  notif.unread
+                                    ? "bg-primary/[0.02]"
+                                    : "opacity-75"
                                 }`}
                               >
-                                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${notif.iconBg}`}>
-                                  <span className={`material-symbols-outlined text-[16px] ${notif.iconColor}`}>{notif.icon}</span>
+                                <div
+                                  className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${notif.iconBg}`}
+                                >
+                                  <span
+                                    className={`material-symbols-outlined text-[16px] ${notif.iconColor}`}
+                                  >
+                                    {notif.icon}
+                                  </span>
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex justify-between items-start gap-1">
-                                    <h6 className={`font-bold text-xs leading-snug truncate ${
-                                      notif.unread ? 'text-primary' : 'text-[#1b1c1c]'
-                                    }`}>{notif.title}</h6>
-                                    {notif.unread && <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0 mt-1" />}
+                                    <h6
+                                      className={`font-bold text-xs leading-snug truncate ${
+                                        notif.unread
+                                          ? "text-primary"
+                                          : "text-[#1b1c1c]"
+                                      }`}
+                                    >
+                                      {notif.title}
+                                    </h6>
+                                    {notif.unread && (
+                                      <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0 mt-1" />
+                                    )}
                                   </div>
-                                  <p className="text-[11px] text-[#4A4A4A] line-clamp-2 mt-0.5 leading-normal">{notif.body}</p>
-                                  <span className="text-[9px] text-[#818A91] block mt-1">{notif.time}</span>
+                                  <p className="text-[11px] text-[#4A4A4A] line-clamp-2 mt-0.5 leading-normal">
+                                    {notif.body}
+                                  </p>
+                                  <span className="text-[9px] text-[#818A91] block mt-1">
+                                    {notif.time}
+                                  </span>
                                 </div>
                               </div>
                             ))
@@ -151,7 +193,7 @@ export function Header() {
                         </div>
 
                         <div className="p-2 text-center border-t border-[#F5F5F5] bg-[#fbf9f8]">
-                          <Link 
+                          <Link
                             href={`${profileHref}?tab=notifications`}
                             onClick={() => setNotifOpen(false)}
                             className="block w-full py-1.5 text-xs text-primary font-bold hover:underline no-underline"
@@ -165,31 +207,46 @@ export function Header() {
                 </div>
 
                 <Link
-                  href={isTechnician ? '/technician/help' : '/help'}
+                  href={isTechnician ? "/technician/help" : "/help"}
                   className="p-2 rounded-full bg-transparent border-none hover:bg-gray-lighter transition-colors cursor-pointer flex items-center justify-center no-underline text-[#383838]"
                   aria-label="Trung tâm hỗ trợ"
                 >
-                  <span className="material-symbols-outlined text-[#383838]">support_agent</span>
+                  <span className="material-symbols-outlined text-[#383838]">
+                    support_agent
+                  </span>
                 </Link>
               </div>
-              <Link href={profileHref} className="w-9 h-9 rounded-full !bg-[#383838] !text-white flex items-center justify-center no-underline hover:brightness-105 transition-all">
-                <span className="material-symbols-outlined text-[22px]">person</span>
+              <Link
+                href={profileHref}
+                className="w-9 h-9 rounded-full !bg-[#383838] !text-white flex items-center justify-center no-underline hover:brightness-105 transition-all"
+              >
+                <span className="material-symbols-outlined text-[22px]">
+                  person
+                </span>
               </Link>
               <button
                 onClick={handleLogout}
                 className="px-3 py-2 rounded-full bg-gray-lighter border-none !text-error font-semibold text-[13px] flex items-center gap-1.5 hover:bg-error-light transition-all cursor-pointer leading-none"
               >
-                <span className="material-symbols-outlined text-[18px] leading-none">logout</span>
-                <span className="leading-none">Logout</span>
+                <span className="material-symbols-outlined text-[18px] leading-none">
+                  logout
+                </span>
+                <span className="leading-none">Đăng xuất</span>
               </button>
             </div>
           ) : (
             <div className="hidden md:flex items-center gap-2">
-              <Link href="/login" className="text-sm font-semibold !text-[#383838] no-underline px-5 py-2 hover:bg-gray-lighter rounded-xl transition-all whitespace-nowrap">
-                Login
+              <Link
+                href="/login"
+                className="text-sm font-semibold !text-[#383838] no-underline px-5 py-2 hover:bg-gray-lighter rounded-xl transition-all whitespace-nowrap"
+              >
+                Đăng nhập
               </Link>
-              <Link href="/register" className="text-sm font-semibold !text-white no-underline px-5 py-2 !bg-primary rounded-xl hover:!bg-primary-dark transition-all whitespace-nowrap shadow-sm">
-                Post a Job
+              <Link
+                href="/register"
+                className="text-sm font-semibold !text-white no-underline px-5 py-2 !bg-primary rounded-xl hover:!bg-primary-dark transition-all whitespace-nowrap shadow-sm"
+              >
+                Đăng việc
               </Link>
             </div>
           )}
@@ -199,21 +256,33 @@ export function Header() {
               className="relative z-[90] p-2 bg-transparent border-none text-[#383838] cursor-pointer touch-manipulation list-none"
               aria-label="Menu"
             >
-              <span className="material-symbols-outlined text-[28px] mobile-menu-icon-open">menu</span>
-              <span className="material-symbols-outlined text-[28px] mobile-menu-icon-close">close</span>
+              <span className="material-symbols-outlined text-[28px] mobile-menu-icon-open">
+                menu
+              </span>
+              <span className="material-symbols-outlined text-[28px] mobile-menu-icon-close">
+                close
+              </span>
             </summary>
 
-            <div id="mobile-header-menu" className="mobile-header-menu animate-fade-in">
+            <div
+              id="mobile-header-menu"
+              className="mobile-header-menu animate-fade-in"
+            >
               {navItems.map((item) => {
-                const isActive = pathname === item.href || (item.href !== '/' && item.href !== '#' && pathname?.startsWith(item.href));
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/" &&
+                    item.href !== "#" &&
+                    pathname?.startsWith(item.href));
                 return (
                   <Link
                     key={item.label}
                     href={item.href}
-                    className={`mobile-header-link block px-4 py-3 rounded-lg text-base transition-all no-underline ${isActive
-                        ? 'font-bold !text-[#383838] bg-primary-light'
-                        : 'font-medium !text-[#383838] hover:bg-gray-lighter'
-                      }`}
+                    className={`mobile-header-link block px-4 py-3 rounded-lg text-base transition-all no-underline ${
+                      isActive
+                        ? "font-bold !text-[#383838] bg-primary-light"
+                        : "font-medium !text-[#383838] hover:bg-gray-lighter"
+                    }`}
                   >
                     {item.label}
                   </Link>
@@ -224,11 +293,17 @@ export function Header() {
                 <div className="h-12" />
               ) : !isAuthenticated ? (
                 <div className="flex gap-2.5 mt-3">
-                  <Link href="/login" className="flex-1 text-center font-semibold !text-[#383838] no-underline px-4 py-3 border border-gray-border rounded-xl hover:bg-gray-lighter transition-all text-[15px]">
-                    Login
+                  <Link
+                    href="/login"
+                    className="flex-1 text-center font-semibold !text-[#383838] no-underline px-4 py-3 border border-gray-border rounded-xl hover:bg-gray-lighter transition-all text-[15px]"
+                  >
+                    Đăng nhập
                   </Link>
-                  <Link href="/register" className="flex-1 text-center font-semibold !text-white no-underline px-4 py-3 !bg-primary rounded-xl hover:!bg-primary-dark transition-all text-[15px] shadow-sm">
-                    Post a Job
+                  <Link
+                    href="/register"
+                    className="flex-1 text-center font-semibold !text-white no-underline px-4 py-3 !bg-primary rounded-xl hover:!bg-primary-dark transition-all text-[15px] shadow-sm"
+                  >
+                    Đăng việc
                   </Link>
                 </div>
               ) : (
@@ -238,7 +313,7 @@ export function Header() {
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-error-light border-none !text-error font-bold text-[15px] cursor-pointer"
                   >
                     <span className="material-symbols-outlined">logout</span>
-                    Logout
+                    Đăng xuất
                   </button>
                 </div>
               )}

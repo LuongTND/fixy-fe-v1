@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
 
 /**
  * Simple Footer Component matching the design
@@ -12,21 +12,27 @@ export function Footer() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
             <div className="text-2xl font-extrabold tracking-normal text-[#FF8228]">
-              Vua Thợ
+              Fixy
             </div>
             <p className="m-0 text-[13px] text-[#818A91]">
-              © 2026 Vua Thợ. Expert at your doorstep.
+              © 2026 Fixy. Dịch vụ thợ sửa chữa tại nhà.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-6">
-            {['About Us', 'Privacy Policy', 'Terms of Service', 'Help Center', 'Contact'].map((link) => (
+            {[
+              { label: "Về chúng tôi", href: "/about" },
+              { label: "Chính sách bảo mật", href: "/privacy" },
+              { label: "Điều khoản dịch vụ", href: "/terms" },
+              { label: "Trung tâm hỗ trợ", href: "/help" },
+              { label: "Liên hệ", href: "/contact" },
+            ].map((item) => (
               <Link
-                key={link}
-                href="#"
+                key={item.label}
+                href={item.href}
                 className="text-[13px] text-[#4A4A4A] no-underline transition-colors hover:text-[#FF8228]"
               >
-                {link}
+                {item.label}
               </Link>
             ))}
           </div>

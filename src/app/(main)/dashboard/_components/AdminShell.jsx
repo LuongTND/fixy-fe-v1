@@ -17,7 +17,7 @@ const navItems = [
   {
     key: "dashboard",
     icon: "dashboard",
-    label: "Dashboard",
+    label: "Bảng điều khiển",
     href: "/dashboard",
   },
   {
@@ -88,7 +88,7 @@ export function AdminShell({ activeKey = "dashboard", children }) {
   const { logout, user } = useAuth();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const displayName =
-    user?.fullName || user?.email || user?.phone || "Người dùng Vua Thợ";
+    user?.fullName || user?.email || user?.phone || "Người dùng Fixy";
   const roleLabel = getRoleLabel(user?.role);
 
   const handleLogout = () => {
@@ -108,8 +108,8 @@ export function AdminShell({ activeKey = "dashboard", children }) {
 
       <aside className={`admin-sidebar ${mobileNavOpen ? "is-open" : ""}`}>
         <div className="admin-brand">
-          <h1>Vua Thợ</h1>
-          <p>Admin Panel</p>
+          <h1>Fixy</h1>
+          <p>Bảng điều khiển Admin</p>
         </div>
 
         <nav className="admin-menu" aria-label="Admin navigation">

@@ -1,7 +1,7 @@
-import { BookingDetailsView } from '@/components/feature/booking/BookingDetailsView';
+import { BookingDetailsView } from "@/components/feature/booking/BookingDetailsView";
 
 export const metadata = {
-  title: 'Chi tiết đặt lịch - Vua Thợ',
+  title: "Chi tiết đặt lịch - Fixy",
 };
 
 export default async function BookingDetailsPage({ params }) {

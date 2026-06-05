@@ -1,8 +1,8 @@
-import { TechnicianShell } from '@/components/feature/technician/TechnicianShell';
+import { TechnicianShell } from "@/components/feature/technician/TechnicianShell";
 
 export const metadata = {
-  title: 'Vua Thợ - Technician Dashboard',
-  description: 'Bảng điều khiển dành cho thợ nghề Vua Thợ',
+  title: "Fixy - Bảng điều khiển thợ",
+  description: "Bảng điều khiển dành cho thợ nghề Fixy",
 };
 
 export default function TechnicianLayout({ children }) {

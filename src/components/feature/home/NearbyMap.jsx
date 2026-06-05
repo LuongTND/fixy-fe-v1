@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { Card, Tag } from 'antd';
+import { Card, Tag } from "antd";
 
 /**
  * NearbyMap - Sidebar with map preview and commitment section
@@ -43,7 +43,7 @@ export function NearbyMap() {
       </Card>
 
       <Card className="sidebar-commitment">
-        <h3>Cam Kết Vua Thợ</h3>
+        <h3>Cam Kết Fixy</h3>
         <ul>
           <li>
             <span className="material-symbols-outlined">security</span>

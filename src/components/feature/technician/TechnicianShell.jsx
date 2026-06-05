@@ -10,7 +10,7 @@ import { getInitials } from "@/utils/helpers";
 import { normalizeNotificationDeepLink } from "@/utils/notifications";
 
 const NAV_ITEMS = [
-  { icon: "dashboard", label: "Dashboard", href: "/technician" },
+  { icon: "dashboard", label: "Bảng điều khiển", href: "/technician" },
   { icon: "fact_check", label: "Thiết lập hồ sơ", href: "/technician/setup" },
   {
     icon: "manage_accounts",
@@ -30,7 +30,7 @@ function getActiveLabel(pathname) {
       item.href === "/technician"
         ? pathname === "/technician"
         : pathname?.startsWith(item.href),
-    )?.label || "Dashboard"
+    )?.label || "Bảng điều khiển"
   );
 }
 
@@ -71,7 +71,7 @@ export function TechnicianShell({ children }) {
   };
   const { bookings } = useWorkerBookings();
   const displayName =
-    user?.fullName || user?.email || user?.phone || "Người dùng Vua Thợ";
+    user?.fullName || user?.email || user?.phone || "Người dùng Fixy";
   const roleLabel = getRoleLabel(user?.role);
 
   const pendingCount = useMemo(() => {
@@ -110,7 +110,7 @@ export function TechnicianShell({ children }) {
 
       <aside className={`technician-sidebar ${mobileNavOpen ? "is-open" : ""}`}>
         <div className="technician-brand">
-          <h1>Vua Thợ</h1>
+          <h1>Fixy</h1>
           <p>Thợ nghề</p>
         </div>
 

@@ -138,7 +138,7 @@ export function ChatView() {
               <h3 className="font-small-bold leading-tight">{currentConv?.name}</h3>
               {currentConv?.online && (
                 <p className="text-xs text-success flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-success" /> Online
+                  <span className="w-1.5 h-1.5 rounded-full bg-success" /> Trực tuyến
                 </p>
               )}
             </div>

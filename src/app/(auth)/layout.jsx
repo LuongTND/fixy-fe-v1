@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useAuth } from '@/hooks/useAuth';
-import { getPostLoginRedirect } from '@/constants/routes';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
+import { getPostLoginRedirect } from "@/constants/routes";
 
 export default function AuthLayout({ children }) {
   const { user, isAuthenticated, loading } = useAuth();
@@ -25,7 +25,7 @@ export default function AuthLayout({ children }) {
       <div className="auth-brand-panel relative hidden flex-col justify-center overflow-hidden md:flex md:w-[40%]">
         <div className="auth-brand-overlay absolute inset-0 z-10" />
         <img
-          alt="Vua Thợ - Thợ nghề chuyên nghiệp"
+          alt="Fixy - Thợ nghề chuyên nghiệp"
           className="auth-brand-image absolute inset-0 z-0 h-full w-full object-cover"
           src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&q=80"
         />
@@ -33,24 +33,29 @@ export default function AuthLayout({ children }) {
         <div className="relative z-20 flex h-full flex-col justify-center">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-              <span className="material-symbols-outlined text-[28px] text-white">handyman</span>
+              <span className="material-symbols-outlined text-[28px] text-white">
+                handyman
+              </span>
             </div>
-            <h1 className="auth-brand-title text-white">Vua Thợ</h1>
+            <h1 className="auth-brand-title text-white">Fixy</h1>
           </div>
 
           <p className="auth-brand-description">
-            Nền tảng kết nối thợ nghề chuyên nghiệp với khách hàng. Tham gia ngay để trải nghiệm dịch vụ chất lượng hàng đầu.
+            Nền tảng kết nối thợ nghề chuyên nghiệp với khách hàng. Tham gia
+            ngay để trải nghiệm dịch vụ chất lượng hàng đầu.
           </p>
 
           <ul className="flex flex-col gap-6">
             {[
-              ['verified', 'Mạng lưới thợ nghề được xác minh'],
-              ['shield', 'Giao dịch an toàn & bảo mật'],
-              ['support_agent', 'Hỗ trợ khách hàng 24/7'],
-              ['star', 'Đánh giá & phản hồi minh bạch'],
+              ["verified", "Mạng lưới thợ nghề được xác minh"],
+              ["shield", "Giao dịch an toàn & bảo mật"],
+              ["support_agent", "Hỗ trợ khách hàng 24/7"],
+              ["star", "Đánh giá & phản hồi minh bạch"],
             ].map(([icon, label]) => (
               <li key={label} className="flex items-center gap-3">
-                <span className="material-symbols-outlined auth-brand-list-icon">{icon}</span>
+                <span className="material-symbols-outlined auth-brand-list-icon">
+                  {icon}
+                </span>
                 <span className="auth-brand-list-text">{label}</span>
               </li>
             ))}
@@ -58,9 +63,9 @@ export default function AuthLayout({ children }) {
 
           <div className="auth-brand-stats flex gap-8">
             {[
-              ['10K+', 'Thợ nghề'],
-              ['50K+', 'Khách hàng'],
-              ['4.8★', 'Đánh giá'],
+              ["10K+", "Thợ nghề"],
+              ["50K+", "Khách hàng"],
+              ["4.8★", "Đánh giá"],
             ].map(([value, label]) => (
               <div key={label}>
                 <div className="auth-brand-stat-value text-white">{value}</div>
@@ -79,9 +84,7 @@ export default function AuthLayout({ children }) {
           </Link>
         </div>
 
-        <div className="auth-form-content w-full">
-          {children}
-        </div>
+        <div className="auth-form-content w-full">{children}</div>
       </div>
     </div>
   );
