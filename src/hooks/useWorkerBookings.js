@@ -53,19 +53,21 @@ export function useWorkerBookings({ params = DEFAULT_WORKER_BOOKING_PARAMS, auto
     }
   }, []);
 
+  const paramsString = JSON.stringify(params);
+
   useEffect(() => {
     if (!autoLoad) return undefined;
 
     let alive = true;
     queueMicrotask(() => {
       if (!alive) return;
-      loadBookings().catch(() => {});
+      loadBookings(paramsRef.current).catch(() => {});
     });
 
     return () => {
       alive = false;
     };
-  }, [autoLoad, loadBookings]);
+  }, [autoLoad, loadBookings, paramsString]);
 
   return {
     bookings,

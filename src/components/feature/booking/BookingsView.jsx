@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import { App } from 'antd';
+import { App, Pagination } from 'antd';
 import Link from 'next/link';
 import { SupportTicketModal } from '@/components/common/SupportTicketModal';
-import { SUPPORT_CATEGORY, SUPPORT_PRIORITY } from '@/constants/enums';
+import { BOOKING_STATUS, SUPPORT_CATEGORY, SUPPORT_PRIORITY } from '@/constants/enums';
 import { useCustomerBookings } from '@/hooks/useCustomerBookings';
 import { normalizeStatus, getBookingTitle, formatBookingPrice, formatBookingDate, getBookingStatusKey, STATUS_CONFIGS } from '@/utils';
 
@@ -15,14 +15,41 @@ const FILTERS = [
   { id: 'cancelled', label: 'Đã hủy' },
 ];
 
+const initialPagination = {
+  PageNumber: 1,
+  PageSize: 10,
+};
+
+const filterQueries = {
+  all: {},
+  active: { IsActive: true },
+  completed: { Status: BOOKING_STATUS.COMPLETED },
+  cancelled: { Status: BOOKING_STATUS.CANCELLED },
+};
+
+function buildCustomerBookingParams(filter, pagination) {
+  return {
+    ...(filterQueries[filter] || {}),
+    PageNumber: pagination.PageNumber,
+    PageSize: pagination.PageSize,
+    SortBy: 'CreatedDate',
+    SortDescending: true,
+  };
+}
+
 export function BookingsView() {
   const { message } = App.useApp();
   const [filter, setFilter] = useState('all');
+  const [pagination, setPagination] = useState(initialPagination);
   const [supportOpen, setSupportOpen] = useState(false);
+
+  const params = useMemo(() => buildCustomerBookingParams(filter, pagination), [filter, pagination]);
+
   const handleLoadError = useCallback((error) => {
-    message.error(error.response?.data?.message || error.message || 'KhÃ´ng thá»ƒ táº£i danh sÃ¡ch Ä‘áº·t lá»‹ch.');
+    message.error(error.response?.data?.message || error.message || 'Không thể tải danh sách đặt lịch.');
   }, [message]);
-  const { bookings, loading } = useCustomerBookings({ onError: handleLoadError });
+
+  const { bookings, meta, loading } = useCustomerBookings({ params, onError: handleLoadError });
 
   /*
   useEffect(() => {
@@ -51,15 +78,15 @@ export function BookingsView() {
   }, [message]);
   */
 
-  const filteredBookings = useMemo(() => {
-    if (filter === 'all') return bookings;
-    return bookings.filter((booking) => normalizeStatus(booking.status) === filter);
-  }, [bookings, filter]);
-
   const completedCount = useMemo(
     () => bookings.filter((booking) => normalizeStatus(booking.status) === 'completed').length,
     [bookings]
   );
+
+  const handleFilterChange = (nextFilter) => {
+    setFilter(nextFilter);
+    setPagination((current) => ({ ...current, PageNumber: 1 }));
+  };
 
   return (
     <div className="mx-auto max-w-[1200px] py-8 font-montserrat">
@@ -73,7 +100,7 @@ export function BookingsView() {
           <button
             key={tab.id}
             type="button"
-            onClick={() => setFilter(tab.id)}
+            onClick={() => handleFilterChange(tab.id)}
             className={`whitespace-nowrap rounded-full px-6 py-2 font-semibold transition-all ${
               filter === tab.id ? 'bg-[#FF8228] text-white shadow-sm' : 'bg-[#F5F5F5] text-[#818A91] hover:bg-[#E8E8E8]'
             }`}
@@ -100,12 +127,12 @@ export function BookingsView() {
               ))}
             </div>
           ) : (
-            filteredBookings.map((booking) => {
+            bookings.map((booking) => {
               const statusKey = normalizeStatus(booking.status);
               const granularKey = getBookingStatusKey(booking.status);
               const config = STATUS_CONFIGS[granularKey] || STATUS_CONFIGS.pending;
               const bookingId = booking.id || booking.bookingId;
-              const price = booking.totalAmount || booking.estimatedPrice || booking.price || booking.finalPrice;
+              const price = booking.finalPrice ?? booking.estimatedPrice ?? booking.totalAmount ?? booking.price;
 
               const workerName = booking.workerName || booking.workerFullName || null;
               const workerAvatar = booking.workerAvatarUrl || booking.workerAvatar || null;
@@ -174,10 +201,22 @@ export function BookingsView() {
             })
           )}
 
-          {!loading && filteredBookings.length === 0 && (
+          {!loading && bookings.length === 0 && (
             <div className="rounded-2xl border border-dashed border-[#dec0b1] bg-white py-20 text-center">
               <span className="material-symbols-outlined mb-4 text-[64px] text-[#818A91]">event_busy</span>
               <p className="font-medium text-[#818A91]">Bạn chưa có đặt lịch nào trong mục này.</p>
+            </div>
+          )}
+
+          {!loading && meta.totalCount > 0 && (
+            <div className="flex justify-center pt-2">
+              <Pagination
+                current={meta.pageNumber}
+                pageSize={meta.pageSize}
+                total={meta.totalCount}
+                showSizeChanger
+                onChange={(PageNumber, PageSize) => setPagination({ PageNumber, PageSize })}
+              />
             </div>
           )}
         </div>
@@ -186,10 +225,10 @@ export function BookingsView() {
           <div className="rounded-2xl bg-[#FF8228] p-6 text-white shadow-sm">
             <div className="mb-4 flex items-start justify-between">
               <span className="material-symbols-outlined text-[40px] opacity-80">check_circle</span>
-              <span className="text-4xl font-bold leading-none">{bookings.length}</span>
+              <span className="text-4xl font-bold leading-none">{meta.totalCount}</span>
             </div>
             <p className="text-lg font-bold">Tổng đặt lịch</p>
-            <p className="mt-1 text-sm opacity-80">Đã hoàn thành {completedCount} dịch vụ.</p>
+            <p className="mt-1 text-sm opacity-80">Trang này có {completedCount} dịch vụ hoàn thành.</p>
           </div>
 
           <div className="rounded-2xl border border-[#dec0b1]/30 bg-white p-6 shadow-sm">

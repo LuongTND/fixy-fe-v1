@@ -59,6 +59,16 @@ export const PAYMENT_METHOD = {
   CASH: 5,
 };
 
+export const EXPORT_FORMAT = {
+  CSV: 0,
+  XLSX: 1,
+  PDF: 2,
+};
+
+export const REPORT_TYPE = {
+  BOOKINGS: 0,
+};
+
 /**
  * Transaction Status
  */

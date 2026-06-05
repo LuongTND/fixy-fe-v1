@@ -1,7 +1,7 @@
-import { SettingsView } from '@/components/feature/technician/SettingsView';
+import { SettingsView } from "@/components/feature/technician/SettingsView";
 
 export const metadata = {
-  title: 'Cài đặt - Vua Thợ',
+  title: "Cài đặt - Fixy",
 };
 
 export default function SettingsPage() {

@@ -4,6 +4,10 @@ import { API_ENDPOINTS } from "@/constants/api-endpoints";
 export const bookingApi = {
   getBookings: async (params) =>
     axios.get(API_ENDPOINTS.BOOKINGS.BASE, { params }),
+  getAdminStats: async (params) =>
+    axios.get(API_ENDPOINTS.BOOKINGS.ADMIN_STATS, { params }),
+  getCustomerBookings: async (params) =>
+    axios.get(API_ENDPOINTS.BOOKINGS.CUSTOMER, { params }),
   getBookingById: async (bookingId) =>
     axios.get(API_ENDPOINTS.BOOKINGS.DETAIL(bookingId)),
   getTracking: async (bookingId) =>

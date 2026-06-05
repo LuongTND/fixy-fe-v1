@@ -129,6 +129,26 @@ function mapNotificationToUI(notif) {
   };
 }
 
+function isExpectedNotificationFailure(error) {
+  return (
+    error?.code === 'ERR_NETWORK' ||
+    error?.code === 'ECONNABORTED' ||
+    error?.message === 'Network Error' ||
+    !error?.response
+  );
+}
+
+function logNotificationFailure(message, error) {
+  if (process.env.NODE_ENV !== 'development') return;
+
+  if (isExpectedNotificationFailure(error)) {
+    console.warn(`[Notifications] ${message}: ${error?.message || 'Network unavailable'}`);
+    return;
+  }
+
+  console.warn(`[Notifications] ${message}:`, error);
+}
+
 export function NotificationProvider({ children }) {
   const { isAuthenticated } = useAuth();
   const { notification } = App.useApp();
@@ -169,7 +189,7 @@ export function NotificationProvider({ children }) {
       setUnreadCount(count);
       return count;
     } catch (err) {
-      console.error('Failed to fetch unread count:', err);
+      logNotificationFailure('Failed to fetch unread count', err);
       return 0;
     }
   }, [isAuthenticated]);
@@ -207,7 +227,7 @@ export function NotificationProvider({ children }) {
       setPage(pageNumber);
       setHasMore(rawItems.length >= pageSize);
     } catch (err) {
-      console.error('Failed to fetch notifications:', err);
+      logNotificationFailure('Failed to fetch notifications', err);
     } finally {
       loadingRef.current = false;
       setLoading(false);
@@ -226,7 +246,7 @@ export function NotificationProvider({ children }) {
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (err) {
-      console.error(`Failed to mark notification ${id} as read:`, err);
+      logNotificationFailure(`Failed to mark notification ${id} as read`, err);
     }
   }, [isAuthenticated]);
 
@@ -242,7 +262,7 @@ export function NotificationProvider({ children }) {
       );
       setUnreadCount(0);
     } catch (err) {
-      console.error('Failed to mark all notifications as read:', err);
+      logNotificationFailure('Failed to mark all notifications as read', err);
     }
   }, [isAuthenticated]);
 
@@ -259,7 +279,7 @@ export function NotificationProvider({ children }) {
         }));
       }
     } catch (err) {
-      console.error('Failed to fetch notification settings:', err);
+      logNotificationFailure('Failed to fetch notification settings', err);
     }
   }, [isAuthenticated]);
 
@@ -271,7 +291,7 @@ export function NotificationProvider({ children }) {
       setSettings(merged);
       await notificationApi.updateSettings(merged);
     } catch (err) {
-      console.error('Failed to update notification settings:', err);
+      logNotificationFailure('Failed to update notification settings', err);
       // Revert settings
       fetchSettings();
     }
@@ -371,7 +391,7 @@ export function NotificationProvider({ children }) {
           }
         });
       } catch (err) {
-        console.error('SignalR Notification Hub connection failed:', err);
+        logNotificationFailure('SignalR Notification Hub connection failed', err);
       }
     };
 
@@ -383,7 +403,7 @@ export function NotificationProvider({ children }) {
         connection.off('ReceiveNotification');
         connection.stop()
           .then(() => console.log('SignalR NotificationHub connection stopped.'))
-          .catch((err) => console.error('Error stopping SignalR NotificationHub connection:', err));
+          .catch((err) => logNotificationFailure('Error stopping SignalR NotificationHub connection', err));
       }
     };
   }, [isAuthenticated, notification]);

@@ -1,4 +1,4 @@
-﻿@layer antd-reset {
+@layer antd-reset {
   @import "antd/dist/reset.css";
 }
 @import "tailwindcss";

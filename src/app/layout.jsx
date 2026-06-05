@@ -11,7 +11,8 @@ const montserrat = Montserrat({
 
 export const metadata = {
   title: "Fixy - Nền tảng kết nối thợ nghề",
-  description: "Nền tảng kết nối thợ nghề chuyên nghiệp với khách hàng. Đăng ký ngay để trải nghiệm dịch vụ chất lượng.",
+  description:
+    "Nền tảng kết nối thợ nghề chuyên nghiệp với khách hàng. Đăng ký ngay để trải nghiệm dịch vụ chất lượng.",
 };
 
 export default function RootLayout({ children }) {

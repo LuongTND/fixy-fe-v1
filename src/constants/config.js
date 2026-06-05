@@ -3,8 +3,8 @@ export const DEFAULT_PAGE_SIZE = 20;
 export const DEFAULT_PAGE = 1;
 
 // App Config
-export const APP_NAME = 'Vua Thợ';
-export const APP_VERSION = '1.0.0';
+export const APP_NAME = "Fixy";
+export const APP_VERSION = "1.0.0";
 
 // OTP Config
 export const OTP_LENGTH = 6;

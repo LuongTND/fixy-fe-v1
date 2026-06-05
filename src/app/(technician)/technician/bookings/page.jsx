@@ -1,7 +1,7 @@
-import { BookingsView } from '@/components/feature/technician/BookingsView';
+import { BookingsView } from "@/components/feature/technician/BookingsView";
 
 export const metadata = {
-  title: 'Công việc - Vua Thợ',
+  title: "Công việc - Fixy",
 };
 
 export default function TechnicianBookingsPage() {

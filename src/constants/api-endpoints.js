@@ -27,6 +27,7 @@ export const API_ENDPOINTS = {
     SUMMARY: '/dashboard/summary',
     BOOKING_TRENDS: '/dashboard/booking-trends',
     TOP_SERVICES: '/dashboard/top-services',
+    EXPORT: '/dashboard/export',
   },
   ADDRESSES: {
     GET_ME: '/addresses/me',
@@ -45,6 +46,8 @@ export const API_ENDPOINTS = {
   },
   BOOKINGS: {
     BASE: '/bookings',
+    ADMIN_STATS: '/bookings/admin/stats',
+    CUSTOMER: '/bookings/customer',
     DETAIL: (bookingId) => `/bookings/${bookingId}`,
     TRACKING: (bookingId) => `/bookings/${bookingId}/tracking`,
     WORKER: '/bookings/worker',

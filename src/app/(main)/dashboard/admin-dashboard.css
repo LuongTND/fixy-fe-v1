@@ -848,6 +848,154 @@
   justify-content: center;
 }
 
+.admin-orders-filter-grid {
+  width: 100%;
+  max-width: 920px;
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) 220px 300px;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-orders-search,
+.admin-orders-status-filter.ant-select,
+.admin-orders-date-filter.ant-picker {
+  width: 100%;
+  min-height: 40px;
+}
+
+.admin-orders-search {
+  display: flex;
+  align-items: stretch;
+  height: 40px;
+  min-height: 40px;
+}
+
+.admin-orders-search input {
+  min-width: 0;
+  flex: 1 1 auto;
+  height: 40px;
+  border: 1px solid #DDDDDD;
+  border-right: 0;
+  border-radius: 4px 0 0 4px;
+  padding: 0 14px;
+  color: #383838;
+  font-size: 14px;
+  line-height: 40px;
+  outline: none;
+  background: #FFFFFF;
+}
+
+.admin-orders-search input::placeholder {
+  color: #A8A8A8;
+}
+
+.admin-orders-search input:focus {
+  border-color: #FF8228;
+}
+
+.admin-orders-search input:focus+button {
+  border-color: #FF8228;
+}
+
+.admin-orders-search button {
+  width: 48px;
+  height: 40px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 48px;
+  border: 1px solid #DDDDDD;
+  border-radius: 0 4px 4px 0;
+  color: #818A91;
+  background: #FFFFFF;
+  cursor: pointer;
+}
+
+.admin-orders-search button:hover {
+  color: #FF8228;
+  border-color: #FF8228;
+}
+
+.admin-orders-search .material-symbols-outlined {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.admin-orders-status-filter .ant-select-selector,
+.admin-orders-date-filter.ant-picker {
+  height: 40px !important;
+  min-height: 40px !important;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+}
+
+.admin-orders-status-filter .ant-select-selection-item,
+.admin-orders-status-filter .ant-select-selection-placeholder {
+  line-height: 38px !important;
+}
+
+.admin-orders-table .ant-table {
+  width: 100%;
+}
+
+.admin-orders-table .ant-table-thead>tr>th {
+  color: #4A4A4A;
+  background: #FBF9F8;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  padding: 12px 10px;
+}
+
+.admin-orders-table .ant-table-tbody>tr>td {
+  color: #4A4A4A;
+  font-size: 13px;
+  vertical-align: middle;
+  padding: 12px 10px;
+}
+
+.admin-orders-table .ant-table-cell {
+  overflow: hidden;
+}
+
+.admin-orders-table .ant-btn {
+  min-width: 76px;
+  height: 32px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.admin-orders-price-status {
+  min-width: 0;
+}
+
+.admin-orders-price-status .ant-tag {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 1120px) {
+  .admin-orders-filter-grid {
+    max-width: none;
+    grid-template-columns: 1fr 220px;
+  }
+
+  .admin-orders-date-filter.ant-picker {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .admin-orders-filter-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .admin-tech-table .ant-table-thead>tr>th {
   color: #4A4A4A;
   background: #FBF9F8;
@@ -1338,6 +1486,14 @@
   font-weight: 700;
 }
 
+.admin-orders-export-range.ant-picker {
+  width: 300px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+}
+
 .admin-finance-export-button.ant-btn:hover,
 .admin-finance-export-button.ant-btn:focus-visible {
   color: #FF8228 !important;
@@ -1776,7 +1932,8 @@
 
   .admin-heading-actions,
   .admin-heading-actions .ant-btn,
-  .admin-heading-actions .ant-select {
+  .admin-heading-actions .ant-select,
+  .admin-heading-actions .ant-picker {
     width: 100%;
   }
 
