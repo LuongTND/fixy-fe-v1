@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "generate:firebase-sw": "node scripts/generate-firebase-sw.js",
+    "predev": "node scripts/generate-firebase-sw.js",
     "dev": "next dev ",
+    "prebuild": "node scripts/generate-firebase-sw.js",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
