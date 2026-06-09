@@ -137,6 +137,7 @@ export const API_ENDPOINTS = {
     READ: (id) => `/Notification/${id}/read`,
     READ_ALL: '/Notification/read-all',
     SETTINGS: '/Notification/settings',
+    FCM_TOKEN: '/Notification/fcm-token',
   },
   SUPPORT_TICKETS: {
     BASE: '/support/tickets',

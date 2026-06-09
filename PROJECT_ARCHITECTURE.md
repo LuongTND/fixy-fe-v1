@@ -5,6 +5,7 @@
 Dự án này sử dụng **Feature-Based Architecture** (hay gọi là Vertical Slice Architecture)
 
 ### Nguyên Lý Chính
+
 - ✅ **Tổ chức theo tính năng (feature)** - không theo loại file (component, service, util)
 - ✅ **Mỗi feature tự chứa** - component, API, constant, util của nó
 - ✅ **Dễ scale** - thêm feature mới không ảnh hưởng code cũ
@@ -130,16 +131,16 @@ fixy-fe-v1/
 
 ```javascript
 // ✅ File Naming
-api-endpoints.js          // kebab-case for files
-DashboardChart.jsx        // PascalCase for components
-useAuth.js                // camelCase for hooks
-user.api.js               // feature.type.js pattern
+api - endpoints.js; // kebab-case for files
+DashboardChart.jsx; // PascalCase for components
+useAuth.js; // camelCase for hooks
+user.api.js; // feature.type.js pattern
 
 // ✅ Import Paths
-import { Button } from '@/components/common/Button';
-import { dashboardApi } from '@/apis/dashboard.api';
-import { useAuth } from '@/hooks/useAuth';
-import { API_ENDPOINTS } from '@/constants/api-endpoints';
+import { Button } from "@/components/common/Button";
+import { dashboardApi } from "@/apis/dashboard.api";
+import { useAuth } from "@/hooks/useAuth";
+import { API_ENDPOINTS } from "@/constants/api-endpoints";
 
 // ✅ Export Pattern
 export const functionName = () => {};
@@ -152,6 +153,7 @@ export default LayoutComponent;
 ## 🚀 Workflow: Nhận Task "Call API Dashboard"
 
 ### 📋 Yêu Cầu
+
 **"Tạo trang admin Dashboard. Lấy dữ liệu từ API, hiển thị 3 card thống kê + 1 biểu đồ. Có filter theo ngày"**
 
 ---
@@ -161,10 +163,10 @@ export default LayoutComponent;
 Tạo file: `src/app/(main)/dashboard/page.jsx`
 
 ```jsx
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { DashboardContent } from '@/components/feature/DashboardContent';
+import { useEffect, useState } from "react";
+import { DashboardContent } from "@/components/feature/DashboardContent";
 
 export default function DashboardPage() {
   const [filters, setFilters] = useState({
@@ -188,8 +190,8 @@ export default function DashboardPage() {
 Tạo file: `src/apis/dashboard.api.js`
 
 ```javascript
-import axios from '@/base/axios';
-import { API_ENDPOINTS } from '@/constants/api-endpoints';
+import axios from "@/base/axios";
+import { API_ENDPOINTS } from "@/constants/api-endpoints";
 
 /**
  * Lấy dữ liệu dashboard
@@ -226,11 +228,11 @@ Cập nhật file: `src/constants/api-endpoints.js`
 ```javascript
 export const API_ENDPOINTS = {
   // ... existing endpoints
-  
+
   DASHBOARD: {
-    GET_DATA: '/dashboard/data',
-    GET_CHART: '/dashboard/chart',
-    GET_STATS: '/dashboard/stats',
+    GET_DATA: "/dashboard/data",
+    GET_CHART: "/dashboard/chart",
+    GET_STATS: "/dashboard/stats",
   },
 };
 ```
@@ -272,10 +274,7 @@ export const DashboardDataShape = {
 // Validation shape
 export const validateDashboardData = (data) => {
   return (
-    data &&
-    Array.isArray(data.stats) &&
-    data.stats.length > 0 &&
-    data.chart
+    data && Array.isArray(data.stats) && data.stats.length > 0 && data.chart
   );
 };
 ```
@@ -287,10 +286,10 @@ export const validateDashboardData = (data) => {
 Tạo file: `src/hooks/useDashboard.js`
 
 ```javascript
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { getDashboardData, getDashboardChart } from '@/apis/dashboard.api';
+import { useState, useEffect } from "react";
+import { getDashboardData, getDashboardChart } from "@/apis/dashboard.api";
 
 export function useDashboard(filters) {
   const [data, setData] = useState(null);
@@ -305,8 +304,8 @@ export function useDashboard(filters) {
         setData(dashboardData);
         setError(null);
       } catch (err) {
-        console.error('Failed to fetch dashboard data:', err);
-        setError(err.message || 'Failed to load dashboard');
+        console.error("Failed to fetch dashboard data:", err);
+        setError(err.message || "Failed to load dashboard");
         setData(null);
       } finally {
         setLoading(false);
@@ -327,12 +326,12 @@ export function useDashboard(filters) {
 Tạo file: `src/components/feature/DashboardContent.jsx`
 
 ```jsx
-'use client';
+"use client";
 
-import { DashboardStats } from './DashboardStats';
-import { DashboardChart } from './DashboardChart';
-import { DateFilter } from './DateFilter';
-import { useDashboard } from '@/hooks/useDashboard';
+import { DashboardStats } from "./DashboardStats";
+import { DashboardChart } from "./DashboardChart";
+import { DateFilter } from "./DateFilter";
+import { useDashboard } from "@/hooks/useDashboard";
 
 export function DashboardContent({ filters, setFilters }) {
   const { data, loading, error } = useDashboard(filters);
@@ -362,10 +361,10 @@ export function DashboardContent({ filters, setFilters }) {
 Tạo file: `src/components/feature/DashboardStats.jsx`
 
 ```jsx
-'use client';
+"use client";
 
-import { StatCard } from '@/components/common/StatCard';
-import { formatCurrency } from '@/utils/format';
+import { StatCard } from "@/components/common/StatCard";
+import { formatCurrency } from "@/utils/format";
 
 export function DashboardStats({ stats }) {
   return (
@@ -387,7 +386,7 @@ export function DashboardStats({ stats }) {
 Tạo file: `src/components/feature/DashboardChart.jsx`
 
 ```jsx
-'use client';
+"use client";
 
 // Dùng chart library của bạn (recharts, chart.js, v.v.)
 export function DashboardChart({ data }) {
@@ -404,16 +403,16 @@ export function DashboardChart({ data }) {
 Tạo file: `src/components/feature/DateFilter.jsx`
 
 ```jsx
-'use client';
+"use client";
 
-import { Button } from '@/components/common/Button';
+import { Button } from "@/components/common/Button";
 
 export function DateFilter({ filters, setFilters }) {
   return (
     <div className="flex gap-4 p-4 bg-gray-50 rounded-lg">
       <input
         type="date"
-        value={filters.startDate.toISOString().split('T')[0]}
+        value={filters.startDate.toISOString().split("T")[0]}
         onChange={(e) =>
           setFilters({
             ...filters,
@@ -423,7 +422,7 @@ export function DateFilter({ filters, setFilters }) {
       />
       <input
         type="date"
-        value={filters.endDate.toISOString().split('T')[0]}
+        value={filters.endDate.toISOString().split("T")[0]}
         onChange={(e) =>
           setFilters({
             ...filters,
@@ -444,7 +443,7 @@ export function DateFilter({ filters, setFilters }) {
 Tạo file: `src/components/common/StatCard.jsx`
 
 ```jsx
-'use client';
+"use client";
 
 export function StatCard({ title, value, unit, change }) {
   const isPositive = change >= 0;
@@ -456,10 +455,10 @@ export function StatCard({ title, value, unit, change }) {
       <div className="text-xs text-gray-500 mt-1">{unit}</div>
       <div
         className={`text-sm mt-3 ${
-          isPositive ? 'text-green-600' : 'text-red-600'
+          isPositive ? "text-green-600" : "text-red-600"
         }`}
       >
-        {isPositive ? '↑' : '↓'} {Math.abs(change)}% từ hôm qua
+        {isPositive ? "↑" : "↓"} {Math.abs(change)}% từ hôm qua
       </div>
     </div>
   );
@@ -474,14 +473,14 @@ Cập nhật file: `src/utils/format.js`
 
 ```javascript
 export const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
   }).format(amount);
 };
 
 export const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('vi-VN');
+  return new Date(date).toLocaleDateString("vi-VN");
 };
 
 export const formatDateRange = (startDate, endDate) => {
@@ -494,16 +493,19 @@ export const formatDateRange = (startDate, endDate) => {
 ## 📋 Checklist: Task Dashboard Complete
 
 ### Before Development
+
 - [ ] Tạo `src/apis/dashboard.api.js`
 - [ ] Thêm API endpoints vào `src/constants/api-endpoints.js`
 - [ ] Tạo `src/interfaces/dashboard.interface.js`
 - [ ] Tạo `src/hooks/useDashboard.js`
 
 ### Page & Layout
+
 - [ ] Tạo `src/app/(main)/dashboard/page.jsx`
 - [ ] Cấu hình route nếu cần (middleware, guards)
 
 ### Components
+
 - [ ] Tạo `src/components/feature/DashboardContent.jsx`
 - [ ] Tạo `src/components/feature/DashboardStats.jsx`
 - [ ] Tạo `src/components/feature/DashboardChart.jsx`
@@ -511,9 +513,11 @@ export const formatDateRange = (startDate, endDate) => {
 - [ ] Tạo `src/components/common/StatCard.jsx` (nếu dùng lại)
 
 ### Utilities
+
 - [ ] Thêm format functions vào `src/utils/format.js`
 
 ### Testing
+
 - [ ] Test page route `/dashboard`
 - [ ] Test API call (mock hoặc real API)
 - [ ] Test filter by date
@@ -525,22 +529,22 @@ export const formatDateRange = (startDate, endDate) => {
 
 ```javascript
 // 📁 Folders
-src/                      // lowercase
-components/               // plural
-feature/                  // singular nếu là business logic
-dashboard/                // feature name
-
-// 📄 Files
-api-endpoints.js          // kebab-case
-DashboardStats.jsx        // PascalCase (React component)
-useDashboard.js           // camelCase + use prefix (hooks)
-dashboard.api.js          // feature.type.js
-dashboard.interface.js    // feature.interface.js
+src / // lowercase
+  components / // plural
+  feature / // singular nếu là business logic
+  dashboard / // feature name
+  // 📄 Files
+  api -
+  endpoints.js; // kebab-case
+DashboardStats.jsx; // PascalCase (React component)
+useDashboard.js; // camelCase + use prefix (hooks)
+dashboard.api.js; // feature.type.js
+dashboard.interface.js; // feature.interface.js
 
 // 📝 Variables & Functions
 const dashboardData = {}; // camelCase
 function getDashboardData() {} // verb + noun
-const StatCard = () => {};    // PascalCase for components
+const StatCard = () => {}; // PascalCase for components
 const formatCurrency = () => {}; // camelCase
 ```
 
@@ -550,16 +554,16 @@ const formatCurrency = () => {}; // camelCase
 
 ```javascript
 // ✅ Good - Sử dụng @ path alias
-import { getDashboardData } from '@/apis/dashboard.api';
-import { DashboardStats } from '@/components/feature/DashboardStats';
-import { useDashboard } from '@/hooks/useDashboard';
-import { Button } from '@/components/common/Button';
-import { formatCurrency } from '@/utils/format';
-import { API_ENDPOINTS } from '@/constants/api-endpoints';
+import { getDashboardData } from "@/apis/dashboard.api";
+import { DashboardStats } from "@/components/feature/DashboardStats";
+import { useDashboard } from "@/hooks/useDashboard";
+import { Button } from "@/components/common/Button";
+import { formatCurrency } from "@/utils/format";
+import { API_ENDPOINTS } from "@/constants/api-endpoints";
 
 // ❌ Bad - Relative paths
-import { getDashboardData } from '../../../apis/dashboard.api';
-import { DashboardStats } from '../../../components/feature/DashboardStats';
+import { getDashboardData } from "../../../apis/dashboard.api";
+import { DashboardStats } from "../../../components/feature/DashboardStats";
 ```
 
 ---
@@ -567,6 +571,7 @@ import { DashboardStats } from '../../../components/feature/DashboardStats';
 ## 📊 Quick Reference: Common Task Workflows
 
 ### Task: Thêm Authentication
+
 ```
 1. src/apis/auth.api.js         → login(), logout(), register()
 2. src/hooks/useAuth.js         → Wrapper hook
@@ -576,6 +581,7 @@ import { DashboardStats } from '../../../components/feature/DashboardStats';
 ```
 
 ### Task: Tạo CRUD Module
+
 ```
 1. src/apis/[feature].api.js    → getAll(), getById(), create(), update(), delete()
 2. src/hooks/use[Feature].js    → Data management hook
@@ -585,6 +591,7 @@ import { DashboardStats } from '../../../components/feature/DashboardStats';
 ```
 
 ### Task: Thêm Validation
+
 ```
 1. src/utils/validate.js        → Validation functions
 2. src/constants/validation.js  → Validation rules & messages

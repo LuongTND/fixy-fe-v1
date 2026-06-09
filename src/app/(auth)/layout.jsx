@@ -12,7 +12,13 @@ export default function AuthLayout({ children }) {
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      router.replace(getPostLoginRedirect(user?.role));
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectPath = searchParams.get('redirect');
+      if (redirectPath) {
+        router.replace(redirectPath);
+      } else {
+        router.replace(getPostLoginRedirect(user?.role));
+      }
     }
   }, [isAuthenticated, loading, router, user]);
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import Link from "next/link";
 import { App, Image as AntImage } from "antd";
 import { bookingApi } from "@/apis/booking.api";
 import { mediaApi } from "@/apis/media.api";
@@ -141,23 +142,6 @@ export function JobTrackingView({ bookingId }) {
     handleIncomingMessage,
     shouldConnectChatHub,
   );
-
-  const openSupportTicket = ({
-    category = SUPPORT_CATEGORY.DISPUTE,
-    priority = SUPPORT_PRIORITY.HIGH,
-    subject = "Báo cáo sự cố công việc",
-    description = "",
-    contextLabel = "Ticket sẽ được gắn với công việc hiện tại để đội hỗ trợ kiểm tra nhanh hơn.",
-  } = {}) => {
-    setSupportTicket({
-      open: true,
-      category,
-      priority,
-      subject,
-      description,
-      contextLabel,
-    });
-  };
 
   // Fetch Booking Detail
   const fetchBooking = async (showLoading = false) => {
@@ -637,6 +621,18 @@ export function JobTrackingView({ bookingId }) {
 
   return (
     <main className="max-w-[1200px] mx-auto px-4 py-8 font-montserrat text-[#1b1c1c] min-h-screen">
+      <div className="mb-6">
+        <Link
+          href="/technician/bookings"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold !text-primary hover:underline no-underline"
+        >
+          <span className="material-symbols-outlined text-[18px]">
+            arrow_back
+          </span>
+          Quay lại danh sách công việc
+        </Link>
+      </div>
+
       {/* Job header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
@@ -652,17 +648,7 @@ export function JobTrackingView({ bookingId }) {
             {formatDate(booking.scheduledAt || booking.createdDate)}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => openSupportTicket()}
-            className="inline-flex items-center gap-2 rounded-full border border-[#FF8228]/40 bg-white px-4 py-2 text-xs font-bold text-[#FF8228] shadow-sm transition-all hover:bg-[#FFF4ED]"
-          >
-            <span className="material-symbols-outlined text-[16px]">
-              report
-            </span>
-            Báo cáo sự cố
-          </button>
+        <div className="flex items-center gap-2">
           <span
             className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider shadow-sm border ${
               statusKey === "pending"
@@ -1629,19 +1615,6 @@ export function JobTrackingView({ bookingId }) {
           </div>
         </>
       )}
-
-      <SupportTicketModal
-        open={supportTicket.open}
-        onClose={() =>
-          setSupportTicket((current) => ({ ...current, open: false }))
-        }
-        bookingId={bookingId}
-        defaultCategory={supportTicket.category}
-        defaultPriority={supportTicket.priority}
-        defaultSubject={supportTicket.subject}
-        defaultDescription={supportTicket.description}
-        contextLabel={supportTicket.contextLabel}
-      />
     </main>
   );
 }

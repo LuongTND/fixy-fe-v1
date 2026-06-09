@@ -1,15 +1,17 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { App, Button, Checkbox, Divider, Form, Input } from "antd";
 import { useAuth } from "@/hooks/useAuth";
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from "@/constants/messages";
-
 import { getPostLoginRedirect } from "@/constants/routes";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectPath = searchParams.get("redirect");
   const { message } = App.useApp();
   const { login } = useAuth();
 
@@ -17,7 +19,13 @@ export default function LoginPage() {
     try {
       const response = await login(values.emailOrPhone, values.password);
       message.success(SUCCESS_MESSAGES.LOGIN_SUCCESS);
-      router.push(getPostLoginRedirect(response?.roles?.[0] || response?.role));
+      if (redirectPath) {
+        router.push(redirectPath);
+      } else {
+        router.push(
+          getPostLoginRedirect(response?.roles?.[0] || response?.role),
+        );
+      }
     } catch (err) {
       message.error(
         err.response?.data?.message || ERROR_MESSAGES.INVALID_CREDENTIALS,
@@ -32,7 +40,7 @@ export default function LoginPage() {
           Đăng nhập
         </h2>
         <p className="text-sm leading-[21px] text-gray">
-          Chào mừng bạn quay trở lại Fixy
+          Chào mừng bạn quay trở lại Vua Thợ
         </p>
       </div>
 
@@ -132,6 +140,16 @@ export default function LoginPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={<div className="py-10 text-center text-gray">Đang tải...</div>}
+    >
+      <LoginForm />
+    </Suspense>
   );
 }
 

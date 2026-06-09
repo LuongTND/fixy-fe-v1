@@ -3,6 +3,7 @@
 import React, { createContext, useState, useCallback, useEffect } from 'react';
 import { authApi } from '@/apis/auth.api';
 import { userApi } from '@/apis/user.api';
+import { notificationApi } from '@/apis/notification.api';
 
 export const AuthContext = createContext(null);
 
@@ -134,6 +135,14 @@ export function AuthProvider({ children }) {
   }, [fetchUserProfile]);
 
   const logout = useCallback(() => {
+    const fcmToken = typeof window !== 'undefined' ? localStorage.getItem('fcm_token') : null;
+    if (fcmToken) {
+      if (typeof notificationApi.unregisterFcmToken === 'function') {
+        notificationApi.unregisterFcmToken({ token: fcmToken })
+          .catch((err) => console.error('Failed to unregister FCM token:', err));
+      }
+      localStorage.removeItem('fcm_token');
+    }
     setUser(null);
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');

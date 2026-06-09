@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "generate:firebase-sw": "node scripts/generate-firebase-sw.js",
+    "predev": "node scripts/generate-firebase-sw.js",
     "dev": "next dev ",
+    "prebuild": "node scripts/generate-firebase-sw.js",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -13,6 +16,7 @@
     "@microsoft/signalr": "^10.0.0",
     "antd": "^5.11.0",
     "axios": "^1.7.0",
+    "firebase": "^12.14.0",
     "next": "16.2.5",
     "react": "19.2.4",
     "react-dom": "19.2.4",

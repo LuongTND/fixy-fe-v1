@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { App } from 'antd';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { addressApi } from '@/apis/address.api';
 import { bookingApi } from '@/apis/booking.api';
 import { goongApi } from '@/apis/goong.api';
 import { mediaApi } from '@/apis/media.api';
+import { workerProfileApi } from '@/apis/worker-profile.api';
 import { serviceCategoryApi } from '@/apis/service-category.api';
 import { useServiceCategories } from '@/hooks/useServiceCategories';
 import { BOOKING_SCHEDULED_TYPE, MEDIA_CATEGORY, MEDIA_OWNER_TYPE } from '@/constants/enums';
@@ -99,9 +100,10 @@ function GoongMapPreview({ selectedLocation }) {
     async function initMap() {
       if (!containerRef.current || mapRef.current) return;
 
-      const [configResponse, goongjs] = await Promise.all([
+      const [configResponse, goongjs, styleResponse] = await Promise.all([
         fetch('/api/goong/map-config'),
         ensureGoongAssets(),
+        fetch('https://tiles.goong.io/assets/goong_map_web.json').then((res) => res.json()).catch(() => null),
       ]);
       const config = await configResponse.json();
 
@@ -113,9 +115,16 @@ function GoongMapPreview({ selectedLocation }) {
         : DEFAULT_MAP_CENTER;
 
       goongjs.accessToken = config.maptilesKey;
+
+      let mapStyle = 'https://tiles.goong.io/assets/goong_map_web.json';
+      if (styleResponse && Array.isArray(styleResponse.layers)) {
+        styleResponse.layers = styleResponse.layers.filter((layer) => layer.id !== 'poi-tree');
+        mapStyle = styleResponse;
+      }
+
       mapRef.current = new goongjs.Map({
         container: containerRef.current,
-        style: 'https://tiles.goong.io/assets/goong_map_web.json',
+        style: mapStyle,
         center,
         zoom: initialLocation ? 15 : 12,
       });
@@ -179,6 +188,9 @@ function GoongMapPreview({ selectedLocation }) {
 export function CreateRequestView() {
   const { message } = App.useApp();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const workerId = searchParams.get('workerId');
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [proType, setProType] = useState('auto');
   const [selectedWorker, setSelectedWorker] = useState(null);
@@ -198,6 +210,37 @@ export function CreateRequestView() {
   const [estimatedCost, setEstimatedCost] = useState(0);
   const [isPriceLoading, setIsPriceLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!workerId) return;
+
+    let alive = true;
+    const fetchWorker = async () => {
+      try {
+        const workerData = await workerProfileApi.getPublicById(workerId);
+        if (!alive) return;
+
+        if (workerData) {
+          setSelectedWorker(workerData);
+          setProType('manual');
+
+          const workerServices = workerData.services || [];
+          const primarySvc = workerServices.find((s) => s.isPrimary) || workerServices[0];
+          if (primarySvc?.categoryId) {
+            setSelectedService(primarySvc.categoryId);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to pre-select worker from query:', err);
+      }
+    };
+
+    fetchWorker();
+
+    return () => {
+      alive = false;
+    };
+  }, [workerId]);
 
   useEffect(() => {
     if (!selectedService && services[0]?.id) {

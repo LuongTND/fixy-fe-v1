@@ -25,13 +25,13 @@ export const throttle = (func, limit) => {
 
 // Capitalize first letter
 export const capitalize = (str) => {
-  if (!str) return '';
+  if (!str) return "";
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
 // Trim and remove extra spaces
 export const trimSpace = (str) => {
-  return str.trim().replace(/\s+/g, ' ');
+  return str.trim().replace(/\s+/g, " ");
 };
 
 // Check if all values are equal
@@ -51,21 +51,34 @@ export const getLast = (arr, n) => {
 
 // Gender Labels and Normalizer
 export const GENDER_LABELS = {
-  0: 'Nam',
-  1: 'Nữ',
-  2: 'Khác',
+  0: "Nam",
+  1: "Nữ",
+  2: "Khác",
 };
 
 export const normalizeGender = (value) => {
-  if (value === null || value === undefined || value === '') return '';
-  if (typeof value === 'number') return value;
+  if (value === null || value === undefined || value === "") return "";
+  if (typeof value === "number") return value;
 
   const normalized = String(value).trim().toLowerCase();
-  if (normalized === '0' || normalized === 'male' || normalized === 'nam') return 0;
-  if (normalized === '1' || normalized === 'female' || normalized === 'nữ' || normalized === 'nu') return 1;
-  if (normalized === '2' || normalized === 'other' || normalized === 'khác' || normalized === 'khac') return 2;
+  if (normalized === "0" || normalized === "male" || normalized === "nam")
+    return 0;
+  if (
+    normalized === "1" ||
+    normalized === "female" ||
+    normalized === "nữ" ||
+    normalized === "nu"
+  )
+    return 1;
+  if (
+    normalized === "2" ||
+    normalized === "other" ||
+    normalized === "khác" ||
+    normalized === "khac"
+  )
+    return 2;
 
-  return '';
+  return "";
 };
 
 export const formatGenderLabel = (value, fallback = 'Chưa cập nhật') => {
@@ -82,21 +95,21 @@ export const GENDER_STRING_OPTIONS = [
 // Safely extract token userId/sub claim
 export const getUserIdFromToken = (token) => {
   try {
-    if (!token) return '';
-    const base64Url = token.split('.')[1];
-    if (!base64Url) return '';
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    if (!token) return "";
+    const base64Url = token.split(".")[1];
+    if (!base64Url) return "";
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const json = decodeURIComponent(
       window
         .atob(base64)
-        .split('')
+        .split("")
         .map((char) => `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`)
-        .join('')
+        .join(""),
     );
     const payload = JSON.parse(json);
-    return payload.sub || payload.nameid || payload.userId || '';
+    return payload.sub || payload.nameid || payload.userId || "";
   } catch {
-    return '';
+    return "";
   }
 };
 
@@ -111,85 +124,160 @@ export const getUploadedMediaItems = (payload) => {
 };
 
 // Extract actual media URL
-export const getMediaUrl = (media) => media?.fileUrl || media?.url || media?.imageUrl || media?.avatarUrl || media?.path || '';
+export const getMediaUrl = (media) =>
+  media?.fileUrl ||
+  media?.url ||
+  media?.imageUrl ||
+  media?.avatarUrl ||
+  media?.path ||
+  "";
 
 // Safely normalize transactions collection
 export const normalizeWalletTransactions = (payload) => {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload?.items)) return payload.items;
   if (Array.isArray(payload?.data)) return payload.data;
-  if (Array.isArray(payload?.recentTransactions)) return payload.recentTransactions;
+  if (Array.isArray(payload?.recentTransactions))
+    return payload.recentTransactions;
   return [];
 };
 
 // Transaction Type and Status Labels
 export const WALLET_TRANSACTION_TYPE_LABELS = {
-  topup: 'Nạp tiền vào ví',
-  payment: 'Thanh toán dịch vụ',
-  refund: 'Hoàn tiền',
-  withdraw: 'Rút tiền',
+  topup: "Nạp tiền vào ví",
+  payment: "Thanh toán dịch vụ",
+  refund: "Hoàn tiền",
+  withdraw: "Rút tiền",
 };
 
 export const WALLET_TRANSACTION_STATUS_LABELS = {
-  success: 'Hoàn tất',
-  completed: 'Hoàn tất',
-  pending: 'Đang xử lý',
-  failed: 'Thất bại',
-  cancelled: 'Đã hủy',
+  success: "Hoàn tất",
+  completed: "Hoàn tất",
+  pending: "Đang xử lý",
+  failed: "Thất bại",
+  cancelled: "Đã hủy",
 };
 
 // Safely extract transaction amount with directional sign
 export const getTransactionAmount = (tx) => {
   const amount = Number(tx?.amount ?? tx?.value ?? tx?.money ?? 0);
-  const direction = String(tx?.direction || '').toLowerCase();
-  if (direction === 'debit' || direction === 'out') return -Math.abs(amount);
+  const direction = String(tx?.direction || "").toLowerCase();
+  if (direction === "debit" || direction === "out") return -Math.abs(amount);
   return amount;
 };
 
 // Map transaction type to material icon name
 export const getTransactionIcon = (tx) => {
-  const rawType = String(tx?.type ?? tx?.transactionType ?? tx?.kind ?? '').toLowerCase();
-  if (rawType.includes('top') || rawType.includes('deposit')) return 'account_balance';
-  if (rawType.includes('refund')) return 'restart_alt';
-  if (rawType.includes('withdraw')) return 'payments';
-  return 'receipt_long';
+  const rawType = String(
+    tx?.type ?? tx?.transactionType ?? tx?.kind ?? "",
+  ).toLowerCase();
+  if (rawType.includes("top") || rawType.includes("deposit"))
+    return "account_balance";
+  if (rawType.includes("refund")) return "restart_alt";
+  if (rawType.includes("withdraw")) return "payments";
+  return "receipt_long";
 };
 
 // Extract transaction display title
 export const getTransactionTitle = (tx) => {
-  const rawType = String(tx?.type ?? tx?.transactionType ?? tx?.kind ?? '').toLowerCase();
-  return tx?.title || tx?.description || tx?.note || tx?.content || WALLET_TRANSACTION_TYPE_LABELS[rawType] || 'Giao dịch ví';
+  const rawType = String(
+    tx?.type ?? tx?.transactionType ?? tx?.kind ?? "",
+  ).toLowerCase();
+  return (
+    tx?.title ||
+    tx?.description ||
+    tx?.note ||
+    tx?.content ||
+    WALLET_TRANSACTION_TYPE_LABELS[rawType] ||
+    "Giao dịch ví"
+  );
 };
 
 // Map transaction status to display label
 export const getTransactionStatus = (tx) => {
-  const status = String(tx?.status || tx?.transactionStatus || '').toLowerCase();
-  return WALLET_TRANSACTION_STATUS_LABELS[status] || tx?.status || tx?.transactionStatus || 'Hoàn tất';
+  const status = String(
+    tx?.status || tx?.transactionStatus || "",
+  ).toLowerCase();
+  return (
+    WALLET_TRANSACTION_STATUS_LABELS[status] ||
+    tx?.status ||
+    tx?.transactionStatus ||
+    "Hoàn tất"
+  );
 };
 
 // Extract initials from user's full name
-export const getInitials = (name, fallback = 'VT') => {
-  const parts = String(name || '')
+export const getInitials = (name, fallback = "VT") => {
+  const parts = String(name || "")
     .trim()
     .split(/\s+/)
     .filter(Boolean);
 
   if (!parts.length) return fallback;
-  return parts.slice(-2).map((part) => part[0]).join('').toUpperCase();
+  return parts
+    .slice(-2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
 };
 
 // Safe wrapper to unpack paginated/array collection responses from APIs
 export const extractCollectionPayload = (payload) => {
   if (Array.isArray(payload)) {
-    return { items: payload, totalCount: payload.length, pageNumber: 1, pageSize: payload.length || 10 };
+    return {
+      items: payload,
+      totalCount: payload.length,
+      pageNumber: 1,
+      pageSize: payload.length || 10,
+    };
   }
 
-  const items = payload?.items || payload?.data || payload?.results || payload?.records || [];
+  const items =
+    payload?.items ||
+    payload?.data ||
+    payload?.results ||
+    payload?.records ||
+    [];
 
   return {
     items: Array.isArray(items) ? items : [],
-    totalCount: payload?.totalCount || payload?.totalItems || payload?.totalRecords || payload?.count || items.length || 0,
+    totalCount:
+      payload?.totalCount ||
+      payload?.totalItems ||
+      payload?.totalRecords ||
+      payload?.count ||
+      items.length ||
+      0,
     pageNumber: payload?.pageNumber || 1,
     pageSize: payload?.pageSize || 10,
   };
 };
+
+// Calculate distance in km between two geo coordinates using Haversine formula
+export const getDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Radius of earth in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+// Mask bank account number showing only last 4 digits
+export const maskAccount = (accountNumber) => {
+  if (!accountNumber) return "Chưa cập nhật";
+  const str = String(accountNumber);
+  if (str.length <= 4) return str;
+  return `•••• ${str.slice(-4)}`;
+};
+
+// Extract raw file object from Upload component file wrapper
+export const getRawFile = (file) => {
+  return file?.rawFile || file?.originFileObj || file;
+};
+

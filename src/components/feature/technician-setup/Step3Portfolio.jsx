@@ -3,10 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Image as AntImage, Select, Steps } from 'antd';
 import { vietnamProvincesApi, matchProvince, matchWard, filterAddressOption } from '@/apis/vietnam-provinces.api';
+import { getRawFile } from '@/utils/helpers';
 
-function getRawFile(file) {
-  return file?.rawFile || file?.originFileObj || file;
-}
+
 
 function createPortfolioUploadItem(file) {
   const rawFile = getRawFile(file);

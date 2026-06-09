@@ -3,14 +3,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Image as AntImage, Steps, Upload } from 'antd';
 import { fptVisionApi, parseVietnameseDate } from '@/apis/fpt-vision.api';
+import { getRawFile } from '@/utils/helpers';
 
 const MAX_ID_UPLOADS = 6;
 const ID_SIDE_FRONT = 'front';
 const ID_SIDE_BACK = 'back';
 
-function getRawFile(file) {
-  return file?.rawFile || file?.originFileObj || file;
-}
+
 
 function createUploadItem(file) {
   const rawFile = getRawFile(file);
