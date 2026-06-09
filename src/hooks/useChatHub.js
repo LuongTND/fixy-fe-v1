@@ -1,5 +1,9 @@
-import { useEffect, useState, useRef } from 'react';
-import { HubConnectionBuilder, LogLevel, HttpTransportType } from '@microsoft/signalr';
+import { useEffect, useState, useRef } from "react";
+import {
+  HubConnectionBuilder,
+  LogLevel,
+  HttpTransportType,
+} from "@microsoft/signalr";
 
 /**
  * Custom hook to connect to the SignalR ChatHub.
@@ -9,7 +13,12 @@ import { HubConnectionBuilder, LogLevel, HttpTransportType } from '@microsoft/si
  * @param {function} onMessageReceived - Callback triggered when a new chat message is received.
  * @returns {object} { isConnected }
  */
-export const useChatHub = (bookingId, token, onMessageReceived, isEnabled = true) => {
+export const useChatHub = (
+  bookingId,
+  token,
+  onMessageReceived,
+  isEnabled = true,
+) => {
   const [isConnected, setIsConnected] = useState(false);
   const connectionRef = useRef(null);
   const onMessageReceivedRef = useRef(onMessageReceived);
@@ -20,19 +29,22 @@ export const useChatHub = (bookingId, token, onMessageReceived, isEnabled = true
   }, [onMessageReceived]);
 
   useEffect(() => {
-    if (!isEnabled || !bookingId || !token || typeof window === 'undefined') {
+    if (!isEnabled || !bookingId || !token || typeof window === "undefined") {
       return undefined;
     }
 
-    let hubUrl = process.env.NEXT_PUBLIC_CHAT_HUB_URL || 
-      (process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/?$/, '/hubs/chat') : '');
+    let hubUrl =
+      process.env.NEXT_PUBLIC_CHAT_HUB_URL ||
+      (process.env.NEXT_PUBLIC_API_URL
+        ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/?$/, "/hubs/chat")
+        : "");
 
     if (!hubUrl) {
-      console.warn('SignalR Chat Hub URL is not defined.');
+      console.warn("SignalR Chat Hub URL is not defined.");
       return undefined;
     }
 
-    const separator = hubUrl.includes('?') ? '&' : '?';
+    const separator = hubUrl.includes("?") ? "&" : "?";
     hubUrl = `${hubUrl}${separator}ngrok-skip-browser-warning=true`;
 
     // Initialize Hub connection
@@ -41,7 +53,7 @@ export const useChatHub = (bookingId, token, onMessageReceived, isEnabled = true
         accessTokenFactory: () => token,
         transport: HttpTransportType.WebSockets | HttpTransportType.LongPolling,
         headers: {
-          'ngrok-skip-browser-warning': 'true',
+          "ngrok-skip-browser-warning": "true",
         },
       })
       .withAutomaticReconnect([0, 2000, 5000, 10000])
@@ -58,7 +70,7 @@ export const useChatHub = (bookingId, token, onMessageReceived, isEnabled = true
           if (logLevel >= LogLevel.Warning) {
             console.warn(`[SignalR] ${message}`);
           }
-        }
+        },
       })
       .build();
 
@@ -75,25 +87,24 @@ export const useChatHub = (bookingId, token, onMessageReceived, isEnabled = true
         }
 
         setIsConnected(true);
-        console.log('SignalR Connected to ChatHub!');
+        console.log("SignalR Connected to ChatHub!");
 
         // Join room/group for the specific booking
         try {
-          await connection.invoke('JoinChatGroup', bookingId);
+          await connection.invoke("JoinChatGroup", bookingId);
           console.log(`Joined chat group for booking: ${bookingId}`);
         } catch (invokeError) {
-          console.warn('Failed to invoke JoinChatGroup:', invokeError);
+          console.warn("Failed to invoke JoinChatGroup:", invokeError);
         }
 
         // Register listener for incoming chat messages
-        connection.on('ReceiveChatMessage', (message) => {
+        connection.on("ReceiveChatMessage", (message) => {
           if (onMessageReceivedRef.current) {
             onMessageReceivedRef.current(message);
           }
         });
-
       } catch (err) {
-        console.error('Error establishing SignalR connection:', err);
+        console.error("Error establishing SignalR connection:", err);
       }
     };
 
@@ -101,35 +112,45 @@ export const useChatHub = (bookingId, token, onMessageReceived, isEnabled = true
 
     // Reconnection & connection state monitoring
     connection.onreconnecting((error) => {
-      console.warn('SignalR reconnecting due to connection loss...', error);
+      console.warn("SignalR reconnecting due to connection loss...", error);
       if (isMounted) setIsConnected(false);
     });
 
     connection.onreconnected((connectionId) => {
-      console.log('SignalR reconnected successfully. Connection ID:', connectionId);
+      console.log(
+        "SignalR reconnected successfully. Connection ID:",
+        connectionId,
+      );
       if (isMounted) {
         setIsConnected(true);
         // Re-join booking group after reconnecting
-        connection.invoke('JoinChatGroup', bookingId).catch((err) => {
-          console.warn('Failed to re-join booking group after reconnection:', err);
+        connection.invoke("JoinChatGroup", bookingId).catch((err) => {
+          console.warn(
+            "Failed to re-join booking group after reconnection:",
+            err,
+          );
         });
       }
     });
 
     connection.onclose((error) => {
-      console.warn('SignalR connection closed.', error);
+      console.warn("SignalR connection closed.", error);
       if (isMounted) setIsConnected(false);
     });
 
     return () => {
       isMounted = false;
       if (connection) {
-        connection.invoke('LeaveChatGroup', bookingId)
-          .catch((err) => console.warn('Error invoking LeaveChatGroup:', err))
+        connection
+          .invoke("LeaveChatGroup", bookingId)
+          .catch((err) => console.warn("Error invoking LeaveChatGroup:", err))
           .finally(() => {
-            connection.stop()
-              .then(() => console.log('SignalR ChatHub connection stopped.'))
-              .catch((err) => console.error('Error stopping SignalR connection:', err));
+            connection
+              .stop()
+              .then(() => console.log("SignalR ChatHub connection stopped."))
+              .catch((err) =>
+                console.error("Error stopping SignalR connection:", err),
+              );
           });
       }
     };

@@ -30,6 +30,7 @@ src/
 ```
 
 Run verification:
+
 ```bash
 # Linux/Mac
 find src -type d | sort
@@ -46,16 +47,12 @@ Get-ChildItem src -Recurse -Directory | Sort-Object
 
 - [ ] API services: `src/apis/*.api.js` (kebab-case)
   - Example: `dashboard.api.js`, `user.api.js`
-  
 - [ ] Constants: `src/constants/*.js` (kebab-case)
   - Example: `api-endpoints.js`, `validation.js`
-  
 - [ ] Utilities: `src/utils/*.js` (kebab-case)
   - Example: `format.js`, `validate.js`, `helpers.js`
-  
 - [ ] Hooks: `src/hooks/use*.js` (use prefix)
   - Example: `useApi.js`, `useAuth.js`, `useFetch.js`
-  
 - [ ] Interfaces: `src/interfaces/*.js` (kebab-case)
   - Example: `dashboard.interface.js`, `api.interface.js`
 
@@ -63,13 +60,10 @@ Get-ChildItem src -Recurse -Directory | Sort-Object
 
 - [ ] PascalCase for component names
   - Example: `Button.jsx`, `DashboardStats.jsx`, `Header.jsx`
-  
 - [ ] Feature components: `src/components/feature/*.jsx`
   - Example: `src/components/feature/DashboardChart.jsx`
-  
 - [ ] Common components: `src/components/common/*.jsx`
   - Example: `src/components/common/Button.jsx`, `src/components/common/Card.jsx`
-  
 - [ ] Layout components: `src/components/layout/*.jsx`
   - Example: `src/components/layout/Header.jsx`, `src/components/layout/Footer.jsx`
 
@@ -77,7 +71,6 @@ Get-ChildItem src -Recurse -Directory | Sort-Object
 
 - [ ] Next.js pages: `src/app/*/page.jsx` (lowercase)
   - Example: `src/app/(main)/dashboard/page.jsx`
-  
 - [ ] Layouts: `**/layout.jsx` (lowercase)
   - Example: `src/app/(main)/layout.jsx`
 
@@ -110,17 +103,17 @@ Check `tsconfig.json`:
 
 ```javascript
 // ✅ GOOD - Using @ path alias
-import { getDashboardData } from '@/apis/dashboard.api';
-import { DashboardStats } from '@/components/feature/DashboardStats';
-import { useDashboard } from '@/hooks/useDashboard';
-import { Button } from '@/components/common/Button';
-import { formatCurrency } from '@/utils/format';
-import { API_ENDPOINTS } from '@/constants/api-endpoints';
-import { AuthProvider, useAuth } from '@/providers/AuthProvider';
+import { getDashboardData } from "@/apis/dashboard.api";
+import { DashboardStats } from "@/components/feature/DashboardStats";
+import { useDashboard } from "@/hooks/useDashboard";
+import { Button } from "@/components/common/Button";
+import { formatCurrency } from "@/utils/format";
+import { API_ENDPOINTS } from "@/constants/api-endpoints";
+import { AuthProvider, useAuth } from "@/providers/AuthProvider";
 
 // ❌ BAD - Relative paths
-import { getDashboardData } from '../../../apis/dashboard.api';
-import { DashboardStats } from '../../../components/feature/DashboardStats';
+import { getDashboardData } from "../../../apis/dashboard.api";
+import { DashboardStats } from "../../../components/feature/DashboardStats";
 ```
 
 ---
@@ -133,8 +126,8 @@ File: `src/apis/[feature].api.js`
 
 ```javascript
 // ✅ Pattern
-import axios from '@/base/axios';
-import { API_ENDPOINTS } from '@/constants/api-endpoints';
+import axios from "@/base/axios";
+import { API_ENDPOINTS } from "@/constants/api-endpoints";
 
 export const getFeatureData = async (params) => {
   const response = await axios.get(API_ENDPOINTS.FEATURE.GET, { params });
@@ -142,7 +135,7 @@ export const getFeatureData = async (params) => {
 };
 
 // ✅ Usage in components
-import { getFeatureData } from '@/apis/feature.api';
+import { getFeatureData } from "@/apis/feature.api";
 
 const data = await getFeatureData({ page: 1 });
 ```
@@ -153,10 +146,10 @@ File: `src/hooks/use[Feature].js`
 
 ```javascript
 // ✅ Pattern
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { getFeatureData } from '@/apis/feature.api';
+import { useState, useEffect } from "react";
+import { getFeatureData } from "@/apis/feature.api";
 
 export function useFeature(params) {
   const [data, setData] = useState(null);
@@ -187,10 +180,10 @@ File: `src/components/feature/[Feature].jsx` or `src/components/common/[Componen
 
 ```jsx
 // ✅ Pattern - Feature Component
-'use client';
+"use client";
 
-import { useFeature } from '@/hooks/useFeature';
-import { SubComponent } from '@/components/common/SubComponent';
+import { useFeature } from "@/hooks/useFeature";
+import { SubComponent } from "@/components/common/SubComponent";
 
 export function DashboardStats({ filters }) {
   const { data, loading, error } = useFeature(filters);
@@ -208,7 +201,7 @@ export function DashboardStats({ filters }) {
 }
 
 // ✅ Pattern - Common Component (Reusable)
-export function Button({ variant = 'primary', children, ...props }) {
+export function Button({ variant = "primary", children, ...props }) {
   return (
     <button className={`btn btn-${variant}`} {...props}>
       {children}
@@ -224,18 +217,18 @@ File: `src/utils/[utility].js`
 ```javascript
 // ✅ Pattern
 export const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('vi-VN');
+  return new Date(date).toLocaleDateString("vi-VN");
 };
 
 export const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
   }).format(amount);
 };
 
 // ✅ Usage
-import { formatDate, formatCurrency } from '@/utils/format';
+import { formatDate, formatCurrency } from "@/utils/format";
 
 const date = formatDate(new Date());
 const price = formatCurrency(50000);
@@ -272,14 +265,14 @@ npm run build
 
 ### ✔️ Advantages of Feature-Based Architecture
 
-| Benefit | Description |
-|---------|-------------|
-| **Easy to Find** | All related files in one feature folder |
-| **Easy to Scale** | Add new features without touching existing code |
-| **Easy to Test** | Each feature is independently testable |
-| **Easy to Maintain** | Changes localized to feature folder |
-| **Team Friendly** | Multiple team members work on different features |
-| **Performance** | Code splitting easier with feature-based structure |
+| Benefit              | Description                                        |
+| -------------------- | -------------------------------------------------- |
+| **Easy to Find**     | All related files in one feature folder            |
+| **Easy to Scale**    | Add new features without touching existing code    |
+| **Easy to Test**     | Each feature is independently testable             |
+| **Easy to Maintain** | Changes localized to feature folder                |
+| **Team Friendly**    | Multiple team members work on different features   |
+| **Performance**      | Code splitting easier with feature-based structure |
 
 ---
 

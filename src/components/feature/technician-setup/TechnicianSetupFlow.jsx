@@ -1,30 +1,28 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import { App } from 'antd';
-import { workerProfileApi } from '@/apis/worker-profile.api';
-import { userApi } from '@/apis/user.api';
-import { WORKER_STATUS } from '@/constants/enums';
-import { normalizeGender } from '@/utils/helpers';
-import { Step1BasicInfo } from './Step1BasicInfo';
-import { Step2Verification } from './Step2Verification';
-import { Step3Portfolio } from './Step3Portfolio';
-import { TechnicianStatus } from './TechnicianStatus';
+import { useCallback, useEffect, useState } from "react";
+import { App } from "antd";
+import { workerProfileApi } from "@/apis/worker-profile.api";
+import { userApi } from "@/apis/user.api";
+import { WORKER_STATUS } from "@/constants/enums";
+import { normalizeGender, getRawFile } from "@/utils/helpers";
+import { Step1BasicInfo } from "./Step1BasicInfo";
+import { Step2Verification } from "./Step2Verification";
+import { Step3Portfolio } from "./Step3Portfolio";
+import { TechnicianStatus } from "./TechnicianStatus";
 
-function getRawFile(file) {
-  return file?.rawFile || file?.originFileObj || file;
-}
-
-async function convertUrlToFile(url, defaultName = 'image.jpg') {
+async function convertUrlToFile(url, defaultName = "image.jpg") {
   try {
     const response = await fetch(url);
     const blob = await response.blob();
-    const mimeType = blob.type || 'image/jpeg';
-    const extension = mimeType.split('/')[1] || 'jpg';
-    const filename = defaultName.includes('.') ? defaultName : `${defaultName}.${extension}`;
+    const mimeType = blob.type || "image/jpeg";
+    const extension = mimeType.split("/")[1] || "jpg";
+    const filename = defaultName.includes(".")
+      ? defaultName
+      : `${defaultName}.${extension}`;
     return new File([blob], filename, { type: mimeType });
   } catch (error) {
-    console.error('Error converting URL to File:', error);
+    console.error("Error converting URL to File:", error);
     return null;
   }
 }
@@ -38,46 +36,63 @@ async function mapCertificateUploadsForApi(certificates = []) {
           if (raw instanceof Blob) return raw;
 
           const url = file?.fileUrl || file?.previewUrl || file?.url;
-          if (typeof url === 'string' && url.startsWith('http')) {
-            return convertUrlToFile(url, file.name || `certificate-${certIndex}-${mediaIndex}`);
+          if (typeof url === "string" && url.startsWith("http")) {
+            return convertUrlToFile(
+              url,
+              file.name || `certificate-${certIndex}-${mediaIndex}`,
+            );
           }
 
           return null;
-        })
+        }),
       );
 
       return {
-        title: certificate.title || 'Chứng chỉ nghề',
-        issuedBy: certificate.issuedBy || '',
+        title: certificate.title || "Chứng chỉ nghề",
+        issuedBy: certificate.issuedBy || "",
         issuedAt: certificate.issuedAt || new Date().toISOString().slice(0, 10),
         mediaUploads: mediaUploads.filter(Boolean),
       };
-    })
+    }),
   );
 }
 
 function mapProfileToSetupData(profile) {
   const services = profile?.services || [];
   // Profile address can come as a single object or the first item of an array
-  const addr = profile?.address || (Array.isArray(profile?.addresses) ? profile.addresses[0] : null);
+  const addr =
+    profile?.address ||
+    (Array.isArray(profile?.addresses) ? profile.addresses[0] : null);
 
   // API returns gender as string ('Male','Female','Other') — normalize to numeric for the dropdown
+  function normalizeGender(g) {
+    if (g === null || g === undefined || g === "") return "";
+    if (g === 0 || g === 1 || g === 2) return g; // already numeric
+    if (typeof g === "string") {
+      const lower = g.toLowerCase();
+      if (lower === "male") return 0;
+      if (lower === "female") return 1;
+      return 2;
+    }
+    return Number(g);
+  }
+
   const idImages = profile?.identificationImages || [];
   const identificationUploads = idImages.map((img, index) => ({
     uid: img.id || `id-img-${index}`,
     name: `Ảnh CCCD ${index + 1}`,
-    side: index === 0 ? 'front' : index === 1 ? 'back' : '',
+    side: index === 0 ? "front" : index === 1 ? "back" : "",
     previewUrl: img.fileUrl || img.url,
   }));
 
   const certs = profile?.certificates || [];
   const certificateUploads = certs.map((cert, certIndex) => ({
-    title: cert.title || 'Chứng chỉ nghề',
-    issuedBy: cert.issuedBy || '',
-    issuedAt: cert.issuedAt ? cert.issuedAt.slice(0, 10) : '',
+    title: cert.title || "Chứng chỉ nghề",
+    issuedBy: cert.issuedBy || "",
+    issuedAt: cert.issuedAt ? cert.issuedAt.slice(0, 10) : "",
     mediaUploads: (cert.certificateImage || []).map((img, index) => ({
       uid: img.id || `cert-img-${certIndex}-${index}`,
-      name: cert.title || 'Chứng chỉ nghề',
+      name: cert.title || "Chứng chỉ nghề",
       fileUrl: img.fileUrl || img.url,
       previewUrl: img.fileUrl || img.url,
     })),
@@ -91,28 +106,32 @@ function mapProfileToSetupData(profile) {
   }));
 
   return {
-    fullName: profile?.fullName || '',
-    phone: profile?.phone || '',
-    dateOfBirth: profile?.dateOfBirth || '',
+    fullName: profile?.fullName || "",
+    phone: profile?.phone || "",
+    dateOfBirth: profile?.dateOfBirth || "",
     gender: normalizeGender(profile?.gender),
-    target: profile?.email || profile?.phone || '',
-    bio: profile?.bio || '',
+    target: profile?.email || profile?.phone || "",
+    bio: profile?.bio || "",
     experienceYears: profile?.experienceYears || 1,
     maxDistanceKm: profile?.maxDistanceKm || 25,
-    citizenIdNumber: profile?.citizenIdNumber || '',
-    citizenIdIssueDate: profile?.citizenIdIssueDate || '',
-    citizenIdIssuePlace: profile?.citizenIdIssuePlace || '',
-    address: addr ? {
-      label: addr.label || '',
-      city: addr.city || '',
-      district: addr.district || '',
-      ward: addr.ward || '',
-      detail: addr.detail || '',
-      lat: addr.lat ?? '',
-      lng: addr.lng ?? '',
-      isDefault: addr.isDefault ?? false,
-    } : undefined,
-    selectedCategoryIds: services.map((service) => service.categoryId).filter(Boolean),
+    citizenIdNumber: profile?.citizenIdNumber || "",
+    citizenIdIssueDate: profile?.citizenIdIssueDate || "",
+    citizenIdIssuePlace: profile?.citizenIdIssuePlace || "",
+    address: addr
+      ? {
+          label: addr.label || "",
+          city: addr.city || "",
+          district: addr.district || "",
+          ward: addr.ward || "",
+          detail: addr.detail || "",
+          lat: addr.lat ?? "",
+          lng: addr.lng ?? "",
+          isDefault: addr.isDefault ?? false,
+        }
+      : undefined,
+    selectedCategoryIds: services
+      .map((service) => service.categoryId)
+      .filter(Boolean),
     workerService: services.map((service) => ({
       categoryId: service.categoryId,
       categoryName: service.categoryName,
@@ -135,7 +154,7 @@ export function TechnicianSetupFlow() {
   const [isEditMode, setIsEditMode] = useState(false);
 
   const scrollToTop = () => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.scrollTo(0, 0);
     }
   };
@@ -148,8 +167,10 @@ export function TechnicianSetupFlow() {
         workerProfileApi.getMe(),
       ]);
 
-      const currentUser = userResponse.status === 'fulfilled' ? userResponse.value : null;
-      const response = workerResponse.status === 'fulfilled' ? workerResponse.value : null;
+      const currentUser =
+        userResponse.status === "fulfilled" ? userResponse.value : null;
+      const response =
+        workerResponse.status === "fulfilled" ? workerResponse.value : null;
 
       if (response?.id) {
         setProfile(response);
@@ -166,11 +187,12 @@ export function TechnicianSetupFlow() {
         setIsEditMode(false);
         setSetupData((current) => ({
           ...current,
-          fullName: current.fullName || currentUser?.fullName || '',
-          phone: current.phone || currentUser?.phone || '',
-          dateOfBirth: current.dateOfBirth || currentUser?.dateOfBirth || '',
-          gender: current.gender ?? currentUser?.gender ?? '',
-          target: current.target || currentUser?.email || currentUser?.phone || '',
+          fullName: current.fullName || currentUser?.fullName || "",
+          phone: current.phone || currentUser?.phone || "",
+          dateOfBirth: current.dateOfBirth || currentUser?.dateOfBirth || "",
+          gender: current.gender ?? currentUser?.gender ?? "",
+          target:
+            current.target || currentUser?.email || currentUser?.phone || "",
         }));
         setCurrentStep(1);
       }
@@ -206,8 +228,17 @@ export function TechnicianSetupFlow() {
     const payload = { ...setupData, ...finalData };
 
     try {
-      if (!payload.fullName || !payload.phone || !payload.dateOfBirth || payload.gender === '' || payload.gender === undefined || payload.gender === null) {
-        message.error('Vui lòng bổ sung họ tên, số điện thoại, ngày sinh và giới tính trước khi gửi hồ sơ.');
+      if (
+        !payload.fullName ||
+        !payload.phone ||
+        !payload.dateOfBirth ||
+        payload.gender === "" ||
+        payload.gender === undefined ||
+        payload.gender === null
+      ) {
+        message.error(
+          "Vui lòng bổ sung họ tên, số điện thoại, ngày sinh và giới tính trước khi gửi hồ sơ.",
+        );
         setCurrentStep(1);
         scrollToTop();
         return;
@@ -221,13 +252,17 @@ export function TechnicianSetupFlow() {
         gender: Number(payload.gender),
       });
       await workerProfileApi.register(payload);
-      message.success('Đã gửi hồ sơ thợ để xét duyệt');
+      message.success("Đã gửi hồ sơ thợ để xét duyệt");
       handleUpdateData(finalData);
       await loadProfile();
       setCurrentStep(4);
       scrollToTop();
     } catch (error) {
-      message.error(error.response?.data?.message || error.message || 'Không thể gửi hồ sơ thợ');
+      message.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Không thể gửi hồ sơ thợ",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -246,7 +281,10 @@ export function TechnicianSetupFlow() {
           fullName: payload.fullName,
           phone: payload.phone,
           dateOfBirth: payload.dateOfBirth?.slice(0, 10),
-          gender: payload.gender !== '' && payload.gender !== undefined ? Number(payload.gender) : undefined,
+          gender:
+            payload.gender !== "" && payload.gender !== undefined
+              ? Number(payload.gender)
+              : undefined,
         });
       }
 
@@ -256,16 +294,28 @@ export function TechnicianSetupFlow() {
         bio: payload.bio || undefined,
         experienceYears: Number(payload.experienceYears) || 0,
         maxDistanceKm: Number(payload.maxDistanceKm) || 0,
-        address: payload.address ? {
-          label: payload.address.label || undefined,
-          city: payload.address.city || '',
-          district: payload.address.district || '',
-          ward: payload.address.ward || '',
-          detail: payload.address.detail || '',
-          lat: payload.address.lat !== undefined && payload.address.lat !== null && payload.address.lat !== '' ? Number(payload.address.lat) : undefined,
-          lng: payload.address.lng !== undefined && payload.address.lng !== null && payload.address.lng !== '' ? Number(payload.address.lng) : undefined,
-          isDefault: payload.address.isDefault ?? false,
-        } : undefined,
+        address: payload.address
+          ? {
+              label: payload.address.label || undefined,
+              city: payload.address.city || "",
+              district: payload.address.district || "",
+              ward: payload.address.ward || "",
+              detail: payload.address.detail || "",
+              lat:
+                payload.address.lat !== undefined &&
+                payload.address.lat !== null &&
+                payload.address.lat !== ""
+                  ? Number(payload.address.lat)
+                  : undefined,
+              lng:
+                payload.address.lng !== undefined &&
+                payload.address.lng !== null &&
+                payload.address.lng !== ""
+                  ? Number(payload.address.lng)
+                  : undefined,
+              isDefault: payload.address.isDefault ?? false,
+            }
+          : undefined,
         services: (payload.workerService || []).map((s) => ({
           categoryId: s.categoryId,
           basePrice: Number(s.basePrice) || 0,
@@ -274,13 +324,14 @@ export function TechnicianSetupFlow() {
       });
 
       // 3. Update identification images + CCCD fields (only if changed, to prevent empty image payload errors)
-      const originalIdNumber = profile?.citizenIdNumber || '';
-      const originalIdIssueDate = profile?.citizenIdIssueDate?.slice(0, 10) || '';
-      const originalIdIssuePlace = profile?.citizenIdIssuePlace || '';
+      const originalIdNumber = profile?.citizenIdNumber || "";
+      const originalIdIssueDate =
+        profile?.citizenIdIssueDate?.slice(0, 10) || "";
+      const originalIdIssuePlace = profile?.citizenIdIssuePlace || "";
 
-      const currentIdNumber = payload.citizenIdNumber || '';
-      const currentIdIssueDate = payload.citizenIdIssueDate?.slice(0, 10) || '';
-      const currentIdIssuePlace = payload.citizenIdIssuePlace || '';
+      const currentIdNumber = payload.citizenIdNumber || "";
+      const currentIdIssueDate = payload.citizenIdIssueDate?.slice(0, 10) || "";
+      const currentIdIssuePlace = payload.citizenIdIssuePlace || "";
 
       const hasNewImages = (payload.identificationUploads || []).some((f) => {
         const raw = getRawFile(f);
@@ -289,7 +340,8 @@ export function TechnicianSetupFlow() {
 
       const originalImagesCount = profile?.identificationImages?.length || 0;
       const currentImagesCount = (payload.identificationUploads || []).length;
-      const imagesChanged = hasNewImages || (originalImagesCount !== currentImagesCount);
+      const imagesChanged =
+        hasNewImages || originalImagesCount !== currentImagesCount;
 
       const hasIdChanges =
         currentIdNumber !== originalIdNumber ||
@@ -302,18 +354,31 @@ export function TechnicianSetupFlow() {
           (payload.identificationUploads || []).map(async (file, index) => {
             const raw = getRawFile(file);
             if (raw instanceof Blob) return raw;
-            if (typeof file?.previewUrl === 'string' && file.previewUrl.startsWith('http')) {
-              const converted = await convertUrlToFile(file.previewUrl, file.name || `cccd-${index}`);
+            if (
+              typeof file?.previewUrl === "string" &&
+              file.previewUrl.startsWith("http")
+            ) {
+              const converted = await convertUrlToFile(
+                file.previewUrl,
+                file.name || `cccd-${index}`,
+              );
               if (converted) return converted;
             }
             return null;
-          })
+          }),
         ).then((results) => results.filter(Boolean));
 
-        if (mappedIdUploads.length || currentIdNumber || currentIdIssueDate || currentIdIssuePlace) {
+        if (
+          mappedIdUploads.length ||
+          currentIdNumber ||
+          currentIdIssueDate ||
+          currentIdIssuePlace
+        ) {
           await workerProfileApi.updateIdentificationImages({
             citizenIdNumber: currentIdNumber || undefined,
-            citizenIdIssueDate: currentIdIssueDate ? new Date(currentIdIssueDate).toISOString() : undefined,
+            citizenIdIssueDate: currentIdIssueDate
+              ? new Date(currentIdIssueDate).toISOString()
+              : undefined,
             citizenIdIssuePlace: currentIdIssuePlace || undefined,
             images: mappedIdUploads,
           });
@@ -322,12 +387,18 @@ export function TechnicianSetupFlow() {
 
       // 4. Update certificates
       if (payload.certificateUploads?.length) {
-        const certificateDtos = await mapCertificateUploadsForApi(payload.certificateUploads);
+        const certificateDtos = await mapCertificateUploadsForApi(
+          payload.certificateUploads,
+        );
         await workerProfileApi.updateCertificates(certificateDtos);
       }
 
       // 5. Upload new portfolio images (if any)
-      const portfolioUploads = (payload.portfolioUploads || finalData.portfolioUploads || []).filter((f) => {
+      const portfolioUploads = (
+        payload.portfolioUploads ||
+        finalData.portfolioUploads ||
+        []
+      ).filter((f) => {
         const raw = f?.rawFile || f?.originFileObj || f;
         return raw instanceof Blob;
       });
@@ -335,12 +406,16 @@ export function TechnicianSetupFlow() {
         await workerProfileApi.uploadPortfolioImages(portfolioUploads);
       }
 
-      message.success('Đã cập nhật và gửi lại hồ sơ để xét duyệt.');
+      message.success("Đã cập nhật và gửi lại hồ sơ để xét duyệt.");
       handleUpdateData(finalData);
       await loadProfile();
       scrollToTop();
     } catch (error) {
-      message.error(error.response?.data?.message || error.message || 'Không thể cập nhật hồ sơ');
+      message.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Không thể cập nhật hồ sơ",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -357,11 +432,18 @@ export function TechnicianSetupFlow() {
           {/* Edit-mode banner shown only while navigating steps */}
           {isEditMode && currentStep !== 4 && (
             <div className="mb-5 flex items-center gap-3 rounded-xl border border-error/20 bg-error/5 px-5 py-3 shadow-sm">
-              <span className="material-symbols-outlined text-error text-[22px]">edit_note</span>
+              <span className="material-symbols-outlined text-error text-[22px]">
+                edit_note
+              </span>
               <div className="flex-1 min-w-0">
-                <p className="m-0 text-sm font-bold text-error">Hồ sơ bị từ chối — đang chỉnh sửa để gửi lại</p>
+                <p className="m-0 text-sm font-bold text-error">
+                  Hồ sơ bị từ chối — đang chỉnh sửa để gửi lại
+                </p>
                 <p className="m-0 mt-0.5 text-xs text-text-tertiary">
-                  Lý do: <span className="font-semibold text-text-secondary">{profile?.rejectReason || 'Chưa có lý do chi tiết'}</span>
+                  Lý do:{" "}
+                  <span className="font-semibold text-text-secondary">
+                    {profile?.rejectReason || "Chưa có lý do chi tiết"}
+                  </span>
                 </p>
               </div>
               <button
@@ -403,7 +485,14 @@ export function TechnicianSetupFlow() {
             <TechnicianStatus
               profile={profile}
               onRefresh={loadProfile}
-              onStartEdit={isEditMode ? () => { setCurrentStep(1); scrollToTop(); } : undefined}
+              onStartEdit={
+                isEditMode
+                  ? () => {
+                      setCurrentStep(1);
+                      scrollToTop();
+                    }
+                  : undefined
+              }
             />
           )}
         </>

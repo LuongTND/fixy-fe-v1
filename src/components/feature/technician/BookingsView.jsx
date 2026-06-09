@@ -5,41 +5,12 @@ import Link from 'next/link';
 import { App } from 'antd';
 import { bookingApi } from '@/apis/booking.api';
 import { useWorkerBookings } from '@/hooks/useWorkerBookings';
-
-function normalizeStatus(status) {
-  return String(status || '').trim().toLowerCase();
-}
-
-function formatCurrency(value) {
-  if (value === null || value === undefined || value === '') return 'Chưa báo giá';
-  return `${Number(value || 0).toLocaleString('vi-VN')}đ`;
-}
-
-function parseBackendDate(value) {
-  if (!value) return null;
-  if (typeof value !== 'string') return new Date(value);
-  const hasTimezone = /(?:z|[+-]\d{2}:?\d{2})$/i.test(value);
-  return new Date(hasTimezone ? value : `${value}Z`);
-}
+import { formatBookingPrice, formatBookingDate, parseBackendDate } from '@/utils/format';
+import { getBookingStatusKey, getBookingTitle } from '@/utils/booking';
 
 function getDefaultProposalTime(booking) {
   if (booking.scheduledAt) return parseBackendDate(booking.scheduledAt);
   return new Date(Date.now() + 30 * 60 * 1000);
-}
-
-function formatDate(value) {
-  if (!value) return 'Chưa cập nhật';
-  return parseBackendDate(value).toLocaleString('vi-VN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
-}
-
-function getBookingTitle(booking) {
-  return booking.categoryName || booking.category?.name || booking.serviceName || 'Yêu cầu dịch vụ';
 }
 
 const STATUS_META = {
@@ -120,7 +91,7 @@ export function BookingsView() {
   const counts = useMemo(() => {
     const result = {};
     TABS.forEach((item) => {
-      result[item.key] = bookings.filter((booking) => item.statuses.includes(normalizeStatus(booking.status))).length;
+      result[item.key] = bookings.filter((booking) => item.statuses.includes(getBookingStatusKey(booking.status))).length;
     });
     return result;
   }, [bookings]);
@@ -128,7 +99,7 @@ export function BookingsView() {
   const filteredBookings = useMemo(() => {
     const selected = TABS.find((item) => item.key === tab);
     if (!selected) return bookings;
-    return bookings.filter((booking) => selected.statuses.includes(normalizeStatus(booking.status)));
+    return bookings.filter((booking) => selected.statuses.includes(getBookingStatusKey(booking.status)));
   }, [bookings, tab]);
 
   const handleAccept = async (bookingId) => {
@@ -254,7 +225,7 @@ export function BookingsView() {
             <div className="space-y-md">
               {filteredBookings.map((booking) => {
                 const bookingId = booking.id || booking.bookingId;
-                const statusKey = normalizeStatus(booking.status);
+                const statusKey = getBookingStatusKey(booking.status);
                 const status = STATUS_META[statusKey] || STATUS_META.pending;
                 const canRespond = statusKey === 'pending' || statusKey === 'matching';
                 const price = booking.workerProposedPrice || booking.estimatedPrice || booking.finalPrice;
@@ -269,7 +240,7 @@ export function BookingsView() {
                           </span>
                           <span className="flex items-center gap-1 text-xs font-semibold text-text-tertiary">
                             <span className="material-symbols-outlined text-[16px]">schedule</span>
-                            {formatDate(booking.scheduledAt || booking.createdDate)}
+                            {formatBookingDate(booking.scheduledAt || booking.createdDate)}
                           </span>
                         </div>
 
@@ -285,7 +256,7 @@ export function BookingsView() {
                             <span className="material-symbols-outlined text-[16px]">person</span>
                             Khách hàng #{String(booking.customerId || '').slice(0, 8)}
                           </span>
-                          <span className="font-body-bold text-primary-container">{formatCurrency(price)}</span>
+                          <span className="font-body-bold text-primary-container">{formatBookingPrice(price)}</span>
                           <span>{booking.scheduledType === 'Scheduled' ? 'Đặt lịch sau' : 'Cần xử lý ngay'}</span>
                         </div>
                       </div>

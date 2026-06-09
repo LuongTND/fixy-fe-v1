@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Alert, Button, Input } from 'antd';
-import { OTP_LENGTH, OTP_RESEND_TIMEOUT } from '@/constants/config';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Alert, Button, Input } from "antd";
+import { OTP_LENGTH, OTP_RESEND_TIMEOUT } from "@/constants/config";
 
 /**
  * OtpVerification - Step 3 of registration
@@ -35,10 +35,10 @@ export function OtpVerification({
   onResend,
   onBack,
 }) {
-  const [otpValues, setOtpValues] = useState(Array(OTP_LENGTH).fill(''));
+  const [otpValues, setOtpValues] = useState(Array(OTP_LENGTH).fill(""));
   const [resendTimer, setResendTimer] = useState(0);
   const canResend = resendTimer === 0;
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const inputRefs = useRef([]);
 
   useEffect(() => {
@@ -63,73 +63,82 @@ export function OtpVerification({
   }, [resendTimer]);
 
   // Handle OTP input change
-  const handleChange = useCallback((index, value) => {
-    // Only allow digits
-    if (value && !/^\d$/.test(value)) return;
+  const handleChange = useCallback(
+    (index, value) => {
+      // Only allow digits
+      if (value && !/^\d$/.test(value)) return;
 
-    const newOtp = [...otpValues];
-    newOtp[index] = value;
-    setOtpValues(newOtp);
-    setError('');
+      const newOtp = [...otpValues];
+      newOtp[index] = value;
+      setOtpValues(newOtp);
+      setError("");
 
-    // Auto-focus next input
-    if (value && index < OTP_LENGTH - 1) {
-      inputRefs.current[index + 1]?.focus();
-    }
-
-    // Auto-submit if all filled
-    if (value && index === OTP_LENGTH - 1) {
-      const fullOtp = newOtp.join('');
-      if (fullOtp.length === OTP_LENGTH) {
-        onVerify(fullOtp);
+      // Auto-focus next input
+      if (value && index < OTP_LENGTH - 1) {
+        inputRefs.current[index + 1]?.focus();
       }
-    }
-  }, [otpValues, onVerify]);
+
+      // Auto-submit if all filled
+      if (value && index === OTP_LENGTH - 1) {
+        const fullOtp = newOtp.join("");
+        if (fullOtp.length === OTP_LENGTH) {
+          onVerify(fullOtp);
+        }
+      }
+    },
+    [otpValues, onVerify],
+  );
 
   // Handle backspace
-  const handleKeyDown = useCallback((index, e) => {
-    if (e.key === 'Backspace' && !otpValues[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-    if (e.key === 'Enter') {
-      const fullOtp = otpValues.join('');
-      if (fullOtp.length === OTP_LENGTH) {
-        onVerify(fullOtp);
+  const handleKeyDown = useCallback(
+    (index, e) => {
+      if (e.key === "Backspace" && !otpValues[index] && index > 0) {
+        inputRefs.current[index - 1]?.focus();
       }
-    }
-  }, [otpValues, onVerify]);
+      if (e.key === "Enter") {
+        const fullOtp = otpValues.join("");
+        if (fullOtp.length === OTP_LENGTH) {
+          onVerify(fullOtp);
+        }
+      }
+    },
+    [otpValues, onVerify],
+  );
 
   // Handle paste
-  const handlePaste = useCallback((e) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').trim();
-    if (/^\d+$/.test(pastedData)) {
-      const digits = pastedData.slice(0, OTP_LENGTH).split('');
-      const newOtp = [...otpValues];
-      digits.forEach((digit, i) => {
-        newOtp[i] = digit;
-      });
-      setOtpValues(newOtp);
-      setError('');
+  const handlePaste = useCallback(
+    (e) => {
+      e.preventDefault();
+      const pastedData = e.clipboardData.getData("text").trim();
+      if (/^\d+$/.test(pastedData)) {
+        const digits = pastedData.slice(0, OTP_LENGTH).split("");
+        const newOtp = [...otpValues];
+        digits.forEach((digit, i) => {
+          newOtp[i] = digit;
+        });
+        setOtpValues(newOtp);
+        setError("");
 
-      // Focus on the next empty input or last input
-      const nextEmpty = newOtp.findIndex((v) => !v);
-      const focusIndex = nextEmpty === -1 ? OTP_LENGTH - 1 : nextEmpty;
-      inputRefs.current[focusIndex]?.focus();
+        // Focus on the next empty input or last input
+        const nextEmpty = newOtp.findIndex((v) => !v);
+        const focusIndex = nextEmpty === -1 ? OTP_LENGTH - 1 : nextEmpty;
+        inputRefs.current[focusIndex]?.focus();
 
-      // Auto-submit if fully pasted
-      if (digits.length === OTP_LENGTH) {
-        onVerify(newOtp.join(''));
+        // Auto-submit if fully pasted
+        if (digits.length === OTP_LENGTH) {
+          onVerify(newOtp.join(""));
+        }
       }
-    }
-  }, [otpValues, onVerify]);
+    },
+    [otpValues, onVerify],
+  );
 
   // Handle resend
   const handleResend = useCallback(() => {
     if (canResend && !loading) {
       setResendTimer(OTP_RESEND_TIMEOUT);
-      setOtpValues(Array(OTP_LENGTH).fill(''));
-      setError('');
+      setOtpValues(Array(OTP_LENGTH).fill(""));
+      setError("");
       onResend();
       // Focus first input
       setTimeout(() => {
@@ -140,9 +149,9 @@ export function OtpVerification({
 
   // Handle manual verify
   const handleVerify = useCallback(() => {
-    const fullOtp = otpValues.join('');
+    const fullOtp = otpValues.join("");
     if (fullOtp.length < OTP_LENGTH) {
-      setError('Vui lòng nhập đủ mã OTP');
+      setError("Vui lòng nhập đủ mã OTP");
       return;
     }
     onVerify(fullOtp);
@@ -168,7 +177,7 @@ export function OtpVerification({
       <div className="flex justify-center mb-6">
         <div className="w-20 h-20 rounded-full bg-primary-light flex items-center justify-center">
           <span className="material-symbols-outlined text-[40px] text-primary">
-            {targetType === 'sms' ? 'sms' : 'mail'}
+            {targetType === "sms" ? "sms" : "mail"}
           </span>
         </div>
       </div>
@@ -184,7 +193,10 @@ export function OtpVerification({
             </p>
           </div>
 
-          <label htmlFor="otp-target" className="block font-semibold text-sm text-[#383838] mb-2">
+          <label
+            htmlFor="otp-target"
+            className="block font-semibold text-sm text-[#383838] mb-2"
+          >
             Email hoặc số điện thoại
           </label>
           <Input
@@ -193,9 +205,16 @@ export function OtpVerification({
             value={targetValue}
             onChange={(e) => onTargetChange(e.target.value)}
             placeholder="example@email.com / 0901234567"
-            status={stepError ? 'error' : undefined}
+            status={stepError ? "error" : undefined}
           />
-          {stepError && <Alert type="error" showIcon message={stepError} className="!mt-3 !rounded" />}
+          {stepError && (
+            <Alert
+              type="error"
+              showIcon
+              message={stepError}
+              className="!mt-3 !rounded"
+            />
+          )}
 
           <Button
             id="otp-send-btn"
@@ -206,7 +225,7 @@ export function OtpVerification({
             onClick={onRequestOtp}
             loading={loading}
           >
-            {loading ? 'Đang gửi OTP...' : 'Gửi mã OTP'}
+            {loading ? "Đang gửi OTP..." : "Gửi mã OTP"}
           </Button>
         </>
       ) : (
@@ -228,10 +247,12 @@ export function OtpVerification({
             {otpValues.map((value, index) => (
               <Input
                 key={index}
-                ref={(el) => { inputRefs.current[index] = el; }}
+                ref={(el) => {
+                  inputRefs.current[index] = el;
+                }}
                 id={`otp-input-${index}`}
-                className={`otp-input ${value ? 'filled' : ''}`}
-                status={error ? 'error' : undefined}
+                className={`otp-input ${value ? "filled" : ""}`}
+                status={error ? "error" : undefined}
                 type="text"
                 inputMode="numeric"
                 maxLength={1}
@@ -246,7 +267,12 @@ export function OtpVerification({
 
           {/* Error Message */}
           {error && (
-            <Alert type="error" showIcon message={error} className="!mb-4 !rounded" />
+            <Alert
+              type="error"
+              showIcon
+              message={error}
+              className="!mb-4 !rounded"
+            />
           )}
 
           {/* Verify Button */}
@@ -257,7 +283,7 @@ export function OtpVerification({
             block
             className="mb-6 !h-11 !rounded !font-semibold"
             onClick={handleVerify}
-            disabled={loading || otpValues.join('').length < OTP_LENGTH}
+            disabled={loading || otpValues.join("").length < OTP_LENGTH}
             loading={loading}
           >
             {loading && (
@@ -265,14 +291,12 @@ export function OtpVerification({
                 progress_activity
               </span>
             )}
-            {loading ? 'Đang xác thực...' : 'Xác nhận'}
+            {loading ? "Đang xác thực..." : "Xác nhận"}
           </Button>
 
           {/* Resend Section */}
           <div className="text-center">
-            <p className="text-sm text-gray mb-2">
-              Không nhận được mã?
-            </p>
+            <p className="text-sm text-gray mb-2">Không nhận được mã?</p>
             {canResend ? (
               <Button
                 id="otp-resend-btn"
@@ -297,14 +321,16 @@ export function OtpVerification({
 
 function maskTarget(value, type) {
   if (!value) {
-    return '';
+    return "";
   }
 
-  if (type === 'sms') {
-    return value.length > 4 ? `${value.slice(0, 3)}***${value.slice(-3)}` : value;
+  if (type === "sms") {
+    return value.length > 4
+      ? `${value.slice(0, 3)}***${value.slice(-3)}`
+      : value;
   }
 
-  const [name, domain] = value.split('@');
+  const [name, domain] = value.split("@");
   if (!domain) {
     return value;
   }

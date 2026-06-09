@@ -696,6 +696,13 @@ select {
   outline-offset: 2px;
 }
 
+/* Prevent double outline on inputs, textareas, and selects with custom focus styling */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
 /* ================================================================
    LAYOUT: Header
    ================================================================ */
@@ -2377,3 +2384,21 @@ select {
   }
 }
 
+/* Hide scrollbar utility class */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Scroll offset margins for LegalLayout content */
+article.legal-content section {
+  scroll-margin-top: 135px;
+}
+@media (min-width: 1024px) {
+  article.legal-content section {
+    scroll-margin-top: 95px;
+  }
+}

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import { isTechnicianRole } from '@/constants/routes';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { isTechnicianRole } from "@/constants/routes";
 
 /**
  * Mobile Bottom Navigation Bar
@@ -16,14 +16,22 @@ export function MobileNav() {
   const isTechnician = isAuthenticated && isTechnicianRole(user?.role);
 
   const navItems = [
-    { href: '/', icon: 'home', label: 'Trang Chủ' },
-    { 
-      href: isTechnician ? '/technician/bookings' : '/bookings', 
-      icon: 'list_alt', 
-      label: isTechnician ? 'Công việc' : 'Hoạt động' 
+    { href: "/", icon: "home", label: "Trang Chủ" },
+    {
+      href: isTechnician ? "/technician/bookings" : "/bookings",
+      icon: "list_alt",
+      label: isTechnician ? "Công việc" : "Hoạt động",
     },
-    { href: isTechnician ? '/technician/help' : '/help', icon: 'support_agent', label: 'Hỗ trợ' },
-    { href: isTechnician ? '/technician/profile' : '/profile', icon: 'person', label: 'Tài Khoản' },
+    {
+      href: isTechnician ? "/technician/help" : "/help",
+      icon: "support_agent",
+      label: "Hỗ trợ",
+    },
+    {
+      href: isTechnician ? "/technician/profile" : "/profile",
+      icon: "person",
+      label: "Tài Khoản",
+    },
   ];
 
   return (
@@ -34,10 +42,10 @@ export function MobileNav() {
           <Link
             key={item.href}
             href={item.href}
-            className={`mobile-nav-item ${isActive ? 'active' : ''}`}
+            className={`mobile-nav-item ${isActive ? "active" : ""}`}
           >
             <span
-              className={`material-symbols-outlined ${isActive ? 'material-symbols-filled' : ''}`}
+              className={`material-symbols-outlined ${isActive ? "material-symbols-filled" : ""}`}
             >
               {item.icon}
             </span>

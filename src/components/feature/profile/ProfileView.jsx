@@ -1,8 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { authApi } from "@/apis/auth.api";
 import { userApi } from "@/apis/user.api";
@@ -30,6 +28,7 @@ import {
   getTransactionIcon,
   getTransactionTitle,
   getTransactionStatus,
+  formatBookingPrice as formatCurrency,
 } from "@/utils";
 
 /**
@@ -43,26 +42,19 @@ export default function ProfileView() {
     user,
     refreshUser,
   } = useAuth();
-  const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState("personal");
-
-  useEffect(() => {
-    const tab = searchParams.get("tab");
-    if (
-      tab &&
-      [
-        "personal",
-        "wallet",
-        "security",
-        "notifications",
-        "notification",
-      ].includes(tab)
-    ) {
-      const normalizedTab = tab === "notification" ? "notifications" : tab;
-      setActiveTab(normalizedTab);
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get("tab");
+      if (
+        tab &&
+        ["personal", "wallet", "security", "notifications"].includes(tab)
+      ) {
+        return tab;
+      }
     }
-  }, [searchParams]);
-
+    return "personal";
+  });
   const [activeNotifFilter, setActiveNotifFilter] = useState("all"); // 'all', 'order', 'promo', 'system'
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] =
     useState(false);
@@ -83,6 +75,18 @@ export default function ProfileView() {
     transactions: walletTransactions,
     loading: walletLoading,
   } = useWalletOverview({ autoLoad: isAuthenticated });
+
+  const {
+    notifications: liveNotifications,
+    loading: notifLoading,
+    hasMore: notifHasMore,
+    page: notifPage,
+    settings: notifSettings,
+    fetchNotifications,
+    markRead,
+    markAllRead,
+    updateSettings,
+  } = useNotifications();
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -123,9 +127,6 @@ export default function ProfileView() {
     confirm: false,
   });
 
-  const formatCurrency = (value = 0) =>
-    `${Number(value || 0).toLocaleString("vi-VN")}đ`;
-
   const recentTransactions = walletTransactions.slice(0, 3);
 
   const topupMethodOptions = [
@@ -158,18 +159,6 @@ export default function ProfileView() {
   const selectedTopupMethod =
     topupMethodOptions.find((method) => method.value === topupMethod) ||
     topupMethodOptions[0];
-
-  const {
-    notifications: liveNotifications,
-    loading: notifLoading,
-    hasMore: notifHasMore,
-    page: notifPage,
-    settings: notifSettings,
-    fetchNotifications,
-    markRead,
-    markAllRead,
-    updateSettings,
-  } = useNotifications();
 
   const fetchAddresses = useCallback(async () => {
     try {
@@ -598,6 +587,8 @@ export default function ProfileView() {
     { id: "system", label: "Hệ thống" },
   ];
 
+
+
   return (
     <div className="min-h-screen bg-[#fbf9f8] py-0 font-sans">
       {contextHolder}
@@ -629,7 +620,7 @@ export default function ProfileView() {
                 className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-transform hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
                 aria-label="Cập nhật ảnh đại diện"
               >
-                <span className="material-symbols-outlined text-[17px] leading-none">
+                <span className="material-symbols-outlined text-[16px]">
                   {avatarUploading ? "hourglass_top" : "edit"}
                 </span>
               </button>
@@ -638,7 +629,7 @@ export default function ProfileView() {
             <div className="text-center md:text-left flex-1">
               <div className="flex flex-col md:flex-row items-center gap-2 mb-1">
                 <h1 className="text-xl md:text-2xl font-black text-[#1b1c1c]">
-                  {user?.fullName || "Người dùng Fixy"}
+                  {user?.fullName || "Người dùng Vua Thợ"}
                 </h1>
                 <span className="bg-[#39B54A]/10 text-[#39B54A] px-2.5 py-0.5 rounded-full flex items-center gap-1 text-xs font-bold">
                   <span className="material-symbols-outlined text-[13px] material-symbols-filled">
@@ -701,7 +692,9 @@ export default function ProfileView() {
             formData={formData}
             setFormData={setFormData}
             genderLabels={GENDER_LABELS}
-            getGenderLabel={formatGenderLabel}
+            getGenderLabel={(value) =>
+              GENDER_LABELS[normalizeGender(value)] || "Chưa cập nhật"
+            }
             addresses={addresses}
             handleOpenAddressModal={handleOpenAddressModal}
             walletLoading={walletLoading}
@@ -760,54 +753,27 @@ export default function ProfileView() {
               </h3>
               <div className="space-y-1">
                 {[
-                  { icon: "help", label: "Trung tâm trợ giúp", href: "/help" },
-                  {
-                    icon: "description",
-                    label: "Điều khoản & Dịch vụ",
-                    href: "/terms",
-                  },
-                  {
-                    icon: "shield",
-                    label: "Chính sách bảo mật",
-                    href: "/privacy",
-                  },
-                ].map((item) => {
-                  const content = (
-                    <>
-                      <div className="flex items-center gap-3">
-                        <span className="material-symbols-outlined text-[#818A91] group-hover:text-primary transition-colors text-[18px]">
-                          {item.icon}
-                        </span>
-                        <span className="text-[#4A4A4A] font-bold text-xs group-hover:text-[#1b1c1c] transition-colors">
-                          {item.label}
-                        </span>
-                      </div>
-                      <span className="material-symbols-outlined text-[#818A91] group-hover:translate-x-1 transition-transform text-[18px]">
-                        chevron_right
+                  { icon: "help", label: "Trung tâm trợ giúp" },
+                  { icon: "description", label: "Điều khoản & Dịch vụ" },
+                  { icon: "shield", label: "Chính sách bảo mật" },
+                ].map((item) => (
+                  <button
+                    key={item.label}
+                    className="w-full flex items-center justify-between p-3 hover:bg-[#F5F5F5] rounded-xl transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="material-symbols-outlined text-[#818A91] group-hover:text-primary transition-colors text-[18px]">
+                        {item.icon}
                       </span>
-                    </>
-                  );
-                  if (item.href) {
-                    return (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        className="w-full flex items-center justify-between p-3 hover:bg-[#F5F5F5] rounded-xl transition-all group no-underline"
-                      >
-                        {content}
-                      </Link>
-                    );
-                  }
-                  return (
-                    <button
-                      key={item.label}
-                      type="button"
-                      className="w-full flex items-center justify-between p-3 hover:bg-[#F5F5F5] rounded-xl transition-all group"
-                    >
-                      {content}
-                    </button>
-                  );
-                })}
+                      <span className="text-[#4A4A4A] font-bold text-xs group-hover:text-[#1b1c1c] transition-colors">
+                        {item.label}
+                      </span>
+                    </div>
+                    <span className="material-symbols-outlined text-[#818A91] group-hover:translate-x-1 transition-transform text-[18px]">
+                      chevron_right
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -830,8 +796,8 @@ export default function ProfileView() {
                   Nạp tiền vào ví
                 </h2>
                 <p className="mt-2 text-xs font-medium text-[#818A91] leading-relaxed">
-                  Số tiền nạp sẽ được cộng trực tiếp vào ví Fixy của bạn sau khi
-                  thanh toán thành công.
+                  Số tiền nạp sẽ được cộng trực tiếp vào ví Vua Thợ của bạn sau
+                  khi thanh toán thành công.
                 </p>
               </div>
               <button

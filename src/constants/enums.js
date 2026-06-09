@@ -9,21 +9,33 @@ export const WORKER_STATUS = {
 };
 
 export const WORKER_STATUS_TEXT = {
-  [WORKER_STATUS.PENDING]: 'pending',
-  [WORKER_STATUS.APPROVED]: 'approved',
-  [WORKER_STATUS.REJECTED]: 'rejected',
-  [WORKER_STATUS.SUSPENDED]: 'suspended',
+  [WORKER_STATUS.PENDING]: "pending",
+  [WORKER_STATUS.APPROVED]: "approved",
+  [WORKER_STATUS.REJECTED]: "rejected",
+  [WORKER_STATUS.SUSPENDED]: "suspended",
 };
 
 export const WORKER_STATUS_UI = {
-  [WORKER_STATUS_TEXT[WORKER_STATUS.PENDING]]: { label: 'Chờ duyệt', className: 'admin-tech-status-pending' },
-  [WORKER_STATUS_TEXT[WORKER_STATUS.APPROVED]]: { label: 'Đã duyệt', className: 'admin-tech-status-approved' },
-  [WORKER_STATUS_TEXT[WORKER_STATUS.REJECTED]]: { label: 'Từ chối', className: 'admin-tech-status-locked' },
-  [WORKER_STATUS_TEXT[WORKER_STATUS.SUSPENDED]]: { label: 'Tạm ngưng', className: 'admin-tech-status-locked' },
+  [WORKER_STATUS_TEXT[WORKER_STATUS.PENDING]]: {
+    label: "Chờ duyệt",
+    className: "admin-tech-status-pending",
+  },
+  [WORKER_STATUS_TEXT[WORKER_STATUS.APPROVED]]: {
+    label: "Đã duyệt",
+    className: "admin-tech-status-approved",
+  },
+  [WORKER_STATUS_TEXT[WORKER_STATUS.REJECTED]]: {
+    label: "Từ chối",
+    className: "admin-tech-status-locked",
+  },
+  [WORKER_STATUS_TEXT[WORKER_STATUS.SUSPENDED]]: {
+    label: "Tạm ngưng",
+    className: "admin-tech-status-locked",
+  },
 };
 
 export const WORKER_STATUS_OPTIONS = [
-  { value: 'all', label: 'Tất cả trạng thái' },
+  { value: "all", label: "Tất cả trạng thái" },
   ...Object.entries(WORKER_STATUS_UI).map(([value, info]) => ({
     value,
     label: info.label,
@@ -80,9 +92,9 @@ export const TRANSACTION_STATUS = {
 
 // User Roles
 export const USER_ROLES = {
-  CUSTOMER: 'customer',
-  WORKER: 'worker',
-  ADMIN: 'admin',
+  CUSTOMER: "customer",
+  WORKER: "worker",
+  ADMIN: "admin",
 };
 
 export const ROLE_REGISTER = {
@@ -171,3 +183,14 @@ export const SUPPORT_STATUS = {
   RESOLVED: 2,
   CLOSED: 3,
 };
+
+// Weekly day metadata (matches dayOfWeek 0=Sun, 1=Mon, ..., 6=Sat in API)
+export const DAY_META = [
+  { dayOfWeek: 1, label: "Thứ 2", short: "T2" },
+  { dayOfWeek: 2, label: "Thứ 3", short: "T3" },
+  { dayOfWeek: 3, label: "Thứ 4", short: "T4" },
+  { dayOfWeek: 4, label: "Thứ 5", short: "T5" },
+  { dayOfWeek: 5, label: "Thứ 6", short: "T6" },
+  { dayOfWeek: 6, label: "Thứ 7", short: "T7" },
+  { dayOfWeek: 0, label: "Chủ nhật", short: "CN" },
+];

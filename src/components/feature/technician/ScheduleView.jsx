@@ -5,27 +5,12 @@ import { App, DatePicker, Input, Modal, Spin, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import { workerScheduleApi } from '@/apis/worker-schedule.api';
 import { workerProfileApi } from '@/apis/worker-profile.api';
-
-// dayOfWeek: 0=Sun, 1=Mon, …, 6=Sat  (matches API)
-const DAY_META = [
-  { dayOfWeek: 1, label: 'Thứ 2', short: 'T2' },
-  { dayOfWeek: 2, label: 'Thứ 3', short: 'T3' },
-  { dayOfWeek: 3, label: 'Thứ 4', short: 'T4' },
-  { dayOfWeek: 4, label: 'Thứ 5', short: 'T5' },
-  { dayOfWeek: 5, label: 'Thứ 6', short: 'T6' },
-  { dayOfWeek: 6, label: 'Thứ 7', short: 'T7' },
-  { dayOfWeek: 0, label: 'Chủ Nhật', short: 'CN' },
-];
+import { DAY_META } from '@/constants/enums';
+import { trimTime } from '@/utils/format';
 
 /** Build a lookup map: dayOfWeek → schedule row */
 function buildScheduleMap(rows) {
   return Object.fromEntries((rows || []).map((r) => [r.dayOfWeek, r]));
-}
-
-/** Strip seconds from "HH:mm:ss" → "HH:mm" */
-function trimTime(t) {
-  if (!t) return '';
-  return t.slice(0, 5);
 }
 
 function Toggle({ on, onChange, disabled }) {

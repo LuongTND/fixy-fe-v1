@@ -144,9 +144,10 @@ function TrackingGoongMap({ workerLocation, destination, workerInfo }) {
     async function initMap() {
       if (!containerRef.current || mapRef.current) return;
 
-      const [configResponse, goongjs] = await Promise.all([
+      const [configResponse, goongjs, styleResponse] = await Promise.all([
         fetch('/api/goong/map-config'),
         ensureGoongAssets(),
+        fetch('https://tiles.goong.io/assets/goong_map_web.json').then((res) => res.json()).catch(() => null),
       ]);
       const config = await configResponse.json();
 
@@ -154,9 +155,16 @@ function TrackingGoongMap({ workerLocation, destination, workerInfo }) {
 
       const center = workerLocation || destination || DEFAULT_MAP_CENTER;
       goongjs.accessToken = config.maptilesKey;
+
+      let mapStyle = 'https://tiles.goong.io/assets/goong_map_web.json';
+      if (styleResponse && Array.isArray(styleResponse.layers)) {
+        styleResponse.layers = styleResponse.layers.filter((layer) => layer.id !== 'poi-tree');
+        mapStyle = styleResponse;
+      }
+
       mapRef.current = new goongjs.Map({
         container: containerRef.current,
-        style: 'https://tiles.goong.io/assets/goong_map_web.json',
+        style: mapStyle,
         center,
         zoom: workerLocation && destination ? 13 : 15,
       });
