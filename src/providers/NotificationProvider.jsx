@@ -317,8 +317,8 @@ export function NotificationProvider({ children }) {
       return undefined;
     }
 
-    const token = localStorage.getItem('token');
-    if (!token) return undefined;
+    const initialToken = localStorage.getItem('token');
+    if (!initialToken) return undefined;
 
     let hubUrl = process.env.NEXT_PUBLIC_NOTIFICATION_HUB_URL || 
       (process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/?$/, '/hubs/notifications') : '');
@@ -333,7 +333,7 @@ export function NotificationProvider({ children }) {
 
     const connection = new HubConnectionBuilder()
       .withUrl(hubUrl, {
-        accessTokenFactory: () => token,
+        accessTokenFactory: () => localStorage.getItem('token') || '',
         transport: HttpTransportType.WebSockets | HttpTransportType.LongPolling,
         headers: {
           'ngrok-skip-browser-warning': 'true',
@@ -358,7 +358,8 @@ export function NotificationProvider({ children }) {
     connectionRef.current = connection;
     let isMounted = true;
 
-    const startConnection = async () => {
+    const startConnection = async (retryCount = 0) => {
+      if (!isMounted) return;
       try {
         await connection.start();
         if (!isMounted) {
@@ -392,6 +393,12 @@ export function NotificationProvider({ children }) {
         });
       } catch (err) {
         logNotificationFailure('SignalR Notification Hub connection failed', err);
+        // If initial connection failed, retry starting the connection with exponential backoff
+        if (isMounted) {
+          const nextDelay = Math.min(1000 * Math.pow(2, retryCount), 30000);
+          console.warn(`[SignalR] Retrying initial connection in ${nextDelay}ms (attempt ${retryCount + 1})...`);
+          setTimeout(() => startConnection(retryCount + 1), nextDelay);
+        }
       }
     };
 

@@ -21,9 +21,9 @@ export const verifyOtp = async (data) => {
   return res;
 };
 
-export const googleLogin = async (oauthToken) => {
+export const googleLogin = async (credential) => {
   const res = await axios.post(API_ENDPOINTS.AUTH.GOOGLE_LOGIN, {
-    token: oauthToken,
+    credential,
   });
   return res;
 };

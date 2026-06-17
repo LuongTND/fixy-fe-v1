@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { App, Button, Checkbox, Divider, Form, Input } from "antd";
@@ -13,7 +13,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect");
   const { message } = App.useApp();
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
 
   const handleSubmit = async (values) => {
     try {
@@ -33,6 +33,69 @@ function LoginForm() {
     }
   };
 
+  const handleGoogleLoginResponse = useCallback(
+    async (response) => {
+      try {
+        const credential = response.credential;
+        if (!credential) return;
+
+        const apiResponse = await loginWithGoogle(credential);
+        message.success(SUCCESS_MESSAGES.LOGIN_SUCCESS);
+        if (redirectPath) {
+          router.push(redirectPath);
+        } else {
+          router.push(
+            getPostLoginRedirect(apiResponse?.roles?.[0] || apiResponse?.role),
+          );
+        }
+      } catch (err) {
+        message.error(
+          err.response?.data?.message || "Đăng nhập bằng Google thất bại.",
+        );
+      }
+    },
+    [loginWithGoogle, message, redirectPath, router],
+  );
+
+  useEffect(() => {
+    // 1. Load the Google GIS script
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      const clientId =
+        process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+        "400475429932-placeholder.apps.googleusercontent.com";
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleLoginResponse,
+        });
+
+        const btnElement = document.getElementById(
+          "login-google-btn-container",
+        );
+        if (btnElement) {
+          window.google.accounts.id.renderButton(btnElement, {
+            theme: "outline",
+            size: "large",
+            width: btnElement.clientWidth || 200,
+            text: "signin_with",
+          });
+        }
+      }
+    };
+
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, [handleGoogleLoginResponse]);
+
   return (
     <div className="font-montserrat">
       <div className="mb-8">
@@ -45,14 +108,21 @@ function LoginForm() {
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Button
-          id="login-google-btn"
-          size="large"
-          className="!h-12 !font-semibold"
-        >
-          <GoogleIcon />
-          Google
-        </Button>
+        <div className="relative w-full">
+          <Button
+            id="login-google-btn"
+            size="large"
+            className="!h-12 !font-semibold w-full"
+          >
+            <GoogleIcon />
+            Google
+          </Button>
+          <div
+            id="login-google-btn-container"
+            className="absolute inset-0 opacity-0 overflow-hidden cursor-pointer [&_iframe]:!w-full [&_iframe]:!h-full"
+            style={{ minWidth: "100%", height: "100%" }}
+          />
+        </div>
         <Button
           id="login-facebook-btn"
           size="large"
