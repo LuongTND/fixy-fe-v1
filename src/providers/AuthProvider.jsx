@@ -134,6 +134,40 @@ export function AuthProvider({ children }) {
     }
   }, [fetchUserProfile]);
 
+  const loginWithGoogle = useCallback(async (credential) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await authApi.googleLogin(credential);
+
+      const token = response?.accessToken || response?.token;
+      if (token) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('token', token);
+          if (response?.refreshToken) {
+            localStorage.setItem('refreshToken', response.refreshToken);
+          }
+        }
+
+        const meta = {
+          userId: response?.userId || null,
+          role: response?.roles?.[0] || response?.role || null,
+          email: response?.email || null,
+        };
+        saveUserMeta(meta);
+
+        await fetchUserProfile(token, meta);
+      }
+
+      return response;
+    } catch (err) {
+      setError(err?.message || 'Google login failed');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchUserProfile]);
+
   const logout = useCallback(() => {
     const fcmToken = typeof window !== 'undefined' ? localStorage.getItem('fcm_token') : null;
     if (fcmToken) {
@@ -169,6 +203,7 @@ export function AuthProvider({ children }) {
     loading,
     error,
     login,
+    loginWithGoogle,
     logout,
     refreshUser,
     isAuthenticated,

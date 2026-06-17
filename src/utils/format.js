@@ -4,10 +4,17 @@
 
 // Format currency to VND
 export const formatCurrency = (amount) => {
+  const parsed = Number(amount);
+  if (amount === null || amount === undefined || Number.isNaN(parsed)) {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(0);
+  }
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
-  }).format(amount);
+  }).format(parsed);
 };
 
 // Format date
@@ -23,8 +30,11 @@ export const formatDate = (date, fallback = "Chưa cập nhật") => {
 };
 
 // Format date and time
-export const formatDateTime = (date) => {
-  return new Date(date).toLocaleString("vi-VN");
+export const formatDateTime = (date, fallback = "Chưa cập nhật") => {
+  if (!date) return fallback;
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return fallback;
+  return d.toLocaleString("vi-VN");
 };
 
 // Format date range
@@ -34,12 +44,19 @@ export const formatDateRange = (startDate, endDate) => {
 
 // Format number with commas
 export const formatNumber = (num) => {
-  return num.toLocaleString("vi-VN");
+  if (num === null || num === undefined) return "0";
+  const parsed = Number(num);
+  if (Number.isNaN(parsed)) return "0";
+  return parsed.toLocaleString("vi-VN");
 };
 
 // Format percentage
 export const formatPercentage = (value) => {
-  return `${value.toFixed(2)}%`;
+  const parsed = Number(value);
+  if (value === null || value === undefined || Number.isNaN(parsed)) {
+    return "0.00%";
+  }
+  return `${parsed.toFixed(2)}%`;
 };
 // Format VNPAY amount (VNPAY returns amount * 100)
 export const formatVnpayAmount = (value) => {
@@ -51,7 +68,9 @@ export const formatVnpayAmount = (value) => {
 export const formatBookingPrice = (value) => {
   if (value === null || value === undefined || value === "")
     return "Chưa báo giá";
-  return `${Number(value || 0).toLocaleString("vi-VN")}đ`;
+  const parsed = Number(value);
+  if (Number.isNaN(parsed)) return "Chưa báo giá";
+  return `${parsed.toLocaleString("vi-VN")}đ`;
 };
 
 // Format booking date with "Chưa đặt lịch" fallback
@@ -114,7 +133,9 @@ export const formatFullDateTime = (value, fallback = "Chưa cập nhật") => {
 // Format currency to VND with đ suffix
 export const formatCurrencyWithUnit = (value, fallback = "Chưa cập nhật") => {
   if (value === null || value === undefined || value === "") return fallback;
-  return `${Number(value).toLocaleString("vi-VN")}đ`;
+  const parsed = Number(value);
+  if (Number.isNaN(parsed)) return fallback;
+  return `${parsed.toLocaleString("vi-VN")}đ`;
 };
 
 // Strip seconds from "HH:mm:ss" -> "HH:mm"

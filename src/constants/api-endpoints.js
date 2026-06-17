@@ -7,7 +7,7 @@ export const API_ENDPOINTS = {
     REFRESH: '/auth/token/refresh',
     SEND_OTP: '/auth/otp/send',
     VERIFY_OTP: '/auth/otp/verify',
-    GOOGLE_LOGIN: '/auth/google',
+    GOOGLE_LOGIN: '/auth/login/google',
     FACEBOOK_LOGIN: '/auth/facebook',
     FORGOT_PASSWORD: '/auth/forgot-password',
     RESET_PASSWORD: '/auth/reset-password',
