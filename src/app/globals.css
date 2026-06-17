@@ -224,6 +224,11 @@ select {
 }
 
 /* === Auth Form Styling === */
+#credential_picker_container,
+iframe[title="Sign in with Google Dialog"] {
+  display: none !important;
+}
+
 .auth-input {
   width: 100%;
   border: 1px solid var(--color-border-medium);

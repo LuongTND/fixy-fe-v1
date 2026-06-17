@@ -119,7 +119,7 @@ function LoginForm() {
           </Button>
           <div
             id="login-google-btn-container"
-            className="absolute inset-0 opacity-0 overflow-hidden cursor-pointer [&_iframe]:!w-full [&_iframe]:!h-full"
+            className="absolute inset-0 opacity-0 overflow-hidden cursor-pointer !pointer-events-none [&_>_div]:!w-full [&_>_div]:!h-full [&_iframe]:!w-full [&_iframe]:!h-full [&_iframe]:!pointer-events-auto"
             style={{ minWidth: "100%", height: "100%" }}
           />
         </div>
