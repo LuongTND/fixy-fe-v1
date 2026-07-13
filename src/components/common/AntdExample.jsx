@@ -37,7 +37,7 @@ export function AntdExample() {
           {/* Empty State Example */}
           <div>
             <h3 className="text-lg font-semibold mb-3">Empty State</h3>
-            <Empty description="No Data" style={{ marginTop: 48, marginBottom: 48 }} />
+            <Empty description="No Data" className="my-12" />
           </div>
         </div>
       </Card>

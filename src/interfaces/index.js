@@ -62,3 +62,5 @@ export const DashboardDataShape = {
   chart: Object,
   summary: Object,
 };
+
+export * from './worker-profile.interface';

@@ -3,19 +3,28 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "generate:firebase-sw": "node scripts/generate-firebase-sw.js",
+    "predev": "node scripts/generate-firebase-sw.js",
+    "dev": "next dev ",
+    "prebuild": "node scripts/generate-firebase-sw.js",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@ant-design/v5-patch-for-react-19": "^1.0.3",
+    "@microsoft/signalr": "^10.0.0",
     "antd": "^5.11.0",
     "axios": "^1.7.0",
+    "firebase": "^12.14.0",
     "next": "16.2.5",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
+    "@tailwindcss/container-queries": "^0.1.1",
+    "@tailwindcss/forms": "^0.5.11",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
