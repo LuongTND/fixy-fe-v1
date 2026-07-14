@@ -1,3 +1,5 @@
+Link website version 1.0 của dự án : fixy-fe-v1.vercel.app
+
 # Fixy - Tài liệu Đặc tả Yêu cầu Hệ thống (SRS)
 
 ## 1. TỔNG QUAN DỰ ÁN
