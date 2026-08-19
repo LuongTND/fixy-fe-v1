@@ -1,12 +1,16 @@
-import { useCallback, useState } from 'react';
-import { supportTicketApi } from '@/apis/support.api';
-import { extractCollectionPayload } from '@/utils/helpers';
+import { useCallback, useState } from "react";
+import { supportTicketApi } from "@/apis/support.api";
+import { extractCollectionPayload } from "@/utils/helpers";
 
 export function useSupportTickets() {
   const [tickets, setTickets] = useState([]);
   const [messages, setMessages] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
-  const [meta, setMeta] = useState({ pageNumber: 1, pageSize: 10, totalCount: 0 });
+  const [meta, setMeta] = useState({
+    pageNumber: 1,
+    pageSize: 10,
+    totalCount: 0,
+  });
   const [loading, setLoading] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [messagesLoading, setMessagesLoading] = useState(false);
@@ -52,19 +56,22 @@ export function useSupportTickets() {
     }
   }, []);
 
-  const loadTicketConversation = useCallback(async (id) => {
-    const [detail, messagePage] = await Promise.all([
-      loadTicketDetail(id),
-      loadMessages(id, {
-        PageNumber: 1,
-        PageSize: 50,
-        SortBy: 'CreatedDate',
-        SortDescending: false,
-      }),
-    ]);
+  const loadTicketConversation = useCallback(
+    async (id) => {
+      const [detail, messagePage] = await Promise.all([
+        loadTicketDetail(id),
+        loadMessages(id, {
+          PageNumber: 1,
+          PageSize: 50,
+          SortBy: "CreatedDate",
+          SortDescending: false,
+        }),
+      ]);
 
-    return { detail, messages: messagePage.items };
-  }, [loadMessages, loadTicketDetail]);
+      return { detail, messages: messagePage.items };
+    },
+    [loadMessages, loadTicketDetail],
+  );
 
   const sendMessage = useCallback(async (id, content) => {
     setActing(true);

@@ -17,7 +17,7 @@ function getPagedItems(payload) {
 }
 
 /**
- * Hook that wraps the GET /api/worker-profiles/search endpoint.
+ * Hook that wraps the GET /api/worker-profiles endpoint.
  * Accepts all supported query params and re-fetches when params change.
  */
 export function useWorkerSearch({ params, autoLoad = true, onError } = {}) {
