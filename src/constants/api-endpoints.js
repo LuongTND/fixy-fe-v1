@@ -121,7 +121,7 @@ export const API_ENDPOINTS = {
     PORTFOLIO_IMAGE_DELETE: (mediaId) => `/worker-profiles/me/portfolio-images/${mediaId}`,
     IDENTIFICATION_IMAGES: '/worker-profiles/me/identification-images',
     CERTIFICATES: '/worker-profiles/me/centificates',
-    SEARCH: '/worker-profiles/search',
+    SEARCH: '/worker-profiles',
   },
   WORKER_SCHEDULES: {
     WEEKLY: (workerProfileId) => `/worker-schedules/${workerProfileId}/weekly`,
