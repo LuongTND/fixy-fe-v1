@@ -753,9 +753,14 @@ export default function AdminFinancePage() {
                 </div>
 
                 {isDepositRefundPayout(vietqrModal.payout) && (
-                  <div className="mx-auto mb-3 max-w-sm rounded-lg bg-[#FFF7E6] border border-[#FFD591] px-3 py-1.5 text-xs text-[#D46B08] font-medium flex items-center justify-center gap-1.5">
-                    <SymbolIcon className="!text-[16px]">shield</SymbolIcon>
-                    <span>Hoàn trả 100% tiền cọc bảo đảm cho KTV thôi việc</span>
+                  <div
+                    className="mx-auto mb-4 flex items-center justify-center gap-2 rounded-xl border border-[#FFD591] bg-[#FFF7E6] px-4 py-2.5 text-xs font-semibold text-[#D46B08]"
+                    style={{ width: "100%", maxWidth: "380px" }}
+                  >
+                    <SymbolIcon className="!text-[18px] shrink-0 text-[#D46B08]">shield</SymbolIcon>
+                    <span className="text-center leading-normal">
+                      Hoàn trả 100% tiền cọc bảo đảm cho KTV thôi việc
+                    </span>
                   </div>
                 )}
 
