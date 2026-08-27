@@ -274,13 +274,21 @@ export function TechnicianTable({ onProfilesLoaded }) {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      render: (value) => {
+      render: (value, record) => {
         const status = mapStatus(value);
         const labelObj = WORKER_STATUS_UI[status] || { label: 'Không xác định', className: '' };
         return (
-          <Tag className={`admin-tech-status ${labelObj.className}`}>
-            {labelObj.label}
-          </Tag>
+          <div className="flex flex-col gap-1 items-start">
+            <Tag className={`admin-tech-status ${labelObj.className}`}>
+              {labelObj.label}
+            </Tag>
+            {record.isOffboardingRequested && (
+              <Tag color="error" className="!m-0 !inline-flex !items-center !gap-1 !text-[11px] !font-bold !px-2 !py-0.5 !rounded-full !border-[#FFCCC7] !bg-[#FFF2F0] !text-[#CF1322]">
+                <SymbolIcon className="!text-[12px]">exit_to_app</SymbolIcon>
+                Chờ thôi việc
+              </Tag>
+            )}
+          </div>
         );
       },
     },
@@ -422,8 +430,26 @@ function WorkerProfileModalContent({ profile, loading }) {
             <p className="m-0 mt-1 text-sm text-[#555555]">{profile.email || profile.phone || 'Chưa có liên hệ'}</p>
           </div>
         </div>
-        <Tag className={`admin-tech-status ${statusMeta.className}`}>{statusMeta.label}</Tag>
+        <div className="flex items-center gap-2">
+          {profile.isOffboardingRequested && (
+            <Tag color="error" className="!m-0 !inline-flex !items-center !gap-1 !text-xs !font-bold !px-2.5 !py-1 !rounded-full !border-[#FFCCC7] !bg-[#FFF2F0] !text-[#CF1322]">
+              <SymbolIcon className="!text-[14px]">exit_to_app</SymbolIcon>
+              Đang yêu cầu thôi việc
+            </Tag>
+          )}
+          <Tag className={`admin-tech-status ${statusMeta.className}`}>{statusMeta.label}</Tag>
+        </div>
       </div>
+
+      {profile.isOffboardingRequested && (
+        <div className="mb-5 flex items-center gap-3 rounded-xl border border-[#FFCCC7] bg-[#FFF2F0] p-4 text-[#CF1322]">
+          <SymbolIcon className="!text-[24px]">warning</SymbolIcon>
+          <div>
+            <p className="m-0 text-sm font-bold">Kỹ thuật viên đang yêu cầu ngừng hợp tác & hoàn 100% tiền cọc ký quỹ</p>
+            <p className="m-0 text-xs text-[#820014]">Hệ thống đã tự động khóa nhận ca. Vui lòng vào trang <b>Tài chính & Giải ngân</b> để duyệt chuyển khoản cọc.</p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <section className="rounded-xl border border-[#DDDDDD] bg-white p-4">

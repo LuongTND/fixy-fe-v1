@@ -66,6 +66,13 @@ function getPayoutAccount(record) {
   );
 }
 
+function isDepositRefundPayout(record) {
+  return Boolean(
+    record?.isDepositRefund ||
+    (record?.vietQrUrl && record.vietQrUrl.includes("HOAN%20COC"))
+  );
+}
+
 export default function AdminFinancePage() {
   const { message, modal, notification } = App.useApp();
   const [payouts, setPayouts] = useState([]);
@@ -232,16 +239,17 @@ export default function AdminFinancePage() {
   }, [vietqrModal.status, loadPayouts]);
 
   const handleApprove = (record) => {
+    const isRefund = isDepositRefundPayout(record);
     modal.confirm({
-      title: "Duyệt yêu cầu rút tiền?",
-      content: `Xác nhận duyệt yêu cầu ${formatCurrency(record.amount)} của ${getTechnicianName(record)}.`,
+      title: isRefund ? "Duyệt hoàn tiền cọc ký quỹ?" : "Duyệt yêu cầu rút tiền?",
+      content: `Xác nhận duyệt ${isRefund ? "hoàn cọc" : "rút tiền"} ${formatCurrency(record.amount)} của ${getTechnicianName(record)}.`,
       okText: "Duyệt",
       cancelText: "Hủy",
       onOk: async () => {
         setActingId(record.id);
         try {
           await payoutApi.approve(record.id);
-          message.success("Đã duyệt yêu cầu rút tiền.");
+          message.success("Đã duyệt yêu cầu thành công.");
           await loadPayouts();
         } catch (error) {
           message.error(
@@ -267,7 +275,7 @@ export default function AdminFinancePage() {
     setActingId(rejectModal.payout?.id);
     try {
       await payoutApi.reject(rejectModal.payout.id, reason);
-      message.success("Đã từ chối yêu cầu rút tiền.");
+      message.success("Đã từ chối yêu cầu.");
       setRejectModal({ open: false, payout: null, reason: "" });
       await loadPayouts();
     } catch (error) {
@@ -285,10 +293,12 @@ export default function AdminFinancePage() {
     setVietqrModal({ open: true, payout: record, status: "waiting" });
   };
 
-  const handleCopyTransferContent = (payoutCode) => {
-    const content = `FIXY RUT ${payoutCode}`;
+  const handleCopyTransferContent = (record) => {
+    const isRefund = isDepositRefundPayout(record);
+    const prefix = isRefund ? "FIXY HOAN COC" : "FIXY RUT";
+    const content = `${prefix} ${record?.payoutCode || ""}`;
     navigator.clipboard.writeText(content).then(
-      () => message.success("Đã copy nội dung chuyển tiền!"),
+      () => message.success(`Đã copy nội dung: ${content}`),
       () => message.error("Không thể copy, vui lòng copy thủ công."),
     );
   };
@@ -360,6 +370,25 @@ export default function AdminFinancePage() {
           </div>
         </div>
       ),
+    },
+    {
+      title: "Loại yêu cầu",
+      key: "type",
+      width: 170,
+      render: (_, record) => {
+        const isRefund = isDepositRefundPayout(record);
+        return isRefund ? (
+          <Tag color="orange" className="!m-0 !inline-flex !items-center !gap-1 !text-xs !font-bold !px-2.5 !py-1 !rounded-md !border-[#FFD591] !bg-[#FFF7E6] !text-[#D46B08]">
+            <SymbolIcon className="!text-[14px]">shield</SymbolIcon>
+            Hoàn cọc thôi việc
+          </Tag>
+        ) : (
+          <Tag color="blue" className="!m-0 !inline-flex !items-center !gap-1 !text-xs !font-bold !px-2.5 !py-1 !rounded-md !border-[#91CAFF] !bg-[#E6F4FF] !text-[#0958D9]">
+            <SymbolIcon className="!text-[14px]">payments</SymbolIcon>
+            Rút thu nhập
+          </Tag>
+        );
+      },
     },
     {
       title: "Mã rút tiền",
@@ -713,13 +742,22 @@ export default function AdminFinancePage() {
                   </span>
                   <div className="text-left">
                     <p className="m-0 text-lg font-bold text-[#383838]">
-                      Quét VietQR chuyển tiền
+                      {isDepositRefundPayout(vietqrModal.payout)
+                        ? "Quét VietQR hoàn cọc ký quỹ"
+                        : "Quét VietQR chuyển tiền"}
                     </p>
                     <p className="m-0 text-xs text-[#818A91]">
                       Mở App ngân hàng → Quét mã QR bên dưới
                     </p>
                   </div>
                 </div>
+
+                {isDepositRefundPayout(vietqrModal.payout) && (
+                  <div className="mx-auto mb-3 max-w-sm rounded-lg bg-[#FFF7E6] border border-[#FFD591] px-3 py-1.5 text-xs text-[#D46B08] font-medium flex items-center justify-center gap-1.5">
+                    <SymbolIcon className="!text-[16px]">shield</SymbolIcon>
+                    <span>Hoàn trả 100% tiền cọc bảo đảm cho KTV thôi việc</span>
+                  </div>
+                )}
 
                 {/* QR Code Image */}
                 <div
@@ -740,6 +778,16 @@ export default function AdminFinancePage() {
                   className="mx-auto mb-4 w-full max-w-sm space-y-2.5 rounded-xl border border-[#DDDDDD] bg-[#FAFAFA] p-4 text-left text-sm"
                   style={{ width: "100%", maxWidth: "380px" }}
                 >
+                  <div className="flex w-full items-center justify-between gap-4">
+                    <span className="shrink-0 text-[#818A91]">Loại yêu cầu:</span>
+                    <span className="text-right font-bold text-[#383838]">
+                      {isDepositRefundPayout(vietqrModal.payout) ? (
+                        <Tag color="orange" className="!m-0 !font-bold">🛡️ Hoàn cọc thôi việc</Tag>
+                      ) : (
+                        <Tag color="blue" className="!m-0 !font-bold">💰 Rút thu nhập</Tag>
+                      )}
+                    </span>
+                  </div>
                   <div className="flex w-full items-center justify-between gap-4">
                     <span className="shrink-0 text-[#818A91]">Tên KTV:</span>
                     <span className="text-right font-bold text-[#383838]">
@@ -770,7 +818,7 @@ export default function AdminFinancePage() {
                     </p>
                     <div className="mt-1 flex w-full items-center justify-between gap-2">
                       <code className="rounded bg-[#FFF3E0] px-2.5 py-1 text-sm font-bold text-[#FF6B00]">
-                        FIXY RUT {vietqrModal.payout.payoutCode}
+                        {isDepositRefundPayout(vietqrModal.payout) ? "FIXY HOAN COC" : "FIXY RUT"} {vietqrModal.payout.payoutCode}
                       </code>
                       <Button
                         size="small"
@@ -778,7 +826,7 @@ export default function AdminFinancePage() {
                         ghost
                         onClick={() =>
                           handleCopyTransferContent(
-                            vietqrModal.payout.payoutCode,
+                            vietqrModal.payout,
                           )
                         }
                         icon={<SymbolIcon className="!text-[14px]">content_copy</SymbolIcon>}
